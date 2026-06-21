@@ -1,0 +1,170 @@
+import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import InputField from '../components/InputField'
+import SelectField from '../components/SelectField'
+import Disclaimer from '../components/Disclaimer'
+import { calcularFiniquito } from '../utils/laborCalculations'
+import type { FiniquitoFormData, ZonaSalarioMinimo } from '../types/labor'
+
+const ESTADO_INICIAL: FiniquitoFormData = {
+  fechaIngreso: '',
+  fechaSalida: '',
+  salarioMensual: 0,
+  diasPendientes: 0,
+  vacacionesDisfrutadas: 0,
+  renunciaVoluntaria: true,
+  tiene15Anios: false,
+  incluirPrimaAntiguedad: true,
+  zonaSalarioMinimo: 'general',
+}
+
+const SI_NO = [
+  { value: 'si', label: 'Sí' },
+  { value: 'no', label: 'No' },
+]
+
+const ZONAS_SALARIO_MINIMO = [
+  { value: 'general', label: 'Resto del país' },
+  { value: 'frontera_norte', label: 'Zona Libre de la Frontera Norte' },
+]
+
+export default function FiniquitoCalculator() {
+  const [form, setForm] = useState<FiniquitoFormData>(ESTADO_INICIAL)
+  const [errores, setErrores] = useState<Record<string, string>>({})
+  const navigate = useNavigate()
+
+  function actualizar<K extends keyof FiniquitoFormData>(campo: K, valor: FiniquitoFormData[K]) {
+    setForm((prev) => ({ ...prev, [campo]: valor }))
+  }
+
+  function validar(): boolean {
+    const e: Record<string, string> = {}
+
+    if (!form.fechaIngreso) e.fechaIngreso = 'Indica la fecha de ingreso.'
+    if (!form.fechaSalida) e.fechaSalida = 'Indica la fecha de salida.'
+    if (
+      form.fechaIngreso &&
+      form.fechaSalida &&
+      new Date(form.fechaSalida) < new Date(form.fechaIngreso)
+    ) {
+      e.fechaSalida = 'La fecha de salida no puede ser anterior a la fecha de ingreso.'
+    }
+    if (!form.salarioMensual || form.salarioMensual <= 0) {
+      e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
+    }
+    if (form.diasPendientes < 0) {
+      e.diasPendientes = 'Los días pendientes no pueden ser negativos.'
+    }
+    if (form.vacacionesDisfrutadas < 0) {
+      e.vacacionesDisfrutadas = 'Las vacaciones disfrutadas no pueden ser negativas.'
+    }
+
+    setErrores(e)
+    return Object.keys(e).length === 0
+  }
+
+  function manejarEnvio(ev: FormEvent) {
+    ev.preventDefault()
+    if (!validar()) return
+    const resultado = calcularFiniquito(form)
+    navigate('/resultado', { state: { resultado } })
+  }
+
+  return (
+    <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
+      <div>
+        <h1 className="text-2xl font-bold text-primary">Calculadora de Finiquito</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Captura los datos de tu relación laboral para obtener una estimación.
+        </p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <InputField
+          label="Fecha de ingreso"
+          name="fechaIngreso"
+          type="date"
+          value={form.fechaIngreso}
+          onChange={(v) => actualizar('fechaIngreso', v)}
+          error={errores.fechaIngreso}
+        />
+        <InputField
+          label="Fecha de salida"
+          name="fechaSalida"
+          type="date"
+          value={form.fechaSalida}
+          onChange={(v) => actualizar('fechaSalida', v)}
+          error={errores.fechaSalida}
+        />
+        <InputField
+          label="Salario mensual (MXN)"
+          name="salarioMensual"
+          type="number"
+          min={0}
+          step={0.01}
+          value={form.salarioMensual}
+          onChange={(v) => actualizar('salarioMensual', Number(v))}
+          error={errores.salarioMensual}
+        />
+        <InputField
+          label="Días trabajados pendientes de pago"
+          name="diasPendientes"
+          type="number"
+          min={0}
+          value={form.diasPendientes}
+          onChange={(v) => actualizar('diasPendientes', Number(v))}
+          error={errores.diasPendientes}
+        />
+        <InputField
+          label="Días de vacaciones disfrutados este año"
+          name="vacacionesDisfrutadas"
+          type="number"
+          min={0}
+          value={form.vacacionesDisfrutadas}
+          onChange={(v) => actualizar('vacacionesDisfrutadas', Number(v))}
+          error={errores.vacacionesDisfrutadas}
+        />
+        <SelectField
+          label="¿Renuncia voluntaria?"
+          name="renunciaVoluntaria"
+          value={form.renunciaVoluntaria ? 'si' : 'no'}
+          options={SI_NO}
+          onChange={(v) => actualizar('renunciaVoluntaria', v === 'si')}
+        />
+        <SelectField
+          label="¿Tiene 15 años o más de antigüedad?"
+          name="tiene15Anios"
+          value={form.tiene15Anios ? 'si' : 'no'}
+          options={SI_NO}
+          onChange={(v) => actualizar('tiene15Anios', v === 'si')}
+          helpText="Solo relevante si la salida es por renuncia voluntaria."
+        />
+        <SelectField
+          label="¿Incluir prima de antigüedad si aplica?"
+          name="incluirPrimaAntiguedad"
+          value={form.incluirPrimaAntiguedad ? 'si' : 'no'}
+          options={SI_NO}
+          onChange={(v) => actualizar('incluirPrimaAntiguedad', v === 'si')}
+        />
+        <SelectField
+          label="Zona del salario mínimo"
+          name="zonaSalarioMinimo"
+          value={form.zonaSalarioMinimo}
+          options={ZONAS_SALARIO_MINIMO}
+          onChange={(v) => actualizar('zonaSalarioMinimo', v as ZonaSalarioMinimo)}
+          disabled={!form.incluirPrimaAntiguedad}
+          helpText="Se usa para aplicar el tope legal de la prima de antigüedad (Art. 162 LFT)."
+        />
+      </div>
+
+      <Disclaimer compact />
+
+      <button
+        type="submit"
+        className="rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition self-start"
+      >
+        Calcular finiquito
+      </button>
+    </form>
+  )
+}
