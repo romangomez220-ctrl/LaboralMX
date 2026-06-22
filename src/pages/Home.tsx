@@ -43,6 +43,45 @@ export default function Home() {
         </div>
       </section>
 
+      <section>
+        <h2 className="font-semibold text-primary mb-3">Más herramientas</h2>
+        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+          <Link
+            to="/aguinaldo"
+            className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
+          >
+            <p className="font-semibold text-primary mb-1">Aguinaldo</p>
+            <p className="text-gray-600">Estima tu aguinaldo proyectado al 31 de diciembre.</p>
+          </Link>
+          <Link
+            to="/vacaciones"
+            className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
+          >
+            <p className="font-semibold text-primary mb-1">Vacaciones y prima vacacional</p>
+            <p className="text-gray-600">Consulta tus días pendientes según tu antigüedad.</p>
+          </Link>
+          <Link
+            to="/sdi"
+            className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
+          >
+            <p className="font-semibold text-primary mb-1">Salario Diario Integrado</p>
+            <p className="text-gray-600">Calcula tu SDI con prestaciones mínimas de ley.</p>
+          </Link>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 opacity-80">
+            <p className="font-semibold text-gray-500 mb-1">
+              Horas Extra <span className="text-xs font-normal">(Próximamente)</span>
+            </p>
+            <p className="text-gray-500">Próximamente podrás incluir:</p>
+            <ul className="list-disc pl-4 mt-1 text-gray-500 space-y-0.5">
+              <li>Horas extra dobles</li>
+              <li>Horas extra triples</li>
+              <li>Descansos laborados</li>
+              <li>Días festivos trabajados</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section className="text-sm text-gray-600">
         <p>
           Captura tus fechas, tu salario y algunos datos de tu caso. LaboralMX hace los cálculos

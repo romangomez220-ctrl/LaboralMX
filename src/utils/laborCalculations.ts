@@ -1,14 +1,21 @@
 import type {
+  AguinaldoFormData,
   ConceptoResultado,
   FiniquitoFormData,
   LiquidacionFormData,
+  ResultadoAguinaldoEstimado,
   ResultadoCalculo,
+  ResultadoSDI,
+  ResultadoVacacionesEstimadas,
+  SDIFormData,
+  VacacionesFormData,
   ZonaSalarioMinimo,
 } from '../types/labor'
 import {
   calcularAntiguedad,
   diasTrabajadosAnioCalendario,
   formatAntiguedad,
+  obtenerFechaHoyUTC,
   parseDate,
 } from './dateUtils'
 import { round2 } from './formatCurrency'
@@ -49,6 +56,23 @@ interface ResultadoPrimaAntiguedad {
   monto: number
   topeAplicado: boolean
 }
+
+/**
+ * Determina si la prima de antigüedad es legalmente exigible (Art. 162
+ * LFT): en separación voluntaria (renuncia) se requieren 15 años o más de
+ * antigüedad; en cualquier otro supuesto de terminación no hay mínimo de
+ * años. Esta función es la ÚNICA fuente de verdad para esta regla y la
+ * usan tanto calcularFiniquito como calcularLiquidacion, para evitar que
+ * ambas calculadoras lleguen a resultados distintos ante el mismo
+ * supuesto jurídico.
+ */
+function primaAntiguedadAplicaLegalmente(esRenunciaVoluntaria: boolean, antiguedadDecimal: number): boolean {
+  if (!esRenunciaVoluntaria) return true
+  return antiguedadDecimal >= 15
+}
+
+const NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE =
+  'No se incluyó la prima de antigüedad: conforme al Art. 162 LFT, la prima de antigüedad por separación voluntaria (renuncia) requiere que el trabajador tenga 15 años o más de antigüedad. Tu antigüedad calculada con las fechas capturadas es menor a 15 años.'
 
 /**
  * Prima de antigüedad (Art. 162 LFT): 12 días de salario por cada año de
@@ -134,18 +158,31 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
   )
 
   const conceptos: ConceptoResultado[] = [
-    { etiqueta: 'Salarios pendientes de pago', monto: base.salariosPendientes },
-    { etiqueta: 'Aguinaldo proporcional', monto: base.aguinaldoProporcional },
+    {
+      etiqueta: 'Salarios pendientes de pago',
+      monto: base.salariosPendientes,
+      formula: 'Salario diario × días pendientes de pago',
+    },
+    {
+      etiqueta: 'Aguinaldo proporcional',
+      monto: base.aguinaldoProporcional,
+      formula: '15 días × salario diario × (días trabajados del año ÷ 365)',
+    },
     {
       etiqueta: 'Vacaciones proporcionales',
       monto: base.vacacionesPendientesDinero,
       detalle: `${base.diasVacacionesCorrespondientes} días correspondientes al año en curso`,
+      formula: 'Días de vacaciones correspondientes × salario diario × (días del año laboral ÷ 365), menos vacaciones disfrutadas',
     },
-    { etiqueta: 'Prima vacacional (25%)', monto: base.primaVacacional },
+    {
+      etiqueta: 'Prima vacacional (25%)',
+      monto: base.primaVacacional,
+      formula: 'Vacaciones pendientes × 25%',
+    },
   ]
 
   const notas: string[] = []
-  const primaAplicaLegal = data.renunciaVoluntaria ? data.tiene15Anios : true
+  const primaAplicaLegal = primaAntiguedadAplicaLegalmente(data.renunciaVoluntaria, base.antiguedadDecimal)
 
   if (data.incluirPrimaAntiguedad) {
     if (primaAplicaLegal) {
@@ -154,16 +191,18 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
         base.antiguedadDecimal,
         data.zonaSalarioMinimo,
       )
-      conceptos.push({ etiqueta: 'Prima de antigüedad', monto })
+      conceptos.push({
+        etiqueta: 'Prima de antigüedad',
+        monto,
+        formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
+      })
       if (topeAplicado) {
         notas.push(
           'La prima de antigüedad se calculó con el salario tope que marca el Art. 162 LFT (el doble del salario mínimo general de la zona seleccionada), ya que tu salario diario lo excede.',
         )
       }
     } else {
-      notas.push(
-        'No se incluyó la prima de antigüedad: en una renuncia voluntaria, la ley exige 15 años o más de antigüedad para que sea exigible.',
-      )
+      notas.push(NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE)
     }
   }
 
@@ -190,14 +229,27 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
   )
 
   const conceptos: ConceptoResultado[] = [
-    { etiqueta: 'Salarios pendientes de pago', monto: base.salariosPendientes },
-    { etiqueta: 'Aguinaldo proporcional', monto: base.aguinaldoProporcional },
+    {
+      etiqueta: 'Salarios pendientes de pago',
+      monto: base.salariosPendientes,
+      formula: 'Salario diario × días pendientes de pago',
+    },
+    {
+      etiqueta: 'Aguinaldo proporcional',
+      monto: base.aguinaldoProporcional,
+      formula: '15 días × salario diario × (días trabajados del año ÷ 365)',
+    },
     {
       etiqueta: 'Vacaciones proporcionales',
       monto: base.vacacionesPendientesDinero,
       detalle: `${base.diasVacacionesCorrespondientes} días correspondientes al año en curso`,
+      formula: 'Días de vacaciones correspondientes × salario diario × (días del año laboral ÷ 365), menos vacaciones disfrutadas',
     },
-    { etiqueta: 'Prima vacacional (25%)', monto: base.primaVacacional },
+    {
+      etiqueta: 'Prima vacacional (25%)',
+      monto: base.primaVacacional,
+      formula: 'Vacaciones pendientes × 25%',
+    },
   ]
 
   const notas: string[] = []
@@ -207,25 +259,34 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     conceptos.push({
       etiqueta: 'Indemnización constitucional (90 días)',
       monto: indemnizacion,
+      formula: 'Salario diario × 90 días',
     })
   }
 
   if (data.incluirPrimaAntiguedad) {
-    const { monto, topeAplicado } = calcularPrimaAntiguedad(
-      base.salarioDiario,
+    const primaAplicaLegal = primaAntiguedadAplicaLegalmente(
+      data.tipoSalida === 'renuncia',
       base.antiguedadDecimal,
-      data.zonaSalarioMinimo,
     )
-    conceptos.push({ etiqueta: 'Prima de antigüedad', monto })
-    if (topeAplicado) {
-      notas.push(
-        'La prima de antigüedad se calculó con el salario tope que marca el Art. 162 LFT (el doble del salario mínimo general de la zona seleccionada), ya que tu salario diario lo excede.',
+
+    if (primaAplicaLegal) {
+      const { monto, topeAplicado } = calcularPrimaAntiguedad(
+        base.salarioDiario,
+        base.antiguedadDecimal,
+        data.zonaSalarioMinimo,
       )
-    }
-    if (data.tipoSalida === 'renuncia') {
-      notas.push(
-        'En caso de renuncia, la prima de antigüedad solo es exigible si el trabajador tiene 15 años o más de antigüedad. Verifica este requisito en tu caso.',
-      )
+      conceptos.push({
+        etiqueta: 'Prima de antigüedad',
+        monto,
+        formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
+      })
+      if (topeAplicado) {
+        notas.push(
+          'La prima de antigüedad se calculó con el salario tope que marca el Art. 162 LFT (el doble del salario mínimo general de la zona seleccionada), ya que tu salario diario lo excede.',
+        )
+      }
+    } else {
+      notas.push(NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE)
     }
   }
 
@@ -240,6 +301,7 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
       veinteDiasInformativo = {
         etiqueta: '20 días por año de servicio (escenario informativo)',
         monto: monto20,
+        formula: 'Salario diario × 20 días × años de antigüedad',
       }
       totalConEscenarioInformativo = round2(totalEstimado + monto20)
     } else {
@@ -259,5 +321,91 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     veinteDiasInformativo,
     totalConEscenarioInformativo,
     notas,
+  }
+}
+
+// =============================================================
+// Módulos independientes: SDI, Aguinaldo estimado y Vacaciones
+// estimadas. No modifican ni dependen de calcularFiniquito ni de
+// calcularLiquidacion; reutilizan las mismas utilidades de fecha y
+// la misma tabla de vacaciones ya existentes en este archivo.
+// =============================================================
+
+/**
+ * Salario Diario Integrado (Art. 84 LSS), versión simplificada con
+ * prestaciones mínimas de ley (aguinaldo 15 días + prima vacacional 25%
+ * sobre los días de vacaciones que correspondan por antigüedad ya
+ * cumplida). No aplica el tope de 25 UMA ni incluye bonos, comisiones u
+ * otras percepciones variables.
+ */
+export function calcularSDI(data: SDIFormData): ResultadoSDI {
+  const ingreso = parseDate(data.fechaIngreso)
+  const hoy = obtenerFechaHoyUTC()
+  const antiguedad = calcularAntiguedad(ingreso, hoy)
+  const diasVacacionesAplicados = diasVacacionesPorAnio(antiguedad.aniosCompletos)
+  const factorIntegracion = 1 + DIAS_AGUINALDO / 365 + (diasVacacionesAplicados * PORCENTAJE_PRIMA_VACACIONAL) / 365
+  const salarioDiario = round2(data.salarioMensual / 30)
+  const sdi = round2(salarioDiario * factorIntegracion)
+
+  return {
+    salarioDiario,
+    diasVacacionesAplicados,
+    factorIntegracion,
+    sdi,
+    antiguedadTexto: formatAntiguedad(ingreso, hoy),
+  }
+}
+
+/**
+ * Aguinaldo proporcional ESTIMADO: proyecta el cálculo al 31 de
+ * diciembre del año en curso, asumiendo que la persona continúa
+ * laborando hasta esa fecha. Es una proyección, no el aguinaldo ya
+ * generado a la fecha de hoy.
+ */
+export function calcularAguinaldoEstimado(data: AguinaldoFormData): ResultadoAguinaldoEstimado {
+  const ingreso = parseDate(data.fechaIngreso)
+  const hoy = obtenerFechaHoyUTC()
+  const finDeAnio = new Date(Date.UTC(hoy.getUTCFullYear(), 11, 31))
+  const diasComputados = diasTrabajadosAnioCalendario(ingreso, finDeAnio)
+  const salarioDiario = round2(data.salarioMensual / 30)
+  const aguinaldoEstimado = round2((salarioDiario * DIAS_AGUINALDO * diasComputados) / 365)
+
+  return {
+    salarioDiario,
+    diasComputados,
+    aguinaldoEstimado,
+    fechaCorte: finDeAnio.toISOString().slice(0, 10),
+  }
+}
+
+/**
+ * Vacaciones y prima vacacional ESTIMADAS para un trabajador activo,
+ * con base en el año laboral en curso según su antigüedad (no el año
+ * calendario): se toman los días completos que le corresponden por el
+ * año de antigüedad que está cursando (sin prorratear, porque a
+ * diferencia del finiquito no hay una fecha de salida) y se restan los
+ * días que ya disfrutó para mostrar el pendiente.
+ */
+export function calcularVacacionesEstimadas(data: VacacionesFormData): ResultadoVacacionesEstimadas {
+  const ingreso = parseDate(data.fechaIngreso)
+  const hoy = obtenerFechaHoyUTC()
+  const antiguedad = calcularAntiguedad(ingreso, hoy)
+  const anioLaboralEnCurso = antiguedad.aniosCompletos + 1
+  const diasVacacionesCorrespondientes = diasVacacionesPorAnio(anioLaboralEnCurso)
+  const diasPendientes = Math.max(0, diasVacacionesCorrespondientes - data.diasDisfrutados)
+  const salarioDiario = round2(data.salarioMensual / 30)
+  const valorPendiente = round2(salarioDiario * diasPendientes)
+  const primaVacacional = round2(valorPendiente * PORCENTAJE_PRIMA_VACACIONAL)
+  const totalEstimado = round2(valorPendiente + primaVacacional)
+
+  return {
+    salarioDiario,
+    antiguedadTexto: formatAntiguedad(ingreso, hoy),
+    diasVacacionesCorrespondientes,
+    diasDisfrutados: data.diasDisfrutados,
+    diasPendientes,
+    valorPendiente,
+    primaVacacional,
+    totalEstimado,
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
 import Disclaimer from '../components/Disclaimer'
+import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
 import type { FiniquitoFormData, ZonaSalarioMinimo } from '../types/labor'
 
@@ -13,7 +14,6 @@ const ESTADO_INICIAL: FiniquitoFormData = {
   diasPendientes: 0,
   vacacionesDisfrutadas: 0,
   renunciaVoluntaria: true,
-  tiene15Anios: false,
   incluirPrimaAntiguedad: true,
   zonaSalarioMinimo: 'general',
 }
@@ -79,6 +79,8 @@ export default function FiniquitoCalculator() {
         </p>
       </div>
 
+      <FiniquitoVsLiquidacion />
+
       <div className="grid sm:grid-cols-2 gap-4">
         <InputField
           label="Fecha de ingreso"
@@ -130,14 +132,7 @@ export default function FiniquitoCalculator() {
           value={form.renunciaVoluntaria ? 'si' : 'no'}
           options={SI_NO}
           onChange={(v) => actualizar('renunciaVoluntaria', v === 'si')}
-        />
-        <SelectField
-          label="¿Tiene 15 años o más de antigüedad?"
-          name="tiene15Anios"
-          value={form.tiene15Anios ? 'si' : 'no'}
-          options={SI_NO}
-          onChange={(v) => actualizar('tiene15Anios', v === 'si')}
-          helpText="Solo relevante si la salida es por renuncia voluntaria."
+          helpText="Si tu antigüedad calculada es menor a 15 años, la ley no exige prima de antigüedad en caso de renuncia."
         />
         <SelectField
           label="¿Incluir prima de antigüedad si aplica?"

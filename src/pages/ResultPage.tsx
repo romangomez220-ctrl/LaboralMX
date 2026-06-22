@@ -66,7 +66,7 @@ export default function ResultPage() {
 
       <div className="flex flex-col gap-3">
         {resultado.conceptos.map((c, i) => (
-          <ResultCard key={i} etiqueta={c.etiqueta} monto={c.monto} detalle={c.detalle} />
+          <ResultCard key={i} etiqueta={c.etiqueta} monto={c.monto} detalle={c.detalle} formula={c.formula} />
         ))}
         <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
       </div>
@@ -76,6 +76,7 @@ export default function ResultPage() {
           <ResultCard
             etiqueta={resultado.veinteDiasInformativo.etiqueta}
             monto={resultado.veinteDiasInformativo.monto}
+            formula={resultado.veinteDiasInformativo.formula}
             variant="info"
           />
           {resultado.totalConEscenarioInformativo !== undefined && (

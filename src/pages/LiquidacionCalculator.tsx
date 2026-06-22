@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
 import Disclaimer from '../components/Disclaimer'
+import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import type { LiquidacionFormData, TipoSalidaLiquidacion, ZonaSalarioMinimo } from '../types/labor'
 
@@ -89,6 +90,8 @@ export default function LiquidacionCalculator() {
           Incluye el finiquito más, en su caso, la indemnización por despido injustificado.
         </p>
       </div>
+
+      <FiniquitoVsLiquidacion />
 
       <div className="grid sm:grid-cols-2 gap-4">
         <InputField

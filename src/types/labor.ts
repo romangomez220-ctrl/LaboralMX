@@ -18,7 +18,6 @@ export interface FiniquitoFormData {
   diasPendientes: number
   vacacionesDisfrutadas: number
   renunciaVoluntaria: boolean
-  tiene15Anios: boolean
   incluirPrimaAntiguedad: boolean
   zonaSalarioMinimo: ZonaSalarioMinimo
 }
@@ -39,6 +38,7 @@ export interface ConceptoResultado {
   etiqueta: string
   monto: number
   detalle?: string
+  formula?: string
 }
 
 export interface ResultadoCalculo {
@@ -51,4 +51,49 @@ export interface ResultadoCalculo {
   veinteDiasInformativo?: ConceptoResultado
   totalConEscenarioInformativo?: number
   notas: string[]
+}
+
+// --- Módulos independientes (SDI, Aguinaldo, Vacaciones) ---
+// No reemplazan ni modifican el flujo de Finiquito/Liquidación.
+
+export interface SDIFormData {
+  fechaIngreso: string
+  salarioMensual: number
+}
+
+export interface ResultadoSDI {
+  salarioDiario: number
+  diasVacacionesAplicados: number
+  factorIntegracion: number
+  sdi: number
+  antiguedadTexto: string
+}
+
+export interface AguinaldoFormData {
+  fechaIngreso: string
+  salarioMensual: number
+}
+
+export interface ResultadoAguinaldoEstimado {
+  salarioDiario: number
+  diasComputados: number
+  aguinaldoEstimado: number
+  fechaCorte: string
+}
+
+export interface VacacionesFormData {
+  fechaIngreso: string
+  salarioMensual: number
+  diasDisfrutados: number
+}
+
+export interface ResultadoVacacionesEstimadas {
+  salarioDiario: number
+  antiguedadTexto: string
+  diasVacacionesCorrespondientes: number
+  diasDisfrutados: number
+  diasPendientes: number
+  valorPendiente: number
+  primaVacacional: number
+  totalEstimado: number
 }

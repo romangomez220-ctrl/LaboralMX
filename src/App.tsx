@@ -7,6 +7,9 @@ import ResultPage from './pages/ResultPage'
 import HowItWorks from './pages/HowItWorks'
 import LegalNotice from './pages/LegalNotice'
 import About from './pages/About'
+import SDICalculator from './pages/SDICalculator'
+import AguinaldoCalculator from './pages/AguinaldoCalculator'
+import VacacionesCalculator from './pages/VacacionesCalculator'
 
 export default function App() {
   return (
@@ -19,6 +22,9 @@ export default function App() {
         <Route path="/como-se-calcula" element={<HowItWorks />} />
         <Route path="/aviso-legal" element={<LegalNotice />} />
         <Route path="/acerca-de" element={<About />} />
+        <Route path="/sdi" element={<SDICalculator />} />
+        <Route path="/aguinaldo" element={<AguinaldoCalculator />} />
+        <Route path="/vacaciones" element={<VacacionesCalculator />} />
       </Route>
     </Routes>
   )

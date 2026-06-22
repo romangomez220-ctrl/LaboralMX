@@ -99,3 +99,14 @@ export function formatAntiguedad(ingreso: Date, salida: Date): string {
   if (days > 0 || partes.length === 0) partes.push(`${days} día${days !== 1 ? 's' : ''}`)
   return partes.join(', ')
 }
+
+/**
+ * Fecha de hoy en UTC a medianoche, para mantener consistencia con
+ * parseDate() al comparar o calcular antigüedad respecto a la fecha actual
+ * (usado por las calculadoras de SDI, Aguinaldo y Vacaciones, que no
+ * dependen de una fecha de salida capturada por el usuario).
+ */
+export function obtenerFechaHoyUTC(): Date {
+  const ahora = new Date()
+  return new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()))
+}
