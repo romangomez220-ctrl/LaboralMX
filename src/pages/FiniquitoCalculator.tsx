@@ -5,14 +5,31 @@ import SelectField from '../components/SelectField'
 import Disclaimer from '../components/Disclaimer'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
+import { aNumero } from '../utils/numericInput'
 import type { FiniquitoFormData, ZonaSalarioMinimo } from '../types/labor'
 
-const ESTADO_INICIAL: FiniquitoFormData = {
+// Estado de captura del formulario: los campos numéricos se manejan como
+// texto mientras el usuario escribe (nunca como number), para que el
+// campo pueda quedar vacío temporalmente y no aparezcan ceros a la
+// izquierda como "0666". Solo se convierten a number al calcular, con
+// aNumero(), justo antes de llamar a calcularFiniquito.
+interface FiniquitoFormState {
+  fechaIngreso: string
+  fechaSalida: string
+  salarioMensual: string
+  diasPendientes: string
+  vacacionesDisfrutadas: string
+  renunciaVoluntaria: boolean
+  incluirPrimaAntiguedad: boolean
+  zonaSalarioMinimo: ZonaSalarioMinimo
+}
+
+const ESTADO_INICIAL: FiniquitoFormState = {
   fechaIngreso: '',
   fechaSalida: '',
-  salarioMensual: 0,
-  diasPendientes: 0,
-  vacacionesDisfrutadas: 0,
+  salarioMensual: '',
+  diasPendientes: '',
+  vacacionesDisfrutadas: '',
   renunciaVoluntaria: true,
   incluirPrimaAntiguedad: true,
   zonaSalarioMinimo: 'general',
@@ -29,11 +46,11 @@ const ZONAS_SALARIO_MINIMO = [
 ]
 
 export default function FiniquitoCalculator() {
-  const [form, setForm] = useState<FiniquitoFormData>(ESTADO_INICIAL)
+  const [form, setForm] = useState<FiniquitoFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const navigate = useNavigate()
 
-  function actualizar<K extends keyof FiniquitoFormData>(campo: K, valor: FiniquitoFormData[K]) {
+  function actualizar<K extends keyof FiniquitoFormState>(campo: K, valor: FiniquitoFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
@@ -49,13 +66,17 @@ export default function FiniquitoCalculator() {
     ) {
       e.fechaSalida = 'La fecha de salida no puede ser anterior a la fecha de ingreso.'
     }
-    if (!form.salarioMensual || form.salarioMensual <= 0) {
+
+    if (form.salarioMensual.trim() === '') {
+      e.salarioMensual = 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioMensual) <= 0) {
       e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
     }
-    if (form.diasPendientes < 0) {
+
+    if (form.diasPendientes.trim() !== '' && aNumero(form.diasPendientes) < 0) {
       e.diasPendientes = 'Los días pendientes no pueden ser negativos.'
     }
-    if (form.vacacionesDisfrutadas < 0) {
+    if (form.vacacionesDisfrutadas.trim() !== '' && aNumero(form.vacacionesDisfrutadas) < 0) {
       e.vacacionesDisfrutadas = 'Las vacaciones disfrutadas no pueden ser negativas.'
     }
 
@@ -66,7 +87,19 @@ export default function FiniquitoCalculator() {
   function manejarEnvio(ev: FormEvent) {
     ev.preventDefault()
     if (!validar()) return
-    const resultado = calcularFiniquito(form)
+
+    const datosParaCalcular: FiniquitoFormData = {
+      fechaIngreso: form.fechaIngreso,
+      fechaSalida: form.fechaSalida,
+      salarioMensual: aNumero(form.salarioMensual),
+      diasPendientes: aNumero(form.diasPendientes),
+      vacacionesDisfrutadas: aNumero(form.vacacionesDisfrutadas),
+      renunciaVoluntaria: form.renunciaVoluntaria,
+      incluirPrimaAntiguedad: form.incluirPrimaAntiguedad,
+      zonaSalarioMinimo: form.zonaSalarioMinimo,
+    }
+
+    const resultado = calcularFiniquito(datosParaCalcular)
     navigate('/resultado', { state: { resultado } })
   }
 
@@ -102,28 +135,27 @@ export default function FiniquitoCalculator() {
           label="Salario mensual (MXN)"
           name="salarioMensual"
           type="number"
-          min={0}
-          step={0.01}
+          placeholder="0.00"
           value={form.salarioMensual}
-          onChange={(v) => actualizar('salarioMensual', Number(v))}
+          onChange={(v) => actualizar('salarioMensual', v)}
           error={errores.salarioMensual}
         />
         <InputField
           label="Días trabajados pendientes de pago"
           name="diasPendientes"
           type="number"
-          min={0}
+          placeholder="0"
           value={form.diasPendientes}
-          onChange={(v) => actualizar('diasPendientes', Number(v))}
+          onChange={(v) => actualizar('diasPendientes', v)}
           error={errores.diasPendientes}
         />
         <InputField
           label="Días de vacaciones disfrutados este año"
           name="vacacionesDisfrutadas"
           type="number"
-          min={0}
+          placeholder="0"
           value={form.vacacionesDisfrutadas}
-          onChange={(v) => actualizar('vacacionesDisfrutadas', Number(v))}
+          onChange={(v) => actualizar('vacacionesDisfrutadas', v)}
           error={errores.vacacionesDisfrutadas}
         />
         <SelectField

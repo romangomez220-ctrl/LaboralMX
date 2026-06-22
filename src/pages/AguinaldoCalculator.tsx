@@ -3,19 +3,27 @@ import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import { calcularAguinaldoEstimado } from '../utils/laborCalculations'
+import { aNumero } from '../utils/numericInput'
 import type { AguinaldoFormData, ResultadoAguinaldoEstimado } from '../types/labor'
 
-const ESTADO_INICIAL: AguinaldoFormData = {
+// Salario mensual se captura como texto (no number); se convierte a
+// number solo al calcular, para evitar el bug de ceros a la izquierda.
+interface AguinaldoFormState {
+  fechaIngreso: string
+  salarioMensual: string
+}
+
+const ESTADO_INICIAL: AguinaldoFormState = {
   fechaIngreso: '',
-  salarioMensual: 0,
+  salarioMensual: '',
 }
 
 export default function AguinaldoCalculator() {
-  const [form, setForm] = useState<AguinaldoFormData>(ESTADO_INICIAL)
+  const [form, setForm] = useState<AguinaldoFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoAguinaldoEstimado | null>(null)
 
-  function actualizar<K extends keyof AguinaldoFormData>(campo: K, valor: AguinaldoFormData[K]) {
+  function actualizar<K extends keyof AguinaldoFormState>(campo: K, valor: AguinaldoFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
@@ -25,7 +33,9 @@ export default function AguinaldoCalculator() {
     if (form.fechaIngreso && new Date(form.fechaIngreso) > new Date()) {
       e.fechaIngreso = 'La fecha de ingreso no puede ser futura.'
     }
-    if (!form.salarioMensual || form.salarioMensual <= 0) {
+    if (form.salarioMensual.trim() === '') {
+      e.salarioMensual = 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioMensual) <= 0) {
       e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
     }
     setErrores(e)
@@ -35,7 +45,11 @@ export default function AguinaldoCalculator() {
   function manejarEnvio(ev: FormEvent) {
     ev.preventDefault()
     if (!validar()) return
-    setResultado(calcularAguinaldoEstimado(form))
+    const datosParaCalcular: AguinaldoFormData = {
+      fechaIngreso: form.fechaIngreso,
+      salarioMensual: aNumero(form.salarioMensual),
+    }
+    setResultado(calcularAguinaldoEstimado(datosParaCalcular))
   }
 
   return (
@@ -67,10 +81,9 @@ export default function AguinaldoCalculator() {
             label="Salario mensual (MXN)"
             name="salarioMensual"
             type="number"
-            min={0}
-            step={0.01}
+            placeholder="0.00"
             value={form.salarioMensual}
-            onChange={(v) => actualizar('salarioMensual', Number(v))}
+            onChange={(v) => actualizar('salarioMensual', v)}
             error={errores.salarioMensual}
           />
         </div>

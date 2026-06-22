@@ -3,20 +3,30 @@ import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import { calcularVacacionesEstimadas } from '../utils/laborCalculations'
+import { aNumero } from '../utils/numericInput'
 import type { ResultadoVacacionesEstimadas, VacacionesFormData } from '../types/labor'
 
-const ESTADO_INICIAL: VacacionesFormData = {
+// Salario mensual y días disfrutados se capturan como texto; se
+// convierten a number solo al calcular, para evitar el bug de ceros a
+// la izquierda y permitir que el campo quede vacío mientras se escribe.
+interface VacacionesFormState {
+  fechaIngreso: string
+  salarioMensual: string
+  diasDisfrutados: string
+}
+
+const ESTADO_INICIAL: VacacionesFormState = {
   fechaIngreso: '',
-  salarioMensual: 0,
-  diasDisfrutados: 0,
+  salarioMensual: '',
+  diasDisfrutados: '',
 }
 
 export default function VacacionesCalculator() {
-  const [form, setForm] = useState<VacacionesFormData>(ESTADO_INICIAL)
+  const [form, setForm] = useState<VacacionesFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoVacacionesEstimadas | null>(null)
 
-  function actualizar<K extends keyof VacacionesFormData>(campo: K, valor: VacacionesFormData[K]) {
+  function actualizar<K extends keyof VacacionesFormState>(campo: K, valor: VacacionesFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
@@ -26,10 +36,12 @@ export default function VacacionesCalculator() {
     if (form.fechaIngreso && new Date(form.fechaIngreso) > new Date()) {
       e.fechaIngreso = 'La fecha de ingreso no puede ser futura.'
     }
-    if (!form.salarioMensual || form.salarioMensual <= 0) {
+    if (form.salarioMensual.trim() === '') {
+      e.salarioMensual = 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioMensual) <= 0) {
       e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
     }
-    if (form.diasDisfrutados < 0) {
+    if (form.diasDisfrutados.trim() !== '' && aNumero(form.diasDisfrutados) < 0) {
       e.diasDisfrutados = 'Los días disfrutados no pueden ser negativos.'
     }
     setErrores(e)
@@ -39,7 +51,12 @@ export default function VacacionesCalculator() {
   function manejarEnvio(ev: FormEvent) {
     ev.preventDefault()
     if (!validar()) return
-    setResultado(calcularVacacionesEstimadas(form))
+    const datosParaCalcular: VacacionesFormData = {
+      fechaIngreso: form.fechaIngreso,
+      salarioMensual: aNumero(form.salarioMensual),
+      diasDisfrutados: aNumero(form.diasDisfrutados),
+    }
+    setResultado(calcularVacacionesEstimadas(datosParaCalcular))
   }
 
   return (
@@ -66,19 +83,18 @@ export default function VacacionesCalculator() {
             label="Salario mensual (MXN)"
             name="salarioMensual"
             type="number"
-            min={0}
-            step={0.01}
+            placeholder="0.00"
             value={form.salarioMensual}
-            onChange={(v) => actualizar('salarioMensual', Number(v))}
+            onChange={(v) => actualizar('salarioMensual', v)}
             error={errores.salarioMensual}
           />
           <InputField
             label="Días de vacaciones ya disfrutados"
             name="diasDisfrutados"
             type="number"
-            min={0}
+            placeholder="0"
             value={form.diasDisfrutados}
-            onChange={(v) => actualizar('diasDisfrutados', Number(v))}
+            onChange={(v) => actualizar('diasDisfrutados', v)}
             error={errores.diasDisfrutados}
           />
         </div>

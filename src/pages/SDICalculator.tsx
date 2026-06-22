@@ -3,19 +3,28 @@ import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import { calcularSDI } from '../utils/laborCalculations'
+import { aNumero } from '../utils/numericInput'
 import type { ResultadoSDI, SDIFormData } from '../types/labor'
 
-const ESTADO_INICIAL: SDIFormData = {
+// Salario mensual se captura como texto (no number) para que el campo
+// pueda quedar vacío mientras el usuario escribe y no muestre ceros a
+// la izquierda. Se convierte a number solo al calcular.
+interface SDIFormState {
+  fechaIngreso: string
+  salarioMensual: string
+}
+
+const ESTADO_INICIAL: SDIFormState = {
   fechaIngreso: '',
-  salarioMensual: 0,
+  salarioMensual: '',
 }
 
 export default function SDICalculator() {
-  const [form, setForm] = useState<SDIFormData>(ESTADO_INICIAL)
+  const [form, setForm] = useState<SDIFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoSDI | null>(null)
 
-  function actualizar<K extends keyof SDIFormData>(campo: K, valor: SDIFormData[K]) {
+  function actualizar<K extends keyof SDIFormState>(campo: K, valor: SDIFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
@@ -25,7 +34,9 @@ export default function SDICalculator() {
     if (form.fechaIngreso && new Date(form.fechaIngreso) > new Date()) {
       e.fechaIngreso = 'La fecha de ingreso no puede ser futura.'
     }
-    if (!form.salarioMensual || form.salarioMensual <= 0) {
+    if (form.salarioMensual.trim() === '') {
+      e.salarioMensual = 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioMensual) <= 0) {
       e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
     }
     setErrores(e)
@@ -35,7 +46,11 @@ export default function SDICalculator() {
   function manejarEnvio(ev: FormEvent) {
     ev.preventDefault()
     if (!validar()) return
-    setResultado(calcularSDI(form))
+    const datosParaCalcular: SDIFormData = {
+      fechaIngreso: form.fechaIngreso,
+      salarioMensual: aNumero(form.salarioMensual),
+    }
+    setResultado(calcularSDI(datosParaCalcular))
   }
 
   return (
@@ -61,10 +76,9 @@ export default function SDICalculator() {
             label="Salario mensual (MXN)"
             name="salarioMensual"
             type="number"
-            min={0}
-            step={0.01}
+            placeholder="0.00"
             value={form.salarioMensual}
-            onChange={(v) => actualizar('salarioMensual', Number(v))}
+            onChange={(v) => actualizar('salarioMensual', v)}
             error={errores.salarioMensual}
           />
         </div>
