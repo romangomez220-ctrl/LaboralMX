@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import LaboralMXLayout from './components/LaboralMXLayout'
+import ErrorBoundary from './components/ErrorBoundary'
 import RomanusHome from './pages/RomanusHome'
 import ProductosListing from './pages/ProductosListing'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
+import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
 import LiquidacionCalculator from './pages/LiquidacionCalculator'
@@ -28,18 +30,71 @@ export default function App() {
         {/* ROMANUS Labs: herramientas experimentales en validación privada.
             Deliberadamente sin enlace en ningún menú, footer o landing —
             solo accesible si se conoce la URL exacta. Ver useNoIndex.ts
-            para el mecanismo de noindex/nofollow específico de esta ruta. */}
-        <Route path="/labs/resico" element={<ResicoDiagnosticoPage />} />
+            para el mecanismo de noindex/nofollow específico de esta ruta.
+            Envuelta en su propio Error Boundary con detalle técnico
+            siempre visible, aislada del resto de la app. */}
+        <Route
+          path="/labs/resico"
+          element={
+            <LabsErrorBoundary moduleName="resico">
+              <ResicoDiagnosticoPage />
+            </LabsErrorBoundary>
+          }
+        />
 
-        {/* Producto: Laboral Suite (sección anidada con su propia sub-navegación) */}
+        {/* Producto: Laboral Suite (sección anidada con su propia sub-navegación).
+            Cada calculadora tiene su propio Error Boundary: si una falla,
+            las demás y el resto de ROMANUS siguen funcionando con normalidad. */}
         <Route path="/productos/laboralmx" element={<LaboralMXLayout />}>
           <Route index element={<Home />} />
-          <Route path="finiquito" element={<FiniquitoCalculator />} />
-          <Route path="liquidacion" element={<LiquidacionCalculator />} />
-          <Route path="resultado" element={<ResultPage />} />
-          <Route path="aguinaldo" element={<AguinaldoCalculator />} />
-          <Route path="vacaciones" element={<VacacionesCalculator />} />
-          <Route path="sdi" element={<SDICalculator />} />
+          <Route
+            path="finiquito"
+            element={
+              <ErrorBoundary moduleName="finiquito">
+                <FiniquitoCalculator />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="liquidacion"
+            element={
+              <ErrorBoundary moduleName="liquidacion">
+                <LiquidacionCalculator />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="resultado"
+            element={
+              <ErrorBoundary moduleName="resultado">
+                <ResultPage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="aguinaldo"
+            element={
+              <ErrorBoundary moduleName="aguinaldo">
+                <AguinaldoCalculator />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="vacaciones"
+            element={
+              <ErrorBoundary moduleName="vacaciones">
+                <VacacionesCalculator />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="sdi"
+            element={
+              <ErrorBoundary moduleName="sdi">
+                <SDICalculator />
+              </ErrorBoundary>
+            }
+          />
           <Route path="como-se-calcula" element={<HowItWorks />} />
           <Route path="aviso-legal" element={<LegalNotice />} />
           <Route path="acerca-de" element={<About />} />
@@ -67,6 +122,10 @@ export default function App() {
         <Route path="/productos/romanus-legal" element={<Navigate to="/productos" replace />} />
         <Route path="/productos/contratos" element={<Navigate to="/productos" replace />} />
         <Route path="/productos/recursos-juridicos" element={<Navigate to="/productos" replace />} />
+
+        {/* Red de seguridad: cualquier ruta no reconocida regresa al inicio
+            en vez de dejar el <Outlet/> vacío dentro del Layout. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   )

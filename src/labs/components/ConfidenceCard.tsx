@@ -11,6 +11,8 @@ const ESTILOS_NIVEL: Record<string, { texto: string; color: string }> = {
   bajo: { texto: 'Bajo', color: 'text-red-600' },
 }
 
+const ESTILO_DESCONOCIDO = { texto: 'No determinado', color: 'text-gray-500' }
+
 /**
  * Tarjeta reutilizable de "nivel de confianza" para diagnósticos de
  * ROMANUS Labs. No calcula nada: solo presenta un nivel y una
@@ -24,7 +26,7 @@ export default function ConfidenceCard({
   factorsEvaluated,
   specificNotes = [],
 }: ConfidenceCardProps) {
-  const estilo = ESTILOS_NIVEL[level]
+  const estilo = ESTILOS_NIVEL[level] ?? ESTILO_DESCONOCIDO
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">

@@ -5,6 +5,7 @@ import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import ExplicacionCalculo from '../components/ExplicacionCalculo'
 import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
+import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
 import type { ResultadoCalculo } from '../types/labor'
 
@@ -15,6 +16,7 @@ export default function ResultPage() {
   const resultado = estadoNavegacion?.resultado
   const datosCapturados = estadoNavegacion?.datosCapturados ?? []
   const [copiado, setCopiado] = useState(false)
+  const [errorPDF, setErrorPDF] = useState(false)
 
   if (!resultado) {
     return (
@@ -110,6 +112,13 @@ export default function ResultPage() {
 
       <Disclaimer />
 
+      {errorPDF && (
+        <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
+          No se pudo generar el PDF en este momento. Puedes usar "Copiar resultado" mientras
+          tanto; el equipo de ROMANUS ya quedó notificado de este error.
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-3">
         <button
           onClick={copiarResultado}
@@ -118,7 +127,19 @@ export default function ResultPage() {
           {copiado ? 'Copiado ✓' : 'Copiar resultado'}
         </button>
         <button
-          onClick={() => generarPDF(resultado, datosCapturados)}
+          onClick={() => {
+            // generarPDF() es una llamada imperativa desde un event handler:
+            // un Error Boundary NO puede capturar errores aquí (solo
+            // captura errores de render), así que necesita su propio
+            // try/catch para no dejar un error sin registrar ni mostrar.
+            try {
+              setErrorPDF(false)
+              generarPDF(resultado, datosCapturados)
+            } catch (error) {
+              registrarError(error as Error, 'pdfGenerator')
+              setErrorPDF(true)
+            }
+          }}
           className="rounded-lg border-2 border-primary text-primary px-5 py-2 font-semibold hover:bg-primary hover:text-white transition"
         >
           Descargar PDF

@@ -11,6 +11,7 @@ import ValidateWithExpertCard from '../components/ValidateWithExpertCard'
 import DisclaimerCard from '../components/DisclaimerCard'
 import { useNoIndex } from '../useNoIndex'
 import { trackEvent } from '../../utils/analytics'
+import { obtenerErroresRegistrados } from '../../utils/errorLogger'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { aNumero } from '../../utils/numericInput'
 import { calcularDiagnosticoResico, RETENCION_PERSONAS_MORALES, TABLA_RESICO_MENSUAL } from './resicoCalculations'
@@ -483,6 +484,25 @@ export default function ResicoDiagnosticoPage() {
           revisar casos específicos.
         </p>
       </Modal>
+
+      {obtenerErroresRegistrados().length > 0 && (
+        <details className="rounded-lg border border-red-300 bg-red-50 p-4">
+          <summary className="cursor-pointer font-semibold text-red-700">
+            🐞 Modo debug — errores registrados en esta sesión ({obtenerErroresRegistrados().length})
+          </summary>
+          <div className="mt-3 flex flex-col gap-3 text-xs text-gray-700">
+            {obtenerErroresRegistrados().map((err, i) => (
+              <div key={i} className="border-l-2 border-red-300 pl-3">
+                <p>
+                  <span className="font-semibold">{err.fechaHora}</span> — componente:{' '}
+                  <span className="font-semibold">{err.componente}</span> — ruta: {err.ruta}
+                </p>
+                <p className="mt-1">{err.mensaje}</p>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   )
 }
