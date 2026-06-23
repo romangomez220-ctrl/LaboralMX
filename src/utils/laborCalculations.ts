@@ -257,9 +257,9 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
   if (data.tipoSalida === 'despido_injustificado') {
     const indemnizacion = round2(base.salarioDiario * DIAS_INDEMNIZACION_CONSTITUCIONAL)
     conceptos.push({
-      etiqueta: 'Indemnización constitucional (90 días)',
+      etiqueta: 'Indemnización constitucional (3 meses / 90 días)',
       monto: indemnizacion,
-      formula: 'Salario diario × 90 días',
+      formula: 'Salario diario × 90 días (3 meses de salario, Art. 48 LFT)',
     })
   }
 
