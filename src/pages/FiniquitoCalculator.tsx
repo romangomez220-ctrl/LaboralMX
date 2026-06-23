@@ -100,7 +100,7 @@ export default function FiniquitoCalculator() {
     }
 
     const resultado = calcularFiniquito(datosParaCalcular)
-    navigate('/resultado', { state: { resultado } })
+    navigate('/productos/laboralmx/resultado', { state: { resultado } })
   }
 
   return (

@@ -12,7 +12,7 @@ export function generarPDF(resultado: ResultadoCalculo): void {
 
   doc.setFontSize(18)
   doc.setTextColor(11, 37, 69)
-  doc.text('LaboralMX', margenIzq, y)
+  doc.text('Laboral Suite', margenIzq, y)
   y += 8
 
   doc.setFontSize(12)
@@ -89,5 +89,5 @@ export function generarPDF(resultado: ResultadoCalculo): void {
   const lineasAviso = doc.splitTextToSize(AVISO_LEGAL, 180)
   doc.text(lineasAviso, margenIzq, y)
 
-  doc.save(`laboralmx-${resultado.tipo}-${Date.now()}.pdf`)
+  doc.save(`laboral-suite-${resultado.tipo}-${Date.now()}.pdf`)
 }

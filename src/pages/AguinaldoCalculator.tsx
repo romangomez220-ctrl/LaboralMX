@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
+import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularAguinaldoEstimado } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import type { AguinaldoFormData, ResultadoAguinaldoEstimado } from '../types/labor'
@@ -115,6 +116,8 @@ export default function AguinaldoCalculator() {
             detalle={`Proyectado al ${resultado.fechaCorte}, si continúas laborando hasta esa fecha`}
             formula="15 días × salario diario × (días computados ÷ 365)"
           />
+
+          <RevisionProfesionalBlock />
         </div>
       )}
     </div>

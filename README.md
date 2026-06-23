@@ -1,5 +1,11 @@
 # LaboralMX
 
+> **LaboralMX es el primer producto de ROMANUS**, una plataforma de soluciones para el ámbito
+> jurídico, empresarial y personal. La marca principal del sitio es ROMANUS (`/`); LaboralMX vive
+> en `/productos/laboralmx`. Identidad visual oficial: Azul Marino `#0F2744`, Dorado `#D4AF37`,
+> Blanco Marfil `#F8F8F6`, Gris Piedra `#6B7280` — Cinzel (wordmark), Cormorant Garamond (títulos),
+> Inter (texto). Ver `tailwind.config.js` y `src/index.css` para la implementación de tokens.
+
 Calculadora laboral mexicana para estimar **finiquito** y **liquidación** de forma rápida y clara. 100% frontend, sin backend, sin login, sin base de datos.
 
 > Esta herramienta ofrece una estimación informativa basada en prestaciones mínimas de la Ley Federal del Trabajo. No sustituye asesoría legal profesional.

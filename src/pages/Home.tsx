@@ -5,19 +5,19 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <section className="text-center pt-6">
-        <h1 className="text-3xl font-bold text-primary">LaboralMX</h1>
+        <h1 className="text-3xl font-bold text-primary">Laboral Suite</h1>
         <p className="mt-2 text-lg text-gray-600">
           Calcula tu finiquito o liquidación en minutos.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            to="/finiquito"
+            to="/productos/laboralmx/finiquito"
             className="rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition"
           >
             Calcular finiquito
           </Link>
           <Link
-            to="/liquidacion"
+            to="/productos/laboralmx/liquidacion"
             className="rounded-lg border-2 border-primary text-primary px-6 py-3 font-semibold hover:bg-primary hover:text-white transition"
           >
             Calcular liquidación
@@ -47,44 +47,32 @@ export default function Home() {
         <h2 className="font-semibold text-primary mb-3">Más herramientas</h2>
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           <Link
-            to="/aguinaldo"
+            to="/productos/laboralmx/aguinaldo"
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Aguinaldo</p>
             <p className="text-gray-600">Estima tu aguinaldo proyectado al 31 de diciembre.</p>
           </Link>
           <Link
-            to="/vacaciones"
+            to="/productos/laboralmx/vacaciones"
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Vacaciones y prima vacacional</p>
             <p className="text-gray-600">Consulta tus días pendientes según tu antigüedad.</p>
           </Link>
           <Link
-            to="/sdi"
+            to="/productos/laboralmx/sdi"
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Salario Diario Integrado</p>
             <p className="text-gray-600">Calcula tu SDI con prestaciones mínimas de ley.</p>
           </Link>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 opacity-80">
-            <p className="font-semibold text-gray-500 mb-1">
-              Horas Extra <span className="text-xs font-normal">(Próximamente)</span>
-            </p>
-            <p className="text-gray-500">Próximamente podrás incluir:</p>
-            <ul className="list-disc pl-4 mt-1 text-gray-500 space-y-0.5">
-              <li>Horas extra dobles</li>
-              <li>Horas extra triples</li>
-              <li>Descansos laborados</li>
-              <li>Días festivos trabajados</li>
-            </ul>
-          </div>
         </div>
       </section>
 
       <section className="text-sm text-gray-600">
         <p>
-          Captura tus fechas, tu salario y algunos datos de tu caso. LaboralMX hace los cálculos
+          Captura tus fechas, tu salario y algunos datos de tu caso. Laboral Suite hace los cálculos
           con base en las prestaciones mínimas de la Ley Federal del Trabajo y te muestra un
           desglose claro, con la opción de copiarlo o descargarlo en PDF.
         </p>

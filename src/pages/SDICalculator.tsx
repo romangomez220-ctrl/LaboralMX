@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
+import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularSDI } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import type { ResultadoSDI, SDIFormData } from '../types/labor'
@@ -123,6 +124,8 @@ export default function SDICalculator() {
             comisiones u otras percepciones variables, y no aplica el tope de 25 UMA del salario
             base de cotización.
           </div>
+
+          <RevisionProfesionalBlock />
         </div>
       )}
     </div>

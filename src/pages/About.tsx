@@ -1,11 +1,11 @@
 export default function About() {
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-primary">Acerca de LaboralMX</h1>
+      <h1 className="text-2xl font-bold text-primary">Acerca de Laboral Suite</h1>
 
       <div className="text-sm text-gray-700 space-y-3">
         <p>
-          LaboralMX es una herramienta informativa diseñada para facilitar la estimación de
+          Laboral Suite es una herramienta informativa diseñada para facilitar la estimación de
           finiquitos y liquidaciones conforme a la legislación laboral mexicana.
         </p>
         <p>
@@ -27,7 +27,7 @@ export default function About() {
       </div>
 
       <p className="text-sm text-gray-500 italic">
-        LaboralMX no sustituye asesoría legal profesional.
+        Laboral Suite no sustituye asesoría legal profesional.
       </p>
     </div>
   )

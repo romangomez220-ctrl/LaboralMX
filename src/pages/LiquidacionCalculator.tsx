@@ -110,7 +110,7 @@ export default function LiquidacionCalculator() {
     }
 
     const resultado = calcularLiquidacion(datosParaCalcular)
-    navigate('/resultado', { state: { resultado } })
+    navigate('/productos/laboralmx/resultado', { state: { resultado } })
   }
 
   const veinteDiasDisponible = form.tipoSalida === 'despido_injustificado'

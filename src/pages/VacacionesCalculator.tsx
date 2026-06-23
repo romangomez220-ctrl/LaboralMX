@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import InputField from '../components/InputField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
+import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularVacacionesEstimadas } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import type { ResultadoVacacionesEstimadas, VacacionesFormData } from '../types/labor'
@@ -143,6 +144,8 @@ export default function VacacionesCalculator() {
             formula="Valor de los días pendientes × 25%"
           />
           <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
+
+          <RevisionProfesionalBlock />
         </div>
       )}
     </div>

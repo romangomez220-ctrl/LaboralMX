@@ -7,10 +7,21 @@ html {
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-ivory text-gray-900;
+}
+
+/* Identidad institucional ROMANUS: todos los h1/h2 del sitio usan la
+   serif Cormorant Garamond, en una sola regla que cubre Laboral Suite y
+   cualquier producto futuro sin tocar componente por componente. */
+@layer base {
+  h1,
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: 0.01em;
+  }
 }
 
 :focus-visible {
-  outline: 2px solid #0b2545;
+  outline: 2px solid theme('colors.primary.DEFAULT');
   outline-offset: 2px;
 }

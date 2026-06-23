@@ -3,14 +3,22 @@ import Navbar from './Navbar'
 
 export default function Layout() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-ivory">
       <Navbar />
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6">
         <Outlet />
       </main>
-      <footer className="text-center text-xs text-gray-500 py-4 border-t border-gray-200">
-        © {new Date().getFullYear()} LaboralMX — Herramienta informativa, no constituye asesoría
-        legal.
+      <footer className="border-t border-gray-200 bg-primary text-white">
+        <div className="max-w-3xl mx-auto px-4 py-8 text-center">
+          <p className="font-display text-lg tracking-widest uppercase text-gold">ROMANUS</p>
+          <p className="mt-2 text-sm text-gray-300">
+            Tecnología. Estrategia. Conocimiento.
+          </p>
+          <p className="mt-4 text-xs text-gray-400">
+            © {new Date().getFullYear()} ROMANUS. Laboral Suite es una herramienta informativa;
+            no constituye asesoría legal.
+          </p>
+        </div>
       </footer>
     </div>
   )

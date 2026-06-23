@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
+import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { generarPDF } from '../utils/pdfGenerator'
 import { formatCurrency } from '../utils/formatCurrency'
 import type { ResultadoCalculo } from '../types/labor'
@@ -17,7 +18,7 @@ export default function ResultPage() {
       <div className="flex flex-col gap-4 items-start">
         <p className="text-gray-700">No hay un resultado para mostrar. Realiza un cálculo primero.</p>
         <Link
-          to="/"
+          to="/productos/laboralmx"
           className="rounded-lg bg-primary text-white px-5 py-2 font-semibold hover:bg-primary-light transition"
         >
           Ir al inicio
@@ -29,7 +30,7 @@ export default function ResultPage() {
   function copiarResultado() {
     if (!resultado) return
     const lineas = [
-      `LaboralMX — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
+      `Laboral Suite — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
       `Salario diario: ${formatCurrency(resultado.salarioDiario)}`,
       `Antigüedad: ${resultado.antiguedadTexto}`,
       ...resultado.conceptos.map((c) => `${c.etiqueta}: ${formatCurrency(c.monto)}`),
@@ -118,12 +119,20 @@ export default function ResultPage() {
           Descargar PDF
         </button>
         <button
-          onClick={() => navigate(resultado.tipo === 'finiquito' ? '/finiquito' : '/liquidacion')}
+          onClick={() =>
+            navigate(
+              resultado.tipo === 'finiquito'
+                ? '/productos/laboralmx/finiquito'
+                : '/productos/laboralmx/liquidacion',
+            )
+          }
           className="rounded-lg bg-primary text-white px-5 py-2 font-semibold hover:bg-primary-light transition"
         >
           Nuevo cálculo
         </button>
       </div>
+
+      <RevisionProfesionalBlock />
     </div>
   )
 }

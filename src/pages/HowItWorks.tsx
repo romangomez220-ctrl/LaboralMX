@@ -30,7 +30,7 @@ export default function HowItWorks() {
       <div>
         <h1 className="text-2xl font-bold text-primary">Cómo se calcula</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Estas son las fórmulas que usa LaboralMX, basadas en las prestaciones mínimas de la Ley
+          Estas son las fórmulas que usa Laboral Suite, basadas en las prestaciones mínimas de la Ley
           Federal del Trabajo (LFT).
         </p>
       </div>
@@ -83,7 +83,7 @@ export default function HowItWorks() {
         <p>
           El Art. 162 de la LFT limita el salario base de este cálculo al doble del salario
           mínimo general vigente en la zona correspondiente. Si tu salario diario excede ese
-          tope, LaboralMX usa el tope legal en lugar de tu salario real, tal como lo exige la ley.
+          tope, Laboral Suite usa el tope legal en lugar de tu salario real, tal como lo exige la ley.
         </p>
         <p>
           En caso de renuncia voluntaria, la ley exige 15 años o más de antigüedad para que sea

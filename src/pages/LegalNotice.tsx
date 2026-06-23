@@ -9,7 +9,7 @@ export default function LegalNotice() {
 
       <div className="text-sm text-gray-700 space-y-3">
         <p>
-          LaboralMX es una herramienta de cálculo informativo. Los resultados que genera se basan
+          Laboral Suite es una herramienta de cálculo informativo. Los resultados que genera se basan
           únicamente en las prestaciones mínimas establecidas por la Ley Federal del Trabajo (LFT)
           vigente en México, utilizando los datos que tú proporcionas.
         </p>
@@ -29,7 +29,7 @@ export default function LegalNotice() {
           Defensa del Trabajo).
         </p>
         <p>
-          LaboralMX no almacena tus datos: todos los cálculos se realizan en tu navegador y no se
+          Laboral Suite no almacena tus datos: todos los cálculos se realizan en tu navegador y no se
           envían a ningún servidor.
         </p>
       </div>
