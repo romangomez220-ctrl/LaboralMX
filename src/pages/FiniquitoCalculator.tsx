@@ -100,7 +100,17 @@ export default function FiniquitoCalculator() {
     }
 
     const resultado = calcularFiniquito(datosParaCalcular)
-    navigate('/productos/laboralmx/resultado', { state: { resultado } })
+
+    const datosCapturados = [
+      { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
+      { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
+      { etiqueta: 'Salario mensual', valor: `$${form.salarioMensual} MXN` },
+      { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
+      { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
+      { etiqueta: '¿Renuncia voluntaria?', valor: form.renunciaVoluntaria ? 'Sí' : 'No' },
+    ]
+
+    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados } })
   }
 
   return (

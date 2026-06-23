@@ -20,6 +20,7 @@ export default function Layout() {
             © {new Date().getFullYear()} ROMANUS. Laboral Suite es una herramienta informativa;
             no constituye asesoría legal.
           </p>
+          <p className="mt-1 text-[10px] text-gray-500 tracking-wide">ROMANUS v0.2</p>
         </div>
       </footer>
     </div>

@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import LaboralMXLayout from './components/LaboralMXLayout'
 import RomanusHome from './pages/RomanusHome'
 import ProductosListing from './pages/ProductosListing'
+import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
 import LiquidacionCalculator from './pages/LiquidacionCalculator'
@@ -23,6 +24,12 @@ export default function App() {
             anunciar nada que todavía no existe. */}
         <Route path="/" element={<RomanusHome />} />
         <Route path="/productos" element={<ProductosListing />} />
+
+        {/* ROMANUS Labs: herramientas experimentales en validación privada.
+            Deliberadamente sin enlace en ningún menú, footer o landing —
+            solo accesible si se conoce la URL exacta. Ver useNoIndex.ts
+            para el mecanismo de noindex/nofollow específico de esta ruta. */}
+        <Route path="/labs/resico" element={<ResicoDiagnosticoPage />} />
 
         {/* Producto: Laboral Suite (sección anidada con su propia sub-navegación) */}
         <Route path="/productos/laboralmx" element={<LaboralMXLayout />}>

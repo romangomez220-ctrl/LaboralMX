@@ -110,7 +110,22 @@ export default function LiquidacionCalculator() {
     }
 
     const resultado = calcularLiquidacion(datosParaCalcular)
-    navigate('/productos/laboralmx/resultado', { state: { resultado } })
+
+    const TIPOS_SALIDA_LABEL: Record<string, string> = {
+      despido_injustificado: 'Despido injustificado',
+      despido_justificado: 'Despido justificado',
+      renuncia: 'Renuncia',
+    }
+    const datosCapturados = [
+      { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
+      { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
+      { etiqueta: 'Salario mensual', valor: `$${form.salarioMensual} MXN` },
+      { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
+      { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
+      { etiqueta: 'Tipo de salida', valor: TIPOS_SALIDA_LABEL[form.tipoSalida] ?? form.tipoSalida },
+    ]
+
+    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados } })
   }
 
   const veinteDiasDisponible = form.tipoSalida === 'despido_injustificado'

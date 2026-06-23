@@ -58,21 +58,62 @@ interface ResultadoPrimaAntiguedad {
 }
 
 /**
- * Determina si la prima de antigüedad es legalmente exigible (Art. 162
- * LFT): en separación voluntaria (renuncia) se requieren 15 años o más de
- * antigüedad; en cualquier otro supuesto de terminación no hay mínimo de
- * años. Esta función es la ÚNICA fuente de verdad para esta regla y la
- * usan tanto calcularFiniquito como calcularLiquidacion, para evitar que
- * ambas calculadoras lleguen a resultados distintos ante el mismo
- * supuesto jurídico.
+ * Casos jurídicos reconocidos para la procedencia de la prima de
+ * antigüedad (Art. 162 LFT). "otro" cubre supuestos de terminación que no
+ * son ni renuncia voluntaria ni un despido (p. ej. mutuo acuerdo,
+ * vencimiento de contrato), donde la prima procede igual que en un
+ * despido pero conviene que el usuario confirme las circunstancias.
  */
-function primaAntiguedadAplicaLegalmente(esRenunciaVoluntaria: boolean, antiguedadDecimal: number): boolean {
-  if (!esRenunciaVoluntaria) return true
-  return antiguedadDecimal >= 15
+type CasoPrimaAntiguedad =
+  | 'renuncia_insuficiente'
+  | 'renuncia_suficiente'
+  | 'despido_injustificado'
+  | 'despido_justificado'
+  | 'otro'
+
+interface EvaluacionPrimaAntiguedad {
+  aplica: boolean
+  nota: string
 }
 
 const NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE =
   'No se incluyó la prima de antigüedad: conforme al Art. 162 LFT, la prima de antigüedad por separación voluntaria (renuncia) requiere que el trabajador tenga 15 años o más de antigüedad. Tu antigüedad calculada con las fechas capturadas es menor a 15 años.'
+
+const NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_SUFICIENTE =
+  'Se incluye la prima de antigüedad: tu antigüedad calculada es de 15 años o más, por lo que es exigible conforme al Art. 162 LFT incluso en una separación voluntaria (renuncia).'
+
+const NOTA_PRIMA_ANTIGUEDAD_DESPIDO_INJUSTIFICADO =
+  'Se incluye la prima de antigüedad: en caso de despido, la ley no exige un mínimo de años de antigüedad para que sea exigible (Art. 162 LFT).'
+
+const NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO =
+  'Se incluye la prima de antigüedad: aunque en un despido justificado no proceden otras prestaciones por la causa de la terminación, la prima de antigüedad no depende de la causa de separación, solo de la antigüedad acumulada, por lo que sigue siendo exigible conforme al Art. 162 LFT.'
+
+const NOTA_PRIMA_ANTIGUEDAD_OTRO_SUPUESTO =
+  'Se incluye la prima de antigüedad: fuera de una renuncia voluntaria, la ley no exige un mínimo de años de antigüedad (Art. 162 LFT). Verifica que la causa real de tu separación corresponda a este supuesto, ya que distintos supuestos de terminación pueden tener tratamiento distinto.'
+
+/**
+ * Determina si la prima de antigüedad es legalmente exigible para el
+ * caso indicado, y devuelve SIEMPRE una nota explicando el porqué (se
+ * incluya o no), para que el usuario nunca asuma automáticamente que le
+ * corresponde. Es la ÚNICA fuente de verdad para esta regla; la usan
+ * tanto calcularFiniquito como calcularLiquidacion, para evitar que
+ * ambas calculadoras lleguen a resultados distintos ante el mismo
+ * supuesto jurídico.
+ */
+function evaluarPrimaAntiguedad(caso: CasoPrimaAntiguedad): EvaluacionPrimaAntiguedad {
+  switch (caso) {
+    case 'renuncia_insuficiente':
+      return { aplica: false, nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE }
+    case 'renuncia_suficiente':
+      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_SUFICIENTE }
+    case 'despido_injustificado':
+      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_INJUSTIFICADO }
+    case 'despido_justificado':
+      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO }
+    case 'otro':
+      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_OTRO_SUPUESTO }
+  }
+}
 
 /**
  * Prima de antigüedad (Art. 162 LFT): 12 días de salario por cada año de
@@ -182,10 +223,15 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
   ]
 
   const notas: string[] = []
-  const primaAplicaLegal = primaAntiguedadAplicaLegalmente(data.renunciaVoluntaria, base.antiguedadDecimal)
+  const casoPrimaAntiguedad: CasoPrimaAntiguedad = data.renunciaVoluntaria
+    ? base.antiguedadDecimal >= 15
+      ? 'renuncia_suficiente'
+      : 'renuncia_insuficiente'
+    : 'otro'
 
   if (data.incluirPrimaAntiguedad) {
-    if (primaAplicaLegal) {
+    const { aplica, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
+    if (aplica) {
       const { monto, topeAplicado } = calcularPrimaAntiguedad(
         base.salarioDiario,
         base.antiguedadDecimal,
@@ -196,13 +242,14 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
         monto,
         formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
       })
+      notas.push(nota)
       if (topeAplicado) {
         notas.push(
           'La prima de antigüedad se calculó con el salario tope que marca el Art. 162 LFT (el doble del salario mínimo general de la zona seleccionada), ya que tu salario diario lo excede.',
         )
       }
     } else {
-      notas.push(NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE)
+      notas.push(nota)
     }
   }
 
@@ -264,12 +311,18 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
   }
 
   if (data.incluirPrimaAntiguedad) {
-    const primaAplicaLegal = primaAntiguedadAplicaLegalmente(
-      data.tipoSalida === 'renuncia',
-      base.antiguedadDecimal,
-    )
+    const casoPrimaAntiguedad: CasoPrimaAntiguedad =
+      data.tipoSalida === 'renuncia'
+        ? base.antiguedadDecimal >= 15
+          ? 'renuncia_suficiente'
+          : 'renuncia_insuficiente'
+        : data.tipoSalida === 'despido_injustificado'
+          ? 'despido_injustificado'
+          : 'despido_justificado'
 
-    if (primaAplicaLegal) {
+    const { aplica, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
+
+    if (aplica) {
       const { monto, topeAplicado } = calcularPrimaAntiguedad(
         base.salarioDiario,
         base.antiguedadDecimal,
@@ -280,13 +333,14 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
         monto,
         formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
       })
+      notas.push(nota)
       if (topeAplicado) {
         notas.push(
           'La prima de antigüedad se calculó con el salario tope que marca el Art. 162 LFT (el doble del salario mínimo general de la zona seleccionada), ya que tu salario diario lo excede.',
         )
       }
     } else {
-      notas.push(NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE)
+      notas.push(nota)
     }
   }
 

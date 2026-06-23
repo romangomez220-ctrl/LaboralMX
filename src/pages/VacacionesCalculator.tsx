@@ -146,6 +146,8 @@ export default function VacacionesCalculator() {
           <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
 
           <RevisionProfesionalBlock />
+
+          <Disclaimer />
         </div>
       )}
     </div>

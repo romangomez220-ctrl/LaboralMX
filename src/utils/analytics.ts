@@ -25,3 +25,14 @@ export function trackPageView(path: string): void {
     page_title: document.title,
   })
 }
+
+/**
+ * Envía un evento de GA4 con nombre y parámetros propios (a diferencia de
+ * trackPageView, que siempre envía "page_view"). Se usa para eventos de
+ * producto específicos, como los de ROMANUS Labs (resico_page_view,
+ * resico_calculation_started, etc.).
+ */
+export function trackEvent(eventName: string, params: Record<string, unknown> = {}): void {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
+  window.gtag('event', eventName, params)
+}

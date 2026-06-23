@@ -118,6 +118,8 @@ export default function AguinaldoCalculator() {
           />
 
           <RevisionProfesionalBlock />
+
+          <Disclaimer />
         </div>
       )}
     </div>

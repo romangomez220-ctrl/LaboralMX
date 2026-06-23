@@ -1,5 +1,5 @@
 const TEXTO_AVISO =
-  'Esta herramienta ofrece una estimación informativa basada en prestaciones mínimas de la Ley Federal del Trabajo. No sustituye asesoría legal profesional. El resultado puede variar por contrato, prestaciones superiores, salario integrado, comisiones, bonos, sindicatos, convenio, juicio laboral o circunstancias específicas del caso.'
+  'Importante: Los resultados mostrados son estimaciones informativas calculadas con base en los datos proporcionados por el usuario y la legislación laboral vigente aplicable. Los importes pueden variar dependiendo de impuestos, retenciones, cuotas de seguridad social, prestaciones contractuales, convenios, políticas internas de la empresa u otras circunstancias particulares del caso concreto. Esta herramienta no sustituye asesoría jurídica profesional.'
 
 interface DisclaimerProps {
   compact?: boolean

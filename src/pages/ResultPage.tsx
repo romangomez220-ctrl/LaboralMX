@@ -3,14 +3,17 @@ import { useLocation, useNavigate, Link } from 'react-router-dom'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
-import { generarPDF } from '../utils/pdfGenerator'
+import ExplicacionCalculo from '../components/ExplicacionCalculo'
+import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
 import { formatCurrency } from '../utils/formatCurrency'
 import type { ResultadoCalculo } from '../types/labor'
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const resultado = (location.state as { resultado?: ResultadoCalculo } | null)?.resultado
+  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[] } | null
+  const resultado = estadoNavegacion?.resultado
+  const datosCapturados = estadoNavegacion?.datosCapturados ?? []
   const [copiado, setCopiado] = useState(false)
 
   if (!resultado) {
@@ -103,6 +106,8 @@ export default function ResultPage() {
         </div>
       )}
 
+      <ExplicacionCalculo resultado={resultado} datosCapturados={datosCapturados} />
+
       <Disclaimer />
 
       <div className="flex flex-wrap gap-3">
@@ -113,7 +118,7 @@ export default function ResultPage() {
           {copiado ? 'Copiado ✓' : 'Copiar resultado'}
         </button>
         <button
-          onClick={() => generarPDF(resultado)}
+          onClick={() => generarPDF(resultado, datosCapturados)}
           className="rounded-lg border-2 border-primary text-primary px-5 py-2 font-semibold hover:bg-primary hover:text-white transition"
         >
           Descargar PDF
