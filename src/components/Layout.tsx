@@ -1,9 +1,11 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
+import AnalyticsTracker from './AnalyticsTracker'
 
 export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col bg-ivory">
+      <AnalyticsTracker />
       <Navbar />
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6">
         <Outlet />
