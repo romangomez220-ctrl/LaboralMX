@@ -1,15 +1,18 @@
 import EcosystemCard from '../components/EcosystemCard'
+import { useNoIndex } from '../labs/useNoIndex'
 
 const PROXIMAMENTE = ['Herramientas fiscales', 'Herramientas jurídicas', 'Herramientas empresariales']
 
 /**
- * Página pública e institucional de ROMANUS Labs. Distinta de
- * /labs/resico (la herramienta experimental en sí, que sigue oculta de
- * la navegación, con su propio Error Boundary y noindex/nofollow sin
- * tocar). Esta página SÍ es pública: describe qué es Labs y enlaza a
- * Diagnóstico RESICO como herramienta disponible.
+ * Página de ROMANUS Labs. Ya NO es una sección pública (v4.3): se quitó
+ * del menú principal y del catálogo de Productos porque Labs es un
+ * laboratorio interno de experimentación, no un producto. Sigue
+ * funcionando por URL directa, y por eso lleva noindex/nofollow — igual
+ * que /labs/resico — para que no aparezca en buscadores.
  */
 export default function LabsLandingPage() {
+  useNoIndex()
+
   return (
     <div className="flex flex-col gap-8">
       <div className="text-center pt-4">

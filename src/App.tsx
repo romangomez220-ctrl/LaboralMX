@@ -25,22 +25,36 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* ROMANUS: plataforma. Por ahora solo se muestra Laboral Suite;
-            la arquitectura queda lista para futuros productos sin
-            anunciar nada que todavía no existe. */}
+        {/* ============================================================
+            JERARQUÍA INSTITUCIONAL DE ROMANUS (v4.3)
+            ============================================================
+            EMPRESA        → ROMANUS (marca/plataforma, "/")
+            PRODUCTOS      → Laboral Suite (activo) + futuros productos,
+                              catalogados en /productos
+            INICIATIVAS    → Con Causa (iniciativa social pública)
+            INSTITUCIONAL  → Acerca de (la organización)
+            LABORATORIO INTERNO → Labs: NO es un producto ni una sección
+                              pública. No tiene enlace en ningún menú,
+                              catálogo ni landing. Solo es alcanzable por
+                              URL directa, y lleva noindex/nofollow.
+            ============================================================ */}
+
+        {/* EMPRESA */}
         <Route path="/" element={<RomanusHome />} />
+
+        {/* PRODUCTOS (catálogo) */}
         <Route path="/productos" element={<ProductosListing />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
-        <Route path="/labs" element={<LabsLandingPage />} />
+
+        {/* INICIATIVAS */}
         <Route path="/con-causa" element={<ConCausaPage />} />
+
+        {/* INSTITUCIONAL */}
         <Route path="/acerca-de" element={<AcercaDeRomanusPage />} />
 
-        {/* ROMANUS Labs: herramientas experimentales en validación privada.
-            Deliberadamente sin enlace en ningún menú, footer o landing —
-            solo accesible si se conoce la URL exacta. Ver useNoIndex.ts
-            para el mecanismo de noindex/nofollow específico de esta ruta.
-            Envuelta en su propio Error Boundary con detalle técnico
-            siempre visible, aislada del resto de la app. */}
+        {/* LABORATORIO INTERNO (oculto de toda navegación pública, con
+            noindex/nofollow; sigue funcionando por URL directa) */}
+        <Route path="/labs" element={<LabsLandingPage />} />
         <Route
           path="/labs/resico"
           element={

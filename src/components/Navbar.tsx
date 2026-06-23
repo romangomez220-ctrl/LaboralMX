@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
+// "Labs" se quitó a propósito del menú público: es un laboratorio
+// interno de experimentación, no un producto. Las rutas /labs/* siguen
+// funcionando por URL directa (ver App.tsx), solo no se enlazan aquí.
 const ENLACES = [
   { to: '/', label: 'Inicio' },
   { to: '/productos', label: 'Productos' },
   { to: '/laboral-suite', label: 'Laboral Suite' },
-  { to: '/labs', label: 'Labs' },
   { to: '/con-causa', label: 'Con Causa' },
   { to: '/acerca-de', label: 'Acerca de' },
 ]
@@ -15,10 +17,10 @@ export default function Navbar() {
 
   return (
     <header className="bg-primary text-white sticky top-0 z-10 shadow-sm">
-      <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-5xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <Link
           to="/"
-          className="font-display font-semibold text-[28px] tracking-[0.24em] uppercase text-white hover:text-gold transition"
+          className="font-display font-semibold text-[28px] tracking-[0.24em] uppercase text-white hover:text-gold transition shrink-0"
           onClick={() => setAbierto(false)}
         >
           Romanus
@@ -33,7 +35,7 @@ export default function Navbar() {
           {abierto ? '✕' : '☰'}
         </button>
 
-        <nav className="hidden md:flex gap-4 text-sm uppercase tracking-wide">
+        <nav className="hidden md:flex items-center gap-9 text-sm uppercase tracking-wide">
           {ENLACES.map((l) => (
             <NavLink
               key={l.to}
@@ -50,7 +52,7 @@ export default function Navbar() {
       </div>
 
       {abierto && (
-        <nav className="md:hidden flex flex-col px-4 pb-4 gap-3 text-sm uppercase tracking-wide">
+        <nav className="md:hidden flex flex-col px-6 pb-4 gap-3 text-sm uppercase tracking-wide">
           {ENLACES.map((l) => (
             <NavLink
               key={l.to}
