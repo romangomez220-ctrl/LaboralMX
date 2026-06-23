@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import AnalyticsTracker from './AnalyticsTracker'
+import WhatsAppFloatingButton from './WhatsAppFloatingButton'
+import ContactWhatsAppButton from './ContactWhatsAppButton'
 
 export default function Layout() {
   return (
@@ -16,13 +18,18 @@ export default function Layout() {
           <p className="mt-2 text-sm text-gray-300">
             Tecnología. Estrategia. Conocimiento.
           </p>
-          <p className="mt-4 text-xs text-gray-400">
+          <div className="mt-5">
+            <ContactWhatsAppButton variant="inverse" />
+          </div>
+          <p className="mt-5 text-xs text-gray-400">
             © {new Date().getFullYear()} ROMANUS. Laboral Suite es una herramienta informativa;
             no constituye asesoría legal.
           </p>
-          <p className="mt-1 text-[10px] text-gray-500 tracking-wide">ROMANUS v0.2</p>
+          <p className="mt-1 text-[10px] text-gray-500 tracking-wide">ROMANUS v4.4</p>
         </div>
       </footer>
+
+      <WhatsAppFloatingButton />
     </div>
   )
 }

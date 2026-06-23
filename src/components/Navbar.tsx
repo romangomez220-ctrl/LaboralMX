@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
-// "Labs" se quitó a propósito del menú público: es un laboratorio
-// interno de experimentación, no un producto. Las rutas /labs/* siguen
-// funcionando por URL directa (ver App.tsx), solo no se enlazan aquí.
+// "Labs" no aparece aquí: es un laboratorio interno, no un producto
+// (ver App.tsx). "Laboral Suite" tampoco: ahora vive DENTRO de
+// Productos, como su producto activo, no como sección independiente.
 const ENLACES = [
   { to: '/', label: 'Inicio' },
   { to: '/productos', label: 'Productos' },
-  { to: '/laboral-suite', label: 'Laboral Suite' },
   { to: '/con-causa', label: 'Con Causa' },
   { to: '/acerca-de', label: 'Acerca de' },
 ]

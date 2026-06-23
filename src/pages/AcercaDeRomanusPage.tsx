@@ -1,3 +1,5 @@
+import ContactWhatsAppButton from '../components/ContactWhatsAppButton'
+
 const VALORES = ['Claridad', 'Responsabilidad', 'Accesibilidad', 'Innovación', 'Confianza']
 
 /**
@@ -61,6 +63,10 @@ export default function AcercaDeRomanusPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="text-center">
+        <ContactWhatsAppButton />
       </div>
     </div>
   )

@@ -26,11 +26,14 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         {/* ============================================================
-            JERARQUÍA INSTITUCIONAL DE ROMANUS (v4.3)
+            JERARQUÍA INSTITUCIONAL DE ROMANUS (v4.4)
             ============================================================
             EMPRESA        → ROMANUS (marca/plataforma, "/")
-            PRODUCTOS      → Laboral Suite (activo) + futuros productos,
-                              catalogados en /productos
+            PRODUCTOS      → catálogo en /productos:
+                              - Laboral Suite (activo) → /laboral-suite
+                              - Próximamente: Contable Suite, Empresarial Suite
+                              (Laboral Suite ya NO es un ítem independiente
+                              del menú principal: vive dentro de Productos)
             INICIATIVAS    → Con Causa (iniciativa social pública)
             INSTITUCIONAL  → Acerca de (la organización)
             LABORATORIO INTERNO → Labs: NO es un producto ni una sección
@@ -42,7 +45,9 @@ export default function App() {
         {/* EMPRESA */}
         <Route path="/" element={<RomanusHome />} />
 
-        {/* PRODUCTOS (catálogo) */}
+        {/* PRODUCTOS (catálogo). Laboral Suite mantiene su propia ruta,
+            solo que ahora se llega a ella desde /productos, no desde el
+            menú principal directamente. */}
         <Route path="/productos" element={<ProductosListing />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
 

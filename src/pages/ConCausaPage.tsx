@@ -1,3 +1,5 @@
+import ContactWhatsAppButton from '../components/ContactWhatsAppButton'
+
 const AREAS = [
   {
     titulo: 'Atención a grupos vulnerables',
@@ -70,7 +72,8 @@ export default function ConCausaPage() {
         </div>
       </section>
 
-      <div className="text-center">
+      <div className="text-center flex flex-col items-center gap-4">
+        <ContactWhatsAppButton label="Contáctanos" variant="outline" />
         <span className="inline-block text-xs font-semibold text-gold-dark uppercase tracking-widest border border-gold rounded-full px-3 py-1">
           Próximamente
         </span>
