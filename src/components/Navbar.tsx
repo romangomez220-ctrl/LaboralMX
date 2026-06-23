@@ -4,6 +4,10 @@ import { Link, NavLink } from 'react-router-dom'
 const ENLACES = [
   { to: '/', label: 'Inicio' },
   { to: '/productos', label: 'Productos' },
+  { to: '/laboral-suite', label: 'Laboral Suite' },
+  { to: '/labs', label: 'Labs' },
+  { to: '/con-causa', label: 'Con Causa' },
+  { to: '/acerca-de', label: 'Acerca de' },
 ]
 
 export default function Navbar() {
@@ -29,7 +33,7 @@ export default function Navbar() {
           {abierto ? '✕' : '☰'}
         </button>
 
-        <nav className="hidden md:flex gap-6 text-sm uppercase tracking-wide">
+        <nav className="hidden md:flex gap-4 text-sm uppercase tracking-wide">
           {ENLACES.map((l) => (
             <NavLink
               key={l.to}

@@ -4,6 +4,10 @@ import LaboralMXLayout from './components/LaboralMXLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 import RomanusHome from './pages/RomanusHome'
 import ProductosListing from './pages/ProductosListing'
+import LaboralSuiteCatalogPage from './pages/LaboralSuiteCatalogPage'
+import LabsLandingPage from './pages/LabsLandingPage'
+import ConCausaPage from './pages/ConCausaPage'
+import AcercaDeRomanusPage from './pages/AcercaDeRomanusPage'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import Home from './pages/Home'
@@ -26,6 +30,10 @@ export default function App() {
             anunciar nada que todavía no existe. */}
         <Route path="/" element={<RomanusHome />} />
         <Route path="/productos" element={<ProductosListing />} />
+        <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
+        <Route path="/labs" element={<LabsLandingPage />} />
+        <Route path="/con-causa" element={<ConCausaPage />} />
+        <Route path="/acerca-de" element={<AcercaDeRomanusPage />} />
 
         {/* ROMANUS Labs: herramientas experimentales en validación privada.
             Deliberadamente sin enlace en ningún menú, footer o landing —
@@ -110,7 +118,11 @@ export default function App() {
         <Route path="/sdi" element={<Navigate to="/productos/laboralmx/sdi" replace />} />
         <Route path="/como-se-calcula" element={<Navigate to="/productos/laboralmx/como-se-calcula" replace />} />
         <Route path="/aviso-legal" element={<Navigate to="/productos/laboralmx/aviso-legal" replace />} />
-        <Route path="/acerca-de" element={<Navigate to="/productos/laboralmx/acerca-de" replace />} />
+        {/* Nota: el redirect legacy de /acerca-de se retiró a propósito:
+            esa ruta ahora es la página institucional "Acerca de ROMANUS"
+            (ver arriba). La página de Laboral Suite sigue disponible en
+            /productos/laboralmx/acerca-de, solo que ya no comparte la
+            URL corta con la de ROMANUS. */}
 
         {/* Las tarjetas "Próximamente" (Romanus AI, Consulting, Analytics,
             Legal) se retiraron por instrucción explícita: no se anuncian

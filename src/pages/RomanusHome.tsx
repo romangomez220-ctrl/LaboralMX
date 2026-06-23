@@ -32,7 +32,7 @@ export default function RomanusHome() {
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            to="/productos/laboralmx"
+            to="/laboral-suite"
             className="rounded-lg bg-primary text-white px-8 py-3 font-semibold hover:bg-primary-light transition"
           >
             Calcular ahora

@@ -11,7 +11,7 @@ export default function ProductosListing() {
       </div>
 
       <EcosystemCard
-        to="/productos/laboralmx"
+        to="/laboral-suite"
         nombre="Laboral Suite"
         descripcion="Calculadoras de finiquito, liquidación, aguinaldo, vacaciones y prima vacacional, y Salario Diario Integrado — todo conforme a la Ley Federal del Trabajo."
         disponible
