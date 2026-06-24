@@ -8,6 +8,9 @@ import LaboralSuiteCatalogPage from './pages/LaboralSuiteCatalogPage'
 import LabsLandingPage from './pages/LabsLandingPage'
 import ConCausaPage from './pages/ConCausaPage'
 import AcercaDeRomanusPage from './pages/AcercaDeRomanusPage'
+import AvisoLegalPage from './pages/AvisoLegalPage'
+import PrivacidadPage from './pages/PrivacidadPage'
+import TerminosPage from './pages/TerminosPage'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import Home from './pages/Home'
@@ -56,6 +59,13 @@ export default function App() {
 
         {/* INSTITUCIONAL */}
         <Route path="/acerca-de" element={<AcercaDeRomanusPage />} />
+
+        {/* LEGAL (v4.5 — Compliance & Trust). A nivel de plataforma,
+            distintas del aviso legal específico de Laboral Suite en
+            /productos/laboralmx/aviso-legal, que no se tocó. */}
+        <Route path="/aviso-legal" element={<AvisoLegalPage />} />
+        <Route path="/privacidad" element={<PrivacidadPage />} />
+        <Route path="/terminos" element={<TerminosPage />} />
 
         {/* LABORATORIO INTERNO (oculto de toda navegación pública, con
             noindex/nofollow; sigue funcionando por URL directa) */}
@@ -136,12 +146,12 @@ export default function App() {
         <Route path="/vacaciones" element={<Navigate to="/productos/laboralmx/vacaciones" replace />} />
         <Route path="/sdi" element={<Navigate to="/productos/laboralmx/sdi" replace />} />
         <Route path="/como-se-calcula" element={<Navigate to="/productos/laboralmx/como-se-calcula" replace />} />
-        <Route path="/aviso-legal" element={<Navigate to="/productos/laboralmx/aviso-legal" replace />} />
-        {/* Nota: el redirect legacy de /acerca-de se retiró a propósito:
-            esa ruta ahora es la página institucional "Acerca de ROMANUS"
-            (ver arriba). La página de Laboral Suite sigue disponible en
-            /productos/laboralmx/acerca-de, solo que ya no comparte la
-            URL corta con la de ROMANUS. */}
+        {/* Nota: los redirects legacy de /aviso-legal y /acerca-de se
+            retiraron a propósito: ambas rutas ahora son páginas de
+            ROMANUS a nivel de plataforma (ver arriba). Las páginas de
+            Laboral Suite siguen disponibles, sin cambios, en
+            /productos/laboralmx/aviso-legal y /productos/laboralmx/acerca-de
+            — solo que ya no comparten la URL corta con las de ROMANUS. */}
 
         {/* Las tarjetas "Próximamente" (Romanus AI, Consulting, Analytics,
             Legal) se retiraron por instrucción explícita: no se anuncian

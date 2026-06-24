@@ -1,6 +1,6 @@
 import ContactWhatsAppButton from '../components/ContactWhatsAppButton'
 
-const AREAS = [
+const AREAS_ENFOQUE = [
   {
     titulo: 'Atención a grupos vulnerables',
     descripcion:
@@ -18,11 +18,30 @@ const AREAS = [
   },
 ]
 
+// Áreas de atención jurídica consideradas (v4.5). Derecho Penal se
+// excluyó deliberadamente de este listado.
+const AREAS_DERECHO = [
+  'Derecho Laboral',
+  'Derecho Civil',
+  'Derecho Familiar',
+  'Cobranza abusiva',
+  'Fraudes y estafas digitales (orientación básica)',
+]
+
+const PRECISIONES = [
+  'Es un programa piloto en fase de validación.',
+  'La atención puede limitarse o suspenderse en cualquier momento.',
+  'No existe representación legal.',
+  'No existe relación abogado-cliente.',
+  'No existe obligación de aceptar todos los casos que se reciban.',
+]
+
 /**
- * Landing institucional, sin formularios ni backend. Pensada para
- * sentirse como una iniciativa seria y permanente de ROMANUS, no como
- * una campaña temporal — aunque el programa de orientación en sí
- * todavía esté en desarrollo.
+ * Landing institucional, sin formularios ni backend. v4.5: se agregaron
+ * las áreas de atención jurídica, las precisiones obligatorias sobre la
+ * naturaleza del programa, y el aviso de servicio no urgente. El botón
+ * de contacto ahora exige el consentimiento previo (WhatsAppConsentModal)
+ * antes de abrir WhatsApp.
  */
 export default function ConCausaPage() {
   return (
@@ -56,6 +75,23 @@ export default function ConCausaPage() {
       </section>
 
       <section className="max-w-xl mx-auto w-full">
+        <h2 className="font-semibold text-primary mb-2">Áreas de atención consideradas</h2>
+        <p className="text-sm text-gray-700 mb-3">
+          Por ahora, ROMANUS con Causa contempla orientación inicial en:
+        </p>
+        <ul className="flex flex-col gap-2">
+          {AREAS_DERECHO.map((area) => (
+            <li
+              key={area}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700"
+            >
+              {area}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="max-w-xl mx-auto w-full">
         <h2 className="font-semibold text-primary mb-2">
           Programa de orientación gratuita <span className="text-stone font-normal">(próximamente)</span>
         </h2>
@@ -63,7 +99,7 @@ export default function ConCausaPage() {
           Estamos construyendo un programa permanente con tres áreas de enfoque:
         </p>
         <div className="flex flex-col gap-3">
-          {AREAS.map((area) => (
+          {AREAS_ENFOQUE.map((area) => (
             <div key={area.titulo} className="rounded-lg border border-gray-200 bg-white p-4">
               <p className="font-semibold text-primary mb-1">{area.titulo}</p>
               <p className="text-sm text-gray-600">{area.descripcion}</p>
@@ -72,8 +108,29 @@ export default function ConCausaPage() {
         </div>
       </section>
 
+      <section className="max-w-xl mx-auto w-full rounded-lg border-2 border-primary bg-white p-5">
+        <h2 className="font-semibold text-primary mb-3">Antes de contactarnos, es importante que sepas:</h2>
+        <ul className="flex flex-col gap-1.5 text-sm text-gray-700">
+          {PRECISIONES.map((p) => (
+            <li key={p} className="flex gap-2">
+              <span className="text-primary">•</span>
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="max-w-xl mx-auto w-full rounded-lg border border-amber-300 bg-warning-light p-5">
+        <h2 className="font-semibold text-warning mb-2">ROMANUS no es un servicio de emergencia</h2>
+        <p className="text-sm text-gray-700">
+          Si tu situación involucra violencia activa, una detención, riesgo para tu integridad
+          física, una audiencia próxima o un plazo legal en curso, debes acudir inmediatamente a
+          la autoridad competente o a un profesional especializado.
+        </p>
+      </section>
+
       <div className="text-center flex flex-col items-center gap-4">
-        <ContactWhatsAppButton label="Contáctanos" variant="outline" />
+        <ContactWhatsAppButton label="Contáctanos" variant="outline" requireConsent />
         <span className="inline-block text-xs font-semibold text-gold-dark uppercase tracking-widest border border-gold rounded-full px-3 py-1">
           Próximamente
         </span>

@@ -1,9 +1,20 @@
+import { useState } from 'react'
 import { WHATSAPP_LINK } from '../config/contacto'
 import WhatsAppIcon from './WhatsAppIcon'
+import WhatsAppConsentModal from './WhatsAppConsentModal'
 
 interface ContactWhatsAppButtonProps {
   label?: string
   variant?: 'solid' | 'outline' | 'inverse'
+  /**
+   * Si es true, no enlaza directo a WhatsApp: abre primero el modal de
+   * consentimiento obligatorio (Fase 5, v4.5). Se usa específicamente en
+   * el canal de WhatsApp de ROMANUS con Causa, donde existe el riesgo de
+   * que se asuma una relación abogado-cliente que no existe. El resto de
+   * los usos de este botón (footer, Acerca de, Productos) son contacto
+   * general y siguen enlazando directo, sin cambios de comportamiento.
+   */
+  requireConsent?: boolean
 }
 
 const VARIANTES: Record<string, string> = {
@@ -22,14 +33,25 @@ const VARIANTES: Record<string, string> = {
 export default function ContactWhatsAppButton({
   label = 'Contáctanos',
   variant = 'outline',
+  requireConsent = false,
 }: ContactWhatsAppButtonProps) {
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const clases = `inline-flex items-center gap-2 rounded-lg px-5 py-2.5 font-semibold transition ${VARIANTES[variant]}`
+
+  if (requireConsent) {
+    return (
+      <>
+        <button type="button" onClick={() => setModalAbierto(true)} className={clases}>
+          <WhatsAppIcon className="w-5 h-5" />
+          {label}
+        </button>
+        <WhatsAppConsentModal abierto={modalAbierto} onCerrar={() => setModalAbierto(false)} />
+      </>
+    )
+  }
+
   return (
-    <a
-      href={WHATSAPP_LINK}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 font-semibold transition ${VARIANTES[variant]}`}
-    >
+    <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className={clases}>
       <WhatsAppIcon className="w-5 h-5" />
       {label}
     </a>
