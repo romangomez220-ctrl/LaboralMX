@@ -48,6 +48,25 @@ export default function AvisoLegalPage() {
         </p>
       </section>
 
+      <section className="rounded-lg border-2 border-primary bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Alcance del proyecto y derecho a derivar solicitudes</h2>
+        <p className="text-sm text-gray-700">
+          ROMANUS se reserva el derecho de rechazar, suspender o derivar cualquier solicitud
+          cuando considere que el asunto excede el alcance del proyecto, implica urgencia,
+          requiere representación formal, involucra riesgos elevados o no puede ser atendido
+          responsablemente dentro de la etapa actual de validación.
+        </p>
+      </section>
+
+      <section className="rounded-lg border border-gray-200 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Carácter de las estimaciones</h2>
+        <p className="text-sm text-gray-700">
+          Los resultados generados por las herramientas de ROMANUS son estimaciones informativas
+          y pueden variar según la información proporcionada por el usuario y las circunstancias
+          particulares del caso.
+        </p>
+      </section>
+
       <section className="rounded-lg border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Modificaciones</h2>
         <p className="text-sm text-gray-700">

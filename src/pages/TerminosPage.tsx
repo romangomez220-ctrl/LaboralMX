@@ -66,6 +66,24 @@ export default function TerminosPage() {
       </section>
 
       <section className="rounded-lg border-2 border-primary bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Derecho a rechazar, suspender o derivar solicitudes</h2>
+        <p className="text-sm text-gray-700">
+          ROMANUS se reserva el derecho de rechazar, suspender o derivar cualquier solicitud
+          cuando considere que el asunto excede el alcance del proyecto, implica urgencia,
+          requiere representación formal, involucra riesgos elevados o no puede ser atendido
+          responsablemente dentro de la etapa actual de validación.
+        </p>
+      </section>
+
+      <section className="rounded-lg border-2 border-primary bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Capacidad operativa limitada</h2>
+        <p className="text-sm text-gray-700">
+          ROMANUS podrá limitar temporalmente la recepción de solicitudes cuando la capacidad
+          operativa del proyecto no permita atenderlas adecuadamente.
+        </p>
+      </section>
+
+      <section className="rounded-lg border-2 border-primary bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Programa piloto</h2>
         <p className="text-sm text-gray-700">
           Debido a que ROMANUS con Causa es un programa piloto en fase de validación, la

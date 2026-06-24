@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom'
+import { EMAIL_PRIVACIDAD } from '../config/contacto'
 
+/**
+ * v4.6 — Intake & Privacy Hardening: se agregó "Responsable del
+ * tratamiento" y la sección de derechos ARCO. El correo de privacidad
+ * NO se publica todavía (corrección explícita) — se usa el texto
+ * temporal hasta que el proyecto se formalice. Cuando EMAIL_PRIVACIDAD
+ * (en src/config/contacto.ts) tenga un valor real, esta página lo
+ * muestra automáticamente sin que haya que tocar este archivo.
+ */
 export default function PrivacidadPage() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
@@ -9,6 +18,14 @@ export default function PrivacidadPage() {
         </p>
         <h1 className="text-3xl font-semibold text-primary">Aviso de Privacidad</h1>
       </div>
+
+      <section className="rounded-lg border border-gray-200 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Responsable del tratamiento</h2>
+        <p className="text-sm text-gray-700">
+          Mientras ROMANUS se encuentra en fase de validación, el responsable del tratamiento de
+          los datos personales es Román Gómez.
+        </p>
+      </section>
 
       <section className="rounded-lg border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Información que captura cada herramienta</h2>
@@ -35,17 +52,42 @@ export default function PrivacidadPage() {
           Si decides contactar a ROMANUS por WhatsApp, esa conversación se realiza dentro de la
           plataforma de WhatsApp/Meta y queda sujeta a las políticas de privacidad de dicha
           plataforma, que ROMANUS no controla. Antes de continuar al canal de WhatsApp de ROMANUS
-          con Causa, se muestra un aviso de consentimiento adicional con información relevante
-          sobre la naturaleza del servicio.
+          con Causa, se muestra un aviso de consentimiento y un formulario breve con información
+          relevante sobre la naturaleza del servicio. WhatsApp es un canal operativo general de
+          contacto; no es el canal principal para ejercer derechos de privacidad (ver más abajo).
         </p>
+      </section>
+
+      <section className="rounded-lg border-2 border-primary bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">
+          Ejercicio de derechos ARCO y contacto de privacidad
+        </h2>
+        {EMAIL_PRIVACIDAD ? (
+          <p className="text-sm text-gray-700">
+            Para ejercer derechos de acceso, rectificación, cancelación u oposición sobre tus
+            datos personales, o para realizar cualquier consulta relacionada con privacidad, puedes
+            escribir a: {EMAIL_PRIVACIDAD}.
+          </p>
+        ) : (
+          <div className="text-sm text-gray-700 flex flex-col gap-2">
+            <p>
+              Los canales oficiales de contacto y privacidad de ROMANUS serán publicados conforme
+              avance el proceso de formalización del proyecto.
+            </p>
+            <p>
+              Durante esta etapa de validación, cualquier consulta relacionada con privacidad o
+              tratamiento de información podrá realizarse a través de los canales oficiales
+              publicados en el sitio web.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Derechos del usuario</h2>
         <p className="text-sm text-gray-700">
           Por encontrarse en fase de validación, ROMANUS no mantiene actualmente una base de datos
-          formal de usuarios más allá de la analítica agregada descrita arriba. Si tienes alguna
-          duda sobre el tratamiento de tu información, puedes contactarnos por WhatsApp.
+          formal de usuarios más allá de la analítica agregada descrita arriba.
         </p>
       </section>
 
