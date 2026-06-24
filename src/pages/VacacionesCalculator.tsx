@@ -1,24 +1,27 @@
 import { useState, type FormEvent } from 'react'
 import InputField from '../components/InputField'
+import SalarioCapturaField from '../components/SalarioCapturaField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularVacacionesEstimadas } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
-import type { ResultadoVacacionesEstimadas, VacacionesFormData } from '../types/labor'
+import type { ResultadoVacacionesEstimadas, TipoCapturaSalarial, VacacionesFormData } from '../types/labor'
 
-// Salario mensual y días disfrutados se capturan como texto; se
-// convierten a number solo al calcular, para evitar el bug de ceros a
-// la izquierda y permitir que el campo quede vacío mientras se escribe.
+// Salario y días disfrutados se capturan como texto; se convierten a
+// number solo al calcular, para evitar el bug de ceros a la izquierda y
+// permitir que el campo quede vacío mientras se escribe.
 interface VacacionesFormState {
   fechaIngreso: string
-  salarioMensual: string
+  tipoSalario: TipoCapturaSalarial
+  salarioBase: string
   diasDisfrutados: string
 }
 
 const ESTADO_INICIAL: VacacionesFormState = {
   fechaIngreso: '',
-  salarioMensual: '',
+  tipoSalario: 'diario',
+  salarioBase: '',
   diasDisfrutados: '',
 }
 
@@ -37,10 +40,10 @@ export default function VacacionesCalculator() {
     if (form.fechaIngreso && new Date(form.fechaIngreso) > new Date()) {
       e.fechaIngreso = 'La fecha de ingreso no puede ser futura.'
     }
-    if (form.salarioMensual.trim() === '') {
-      e.salarioMensual = 'Indica el salario mensual.'
-    } else if (aNumero(form.salarioMensual) <= 0) {
-      e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
+    if (form.salarioBase.trim() === '') {
+      e.salarioBase = form.tipoSalario === 'diario' ? 'Indica el salario diario.' : 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioBase) <= 0) {
+      e.salarioBase = 'El salario debe ser mayor a 0.'
     }
     if (form.diasDisfrutados.trim() !== '' && aNumero(form.diasDisfrutados) < 0) {
       e.diasDisfrutados = 'Los días disfrutados no pueden ser negativos.'
@@ -54,7 +57,8 @@ export default function VacacionesCalculator() {
     if (!validar()) return
     const datosParaCalcular: VacacionesFormData = {
       fechaIngreso: form.fechaIngreso,
-      salarioMensual: aNumero(form.salarioMensual),
+      salarioBase: aNumero(form.salarioBase),
+      tipoSalario: form.tipoSalario,
       diasDisfrutados: aNumero(form.diasDisfrutados),
     }
     setResultado(calcularVacacionesEstimadas(datosParaCalcular))
@@ -80,14 +84,12 @@ export default function VacacionesCalculator() {
             onChange={(v) => actualizar('fechaIngreso', v)}
             error={errores.fechaIngreso}
           />
-          <InputField
-            label="Salario mensual (MXN)"
-            name="salarioMensual"
-            type="number"
-            placeholder="0.00"
-            value={form.salarioMensual}
-            onChange={(v) => actualizar('salarioMensual', v)}
-            error={errores.salarioMensual}
+          <SalarioCapturaField
+            tipoSalario={form.tipoSalario}
+            salarioBase={form.salarioBase}
+            onTipoSalarioChange={(v) => actualizar('tipoSalario', v)}
+            onSalarioBaseChange={(v) => actualizar('salarioBase', v)}
+            error={errores.salarioBase}
           />
           <InputField
             label="Días de vacaciones ya disfrutados"
@@ -118,7 +120,16 @@ export default function VacacionesCalculator() {
             </p>
           </div>
 
-          <ResultCard etiqueta="Salario diario" monto={resultado.salarioDiario} formula="Salario mensual ÷ 30" />
+          <ResultCard
+            etiqueta="Salario diario usado"
+            monto={resultado.salarioDiario}
+            detalle={
+              resultado.tipoSalario === 'diario'
+                ? 'Capturado directamente como salario diario'
+                : `Convertido desde $${resultado.salarioBase} mensual ÷ 30`
+            }
+            formula={resultado.tipoSalario === 'diario' ? 'Salario diario capturado' : 'Salario mensual ÷ 30'}
+          />
 
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
             <p>

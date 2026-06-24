@@ -4,6 +4,9 @@ export type TipoSalidaLiquidacion =
   | 'despido_injustificado'
   | 'despido_justificado'
   | 'renuncia'
+  | 'mutuo_acuerdo'
+  | 'fallecimiento'
+  | 'incapacidad'
 
 /**
  * Zona geográfica para efectos del salario mínimo vigente (relevante para
@@ -11,10 +14,20 @@ export type TipoSalidaLiquidacion =
  */
 export type ZonaSalarioMinimo = 'general' | 'frontera_norte'
 
+/**
+ * Forma en que el usuario capturó el salario. "diario" se usa
+ * directamente; "mensual" se convierte internamente a diario dividiendo
+ * entre 30 (criterio ya usado en todo ROMANUS desde la primera versión).
+ * Se guarda en el resultado para mostrar siempre, de forma transparente,
+ * qué capturó el usuario y qué conversión se aplicó.
+ */
+export type TipoCapturaSalarial = 'diario' | 'mensual'
+
 export interface FiniquitoFormData {
   fechaIngreso: string
   fechaSalida: string
-  salarioMensual: number
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   diasPendientes: number
   vacacionesDisfrutadas: number
   renunciaVoluntaria: boolean
@@ -25,7 +38,8 @@ export interface FiniquitoFormData {
 export interface LiquidacionFormData {
   fechaIngreso: string
   fechaSalida: string
-  salarioMensual: number
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   diasPendientes: number
   vacacionesDisfrutadas: number
   tipoSalida: TipoSalidaLiquidacion
@@ -43,6 +57,8 @@ export interface ConceptoResultado {
 
 export interface ResultadoCalculo {
   tipo: TipoCalculo
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   salarioDiario: number
   antiguedadAnios: number
   antiguedadTexto: string
@@ -50,6 +66,16 @@ export interface ResultadoCalculo {
   totalEstimado: number
   veinteDiasInformativo?: ConceptoResultado
   totalConEscenarioInformativo?: number
+  /**
+   * Prima de antigüedad calculada pero NO sumada al total principal,
+   * porque el supuesto de terminación (mutuo acuerdo, incapacidad, u
+   * "otro" en Finiquito) no tiene un tratamiento legal automático y
+   * cierto como sí lo tienen renuncia con 15+ años, despido o
+   * fallecimiento. Se muestra de forma informativa, separada, para que
+   * el usuario y/o un profesional la revisen antes de asumirla como
+   * parte del total.
+   */
+  primaAntiguedadInformativa?: ConceptoResultado
   notas: string[]
 }
 
@@ -58,10 +84,13 @@ export interface ResultadoCalculo {
 
 export interface SDIFormData {
   fechaIngreso: string
-  salarioMensual: number
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
 }
 
 export interface ResultadoSDI {
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   salarioDiario: number
   diasVacacionesAplicados: number
   factorIntegracion: number
@@ -71,10 +100,13 @@ export interface ResultadoSDI {
 
 export interface AguinaldoFormData {
   fechaIngreso: string
-  salarioMensual: number
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
 }
 
 export interface ResultadoAguinaldoEstimado {
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   salarioDiario: number
   diasComputados: number
   aguinaldoEstimado: number
@@ -83,11 +115,14 @@ export interface ResultadoAguinaldoEstimado {
 
 export interface VacacionesFormData {
   fechaIngreso: string
-  salarioMensual: number
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   diasDisfrutados: number
 }
 
 export interface ResultadoVacacionesEstimadas {
+  salarioBase: number
+  tipoSalario: TipoCapturaSalarial
   salarioDiario: number
   antiguedadTexto: string
   diasVacacionesCorrespondientes: number

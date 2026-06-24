@@ -392,15 +392,9 @@ export default function ResicoDiagnosticoPage() {
               </li>
             </ul>
 
-            {/*
-              EASTER EGG TEMPORAL — fase privada de validación (v4.8).
-              Agradecimiento informal por feedback de un contador en beta.
-              NO es botón, NO lleva datos de contacto, NO presenta a
-              Josué como colaborador ni asesor oficial de ROMANUS.
-              ELIMINAR antes de cualquier lanzamiento público.
-            */}
-            <p className="text-xs text-gray-400 italic mt-4">
-              Si llegaste hasta aquí, probablemente sea momento de preguntarle a Josué. 😄
+            <p className="text-xs text-gray-500 mt-4">
+              Si tienes dudas sobre tu situación fiscal, consulta a un contador o asesor
+              especializado.
             </p>
           </div>
 

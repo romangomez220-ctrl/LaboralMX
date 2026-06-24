@@ -12,6 +12,7 @@ import AvisoLegalPage from './pages/AvisoLegalPage'
 import PrivacidadPage from './pages/PrivacidadPage'
 import TerminosPage from './pages/TerminosPage'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
+import ConverterPage from './labs/xml-cfdi/ConverterPage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
@@ -75,6 +76,14 @@ export default function App() {
           element={
             <LabsErrorBoundary moduleName="resico">
               <ResicoDiagnosticoPage />
+            </LabsErrorBoundary>
+          }
+        />
+        <Route
+          path="/labs/xml-cfdi"
+          element={
+            <LabsErrorBoundary moduleName="xml-cfdi">
+              <ConverterPage />
             </LabsErrorBoundary>
           }
         />

@@ -171,7 +171,11 @@ export function generarPDF(resultado: ResultadoCalculo, datosCapturados: DatoCap
   y = asegurarEspacio(doc, y, 10)
   doc.setFontSize(9.5)
   doc.setTextColor(...COLOR_STONE)
-  doc.text(`Salario diario utilizado: ${formatCurrency(resultado.salarioDiario)} · Antigüedad: ${resultado.antiguedadTexto}`, MARGEN_IZQ, y)
+  doc.text(
+    `Salario capturado: ${formatCurrency(resultado.salarioBase)} (${resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'}) · Salario diario usado: ${formatCurrency(resultado.salarioDiario)} · Antigüedad: ${resultado.antiguedadTexto}`,
+    MARGEN_IZQ,
+    y,
+  )
   y += 8
 
   if (resultado.notas.length > 0) {

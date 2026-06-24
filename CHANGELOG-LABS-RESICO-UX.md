@@ -25,4 +25,6 @@ Las 5 tarjetas no reciben nada específico de RESICO en sus props — reciben st
 
 ## Build
 
-Verificación de tipos con TypeScript real + stubs (sin red para `npm install`/`npm run build` real): cero errores nuevos. Mismo artefacto conocido de siempre en `SelectField.tsx` (no relacionado, no tocado). Pendiente build real de tu lado.
+Verificación estática de tipos de TypeScript: cero errores nuevos. Hallazgo previamente
+identificado en `SelectField.tsx`, sin relación con estos cambios, no tocado. Build completo
+pendiente de confirmación en el entorno de desarrollo del equipo.

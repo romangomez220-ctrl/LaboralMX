@@ -1,22 +1,25 @@
 import { useState, type FormEvent } from 'react'
 import InputField from '../components/InputField'
+import SalarioCapturaField from '../components/SalarioCapturaField'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularAguinaldoEstimado } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
-import type { AguinaldoFormData, ResultadoAguinaldoEstimado } from '../types/labor'
+import type { AguinaldoFormData, ResultadoAguinaldoEstimado, TipoCapturaSalarial } from '../types/labor'
 
-// Salario mensual se captura como texto (no number); se convierte a
-// number solo al calcular, para evitar el bug de ceros a la izquierda.
+// Salario se captura como texto (no number); se convierte a number solo
+// al calcular, para evitar el bug de ceros a la izquierda.
 interface AguinaldoFormState {
   fechaIngreso: string
-  salarioMensual: string
+  tipoSalario: TipoCapturaSalarial
+  salarioBase: string
 }
 
 const ESTADO_INICIAL: AguinaldoFormState = {
   fechaIngreso: '',
-  salarioMensual: '',
+  tipoSalario: 'diario',
+  salarioBase: '',
 }
 
 export default function AguinaldoCalculator() {
@@ -34,10 +37,10 @@ export default function AguinaldoCalculator() {
     if (form.fechaIngreso && new Date(form.fechaIngreso) > new Date()) {
       e.fechaIngreso = 'La fecha de ingreso no puede ser futura.'
     }
-    if (form.salarioMensual.trim() === '') {
-      e.salarioMensual = 'Indica el salario mensual.'
-    } else if (aNumero(form.salarioMensual) <= 0) {
-      e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
+    if (form.salarioBase.trim() === '') {
+      e.salarioBase = form.tipoSalario === 'diario' ? 'Indica el salario diario.' : 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioBase) <= 0) {
+      e.salarioBase = 'El salario debe ser mayor a 0.'
     }
     setErrores(e)
     return Object.keys(e).length === 0
@@ -48,7 +51,8 @@ export default function AguinaldoCalculator() {
     if (!validar()) return
     const datosParaCalcular: AguinaldoFormData = {
       fechaIngreso: form.fechaIngreso,
-      salarioMensual: aNumero(form.salarioMensual),
+      salarioBase: aNumero(form.salarioBase),
+      tipoSalario: form.tipoSalario,
     }
     setResultado(calcularAguinaldoEstimado(datosParaCalcular))
   }
@@ -78,14 +82,12 @@ export default function AguinaldoCalculator() {
             onChange={(v) => actualizar('fechaIngreso', v)}
             error={errores.fechaIngreso}
           />
-          <InputField
-            label="Salario mensual (MXN)"
-            name="salarioMensual"
-            type="number"
-            placeholder="0.00"
-            value={form.salarioMensual}
-            onChange={(v) => actualizar('salarioMensual', v)}
-            error={errores.salarioMensual}
+          <SalarioCapturaField
+            tipoSalario={form.tipoSalario}
+            salarioBase={form.salarioBase}
+            onTipoSalarioChange={(v) => actualizar('tipoSalario', v)}
+            onSalarioBaseChange={(v) => actualizar('salarioBase', v)}
+            error={errores.salarioBase}
           />
         </div>
 
@@ -101,7 +103,16 @@ export default function AguinaldoCalculator() {
 
       {resultado && (
         <div className="flex flex-col gap-3">
-          <ResultCard etiqueta="Salario diario" monto={resultado.salarioDiario} formula="Salario mensual ÷ 30" />
+          <ResultCard
+            etiqueta="Salario diario usado"
+            monto={resultado.salarioDiario}
+            detalle={
+              resultado.tipoSalario === 'diario'
+                ? 'Capturado directamente como salario diario'
+                : `Convertido desde $${resultado.salarioBase} mensual ÷ 30`
+            }
+            formula={resultado.tipoSalario === 'diario' ? 'Salario diario capturado' : 'Salario mensual ÷ 30'}
+          />
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
             <p>
               Días computados para el aguinaldo:{' '}

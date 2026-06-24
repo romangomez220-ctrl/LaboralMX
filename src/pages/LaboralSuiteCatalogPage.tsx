@@ -26,6 +26,11 @@ const HERRAMIENTAS = [
     nombre: 'Prima vacacional',
     descripcion: '25% sobre el valor de tus vacaciones pendientes.',
   },
+  {
+    to: '/productos/laboralmx/sdi',
+    nombre: 'Salario Diario Integrado (SDI)',
+    descripcion: 'Estimación del SDI con prestaciones mínimas de ley, calculada a la fecha de hoy.',
+  },
 ]
 
 const ENLACES_UTILES = [

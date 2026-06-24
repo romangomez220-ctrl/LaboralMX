@@ -36,11 +36,17 @@ export default function ResultPage() {
     if (!resultado) return
     const lineas = [
       `Laboral Suite — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
-      `Salario diario: ${formatCurrency(resultado.salarioDiario)}`,
+      `Salario capturado: ${formatCurrency(resultado.salarioBase)} (${resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
+      `Salario diario usado: ${formatCurrency(resultado.salarioDiario)}`,
       `Antigüedad: ${resultado.antiguedadTexto}`,
       ...resultado.conceptos.map((c) => `${c.etiqueta}: ${formatCurrency(c.monto)}`),
       `Total estimado: ${formatCurrency(resultado.totalEstimado)}`,
     ]
+    if (resultado.primaAntiguedadInformativa) {
+      lineas.push(
+        `${resultado.primaAntiguedadInformativa.etiqueta} (informativo, no incluido en el total): ${formatCurrency(resultado.primaAntiguedadInformativa.monto)}`,
+      )
+    }
     if (resultado.veinteDiasInformativo) {
       lineas.push(
         `${resultado.veinteDiasInformativo.etiqueta}: ${formatCurrency(resultado.veinteDiasInformativo.monto)}`,
@@ -62,8 +68,13 @@ export default function ResultPage() {
 
       <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg p-4">
         <p>
-          <span className="font-semibold">Salario diario:</span>{' '}
+          <span className="font-semibold">Salario capturado:</span>{' '}
+          {formatCurrency(resultado.salarioBase)} ({resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'})
+        </p>
+        <p>
+          <span className="font-semibold">Salario diario usado:</span>{' '}
           {formatCurrency(resultado.salarioDiario)}
+          {resultado.tipoSalario === 'mensual' && ' (mensual ÷ 30)'}
         </p>
         <p>
           <span className="font-semibold">Antigüedad:</span> {resultado.antiguedadTexto}
@@ -76,6 +87,20 @@ export default function ResultPage() {
         ))}
         <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
       </div>
+
+      {resultado.primaAntiguedadInformativa && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-semibold text-stone uppercase tracking-wide">
+            Concepto informativo — no incluido en el total principal
+          </p>
+          <ResultCard
+            etiqueta={resultado.primaAntiguedadInformativa.etiqueta}
+            monto={resultado.primaAntiguedadInformativa.monto}
+            formula={resultado.primaAntiguedadInformativa.formula}
+            variant="info"
+          />
+        </div>
+      )}
 
       {resultado.veinteDiasInformativo && (
         <div className="flex flex-col gap-3">

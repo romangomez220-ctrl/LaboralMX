@@ -2,11 +2,12 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
+import SalarioCapturaField from '../components/SalarioCapturaField'
 import Disclaimer from '../components/Disclaimer'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
-import type { FiniquitoFormData, ZonaSalarioMinimo } from '../types/labor'
+import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
 // texto mientras el usuario escribe (nunca como number), para que el
@@ -16,7 +17,8 @@ import type { FiniquitoFormData, ZonaSalarioMinimo } from '../types/labor'
 interface FiniquitoFormState {
   fechaIngreso: string
   fechaSalida: string
-  salarioMensual: string
+  tipoSalario: TipoCapturaSalarial
+  salarioBase: string
   diasPendientes: string
   vacacionesDisfrutadas: string
   renunciaVoluntaria: boolean
@@ -27,7 +29,8 @@ interface FiniquitoFormState {
 const ESTADO_INICIAL: FiniquitoFormState = {
   fechaIngreso: '',
   fechaSalida: '',
-  salarioMensual: '',
+  tipoSalario: 'diario',
+  salarioBase: '',
   diasPendientes: '',
   vacacionesDisfrutadas: '',
   renunciaVoluntaria: true,
@@ -67,10 +70,10 @@ export default function FiniquitoCalculator() {
       e.fechaSalida = 'La fecha de salida no puede ser anterior a la fecha de ingreso.'
     }
 
-    if (form.salarioMensual.trim() === '') {
-      e.salarioMensual = 'Indica el salario mensual.'
-    } else if (aNumero(form.salarioMensual) <= 0) {
-      e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
+    if (form.salarioBase.trim() === '') {
+      e.salarioBase = form.tipoSalario === 'diario' ? 'Indica el salario diario.' : 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioBase) <= 0) {
+      e.salarioBase = 'El salario debe ser mayor a 0.'
     }
 
     if (form.diasPendientes.trim() !== '' && aNumero(form.diasPendientes) < 0) {
@@ -91,7 +94,8 @@ export default function FiniquitoCalculator() {
     const datosParaCalcular: FiniquitoFormData = {
       fechaIngreso: form.fechaIngreso,
       fechaSalida: form.fechaSalida,
-      salarioMensual: aNumero(form.salarioMensual),
+      salarioBase: aNumero(form.salarioBase),
+      tipoSalario: form.tipoSalario,
       diasPendientes: aNumero(form.diasPendientes),
       vacacionesDisfrutadas: aNumero(form.vacacionesDisfrutadas),
       renunciaVoluntaria: form.renunciaVoluntaria,
@@ -104,7 +108,10 @@ export default function FiniquitoCalculator() {
     const datosCapturados = [
       { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
       { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
-      { etiqueta: 'Salario mensual', valor: `$${form.salarioMensual} MXN` },
+      {
+        etiqueta: 'Salario capturado',
+        valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
+      },
       { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
       { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
       { etiqueta: '¿Renuncia voluntaria?', valor: form.renunciaVoluntaria ? 'Sí' : 'No' },
@@ -141,14 +148,12 @@ export default function FiniquitoCalculator() {
           onChange={(v) => actualizar('fechaSalida', v)}
           error={errores.fechaSalida}
         />
-        <InputField
-          label="Salario mensual (MXN)"
-          name="salarioMensual"
-          type="number"
-          placeholder="0.00"
-          value={form.salarioMensual}
-          onChange={(v) => actualizar('salarioMensual', v)}
-          error={errores.salarioMensual}
+        <SalarioCapturaField
+          tipoSalario={form.tipoSalario}
+          salarioBase={form.salarioBase}
+          onTipoSalarioChange={(v) => actualizar('tipoSalario', v)}
+          onSalarioBaseChange={(v) => actualizar('salarioBase', v)}
+          error={errores.salarioBase}
         />
         <InputField
           label="Días trabajados pendientes de pago"

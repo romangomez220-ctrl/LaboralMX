@@ -11,8 +11,8 @@ decisiones futuras de producto, no un compromiso de fechas ni de alcance.
 Labs (oculto, sin enlace en navegación principal — solo URL directa)
 │
 ├── Fiscal Suite
-│   ├── RESICO Beta            ← disponible hoy en /labs/resico
-│   ├── XML CFDI Beta          ← placeholder, sin desarrollar
+│   ├── RESICO Beta            ← disponible en /labs/resico
+│   ├── XML CFDI Beta          ← disponible en /labs/xml-cfdi (CFDI estándar y Nómina → Excel)
 │   └── Retenciones Beta       ← placeholder, sin desarrollar
 │
 └── Laboral Suite (experimentos)
@@ -42,7 +42,8 @@ Reglas de Labs:
 - Exportar a PDF.
 - Exportar a Excel.
 - Herramientas avanzadas:
-  - XML CFDI → Excel.
+  - XML CFDI → Excel sin límite de lote (la versión básica, con tope de 50 archivos, ya está
+    disponible en Labs).
   - Estado de cuenta → Excel.
   - Retenciones.
   - Simuladores fiscales.
@@ -75,7 +76,7 @@ Reglas de Labs:
 
 Ideas futuras para Fiscal Suite, sin implementar todavía:
 
-1. XML CFDI → Excel.
+1. ~~XML CFDI → Excel.~~ Implementado en Labs (`/labs/xml-cfdi`), versión básica con tope de 50 archivos por lote.
 2. Estado de Cuenta PDF → Excel.
 3. Calculadora de Facturación con Retenciones.
 4. Simulador de Flujo Fiscal.

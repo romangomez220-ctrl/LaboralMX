@@ -2,11 +2,17 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
+import SalarioCapturaField from '../components/SalarioCapturaField'
 import Disclaimer from '../components/Disclaimer'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
-import type { LiquidacionFormData, TipoSalidaLiquidacion, ZonaSalarioMinimo } from '../types/labor'
+import type {
+  LiquidacionFormData,
+  TipoCapturaSalarial,
+  TipoSalidaLiquidacion,
+  ZonaSalarioMinimo,
+} from '../types/labor'
 
 // Igual que en FiniquitoCalculator: los campos numéricos se capturan
 // como texto y solo se convierten a number al calcular (aNumero), para
@@ -14,7 +20,8 @@ import type { LiquidacionFormData, TipoSalidaLiquidacion, ZonaSalarioMinimo } fr
 interface LiquidacionFormState {
   fechaIngreso: string
   fechaSalida: string
-  salarioMensual: string
+  tipoSalario: TipoCapturaSalarial
+  salarioBase: string
   diasPendientes: string
   vacacionesDisfrutadas: string
   tipoSalida: TipoSalidaLiquidacion
@@ -26,7 +33,8 @@ interface LiquidacionFormState {
 const ESTADO_INICIAL: LiquidacionFormState = {
   fechaIngreso: '',
   fechaSalida: '',
-  salarioMensual: '',
+  tipoSalario: 'diario',
+  salarioBase: '',
   diasPendientes: '',
   vacacionesDisfrutadas: '',
   tipoSalida: 'despido_injustificado',
@@ -45,11 +53,27 @@ const ZONAS_SALARIO_MINIMO = [
   { value: 'frontera_norte', label: 'Zona Libre de la Frontera Norte' },
 ]
 
+// v4.9.2 — feedback de validación profesional: se agregan mutuo acuerdo,
+// fallecimiento e incapacidad como supuestos de terminación propios,
+// cada uno con su propio tratamiento de prima de antigüedad (ver
+// laborCalculations.ts → evaluarPrimaAntiguedad).
 const TIPOS_SALIDA: { value: TipoSalidaLiquidacion; label: string }[] = [
   { value: 'despido_injustificado', label: 'Despido injustificado' },
   { value: 'despido_justificado', label: 'Despido justificado' },
   { value: 'renuncia', label: 'Renuncia' },
+  { value: 'mutuo_acuerdo', label: 'Mutuo acuerdo' },
+  { value: 'fallecimiento', label: 'Fallecimiento del trabajador' },
+  { value: 'incapacidad', label: 'Incapacidad' },
 ]
+
+const TIPOS_SALIDA_LABEL: Record<string, string> = {
+  despido_injustificado: 'Despido injustificado',
+  despido_justificado: 'Despido justificado',
+  renuncia: 'Renuncia',
+  mutuo_acuerdo: 'Mutuo acuerdo',
+  fallecimiento: 'Fallecimiento del trabajador',
+  incapacidad: 'Incapacidad',
+}
 
 export default function LiquidacionCalculator() {
   const [form, setForm] = useState<LiquidacionFormState>(ESTADO_INICIAL)
@@ -76,10 +100,10 @@ export default function LiquidacionCalculator() {
       e.fechaSalida = 'La fecha de salida no puede ser anterior a la fecha de ingreso.'
     }
 
-    if (form.salarioMensual.trim() === '') {
-      e.salarioMensual = 'Indica el salario mensual.'
-    } else if (aNumero(form.salarioMensual) <= 0) {
-      e.salarioMensual = 'El salario mensual debe ser mayor a 0.'
+    if (form.salarioBase.trim() === '') {
+      e.salarioBase = form.tipoSalario === 'diario' ? 'Indica el salario diario.' : 'Indica el salario mensual.'
+    } else if (aNumero(form.salarioBase) <= 0) {
+      e.salarioBase = 'El salario debe ser mayor a 0.'
     }
 
     if (form.diasPendientes.trim() !== '' && aNumero(form.diasPendientes) < 0) {
@@ -100,7 +124,8 @@ export default function LiquidacionCalculator() {
     const datosParaCalcular: LiquidacionFormData = {
       fechaIngreso: form.fechaIngreso,
       fechaSalida: form.fechaSalida,
-      salarioMensual: aNumero(form.salarioMensual),
+      salarioBase: aNumero(form.salarioBase),
+      tipoSalario: form.tipoSalario,
       diasPendientes: aNumero(form.diasPendientes),
       vacacionesDisfrutadas: aNumero(form.vacacionesDisfrutadas),
       tipoSalida: form.tipoSalida,
@@ -111,15 +136,13 @@ export default function LiquidacionCalculator() {
 
     const resultado = calcularLiquidacion(datosParaCalcular)
 
-    const TIPOS_SALIDA_LABEL: Record<string, string> = {
-      despido_injustificado: 'Despido injustificado',
-      despido_justificado: 'Despido justificado',
-      renuncia: 'Renuncia',
-    }
     const datosCapturados = [
       { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
       { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
-      { etiqueta: 'Salario mensual', valor: `$${form.salarioMensual} MXN` },
+      {
+        etiqueta: 'Salario capturado',
+        valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
+      },
       { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
       { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
       { etiqueta: 'Tipo de salida', valor: TIPOS_SALIDA_LABEL[form.tipoSalida] ?? form.tipoSalida },
@@ -158,14 +181,12 @@ export default function LiquidacionCalculator() {
           onChange={(v) => actualizar('fechaSalida', v)}
           error={errores.fechaSalida}
         />
-        <InputField
-          label="Salario mensual (MXN)"
-          name="salarioMensual"
-          type="number"
-          placeholder="0.00"
-          value={form.salarioMensual}
-          onChange={(v) => actualizar('salarioMensual', v)}
-          error={errores.salarioMensual}
+        <SalarioCapturaField
+          tipoSalario={form.tipoSalario}
+          salarioBase={form.salarioBase}
+          onTipoSalarioChange={(v) => actualizar('tipoSalario', v)}
+          onSalarioBaseChange={(v) => actualizar('salarioBase', v)}
+          error={errores.salarioBase}
         />
         <InputField
           label="Días trabajados pendientes de pago"
@@ -204,6 +225,7 @@ export default function LiquidacionCalculator() {
           value={form.incluirPrimaAntiguedad ? 'si' : 'no'}
           options={SI_NO}
           onChange={(v) => actualizar('incluirPrimaAntiguedad', v === 'si')}
+          helpText="En mutuo acuerdo e incapacidad, el monto se mostrará por separado del total, como referencia informativa."
         />
         <SelectField
           label="Zona del salario mínimo"

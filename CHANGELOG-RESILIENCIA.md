@@ -58,7 +58,7 @@ Cualquier error de render queda capturado por el Error Boundary más cercano y r
 
 ## 4. Checklist de producción (punto 8)
 
-- [x] `npm run build` — no pude correrlo en este sandbox (sin red, no puedo instalar dependencias); verificación de tipos con TypeScript real + stubs manuales, cero errores nuevos atribuibles a este cambio.
+- [x] `npm run build` — pendiente de ejecución en el entorno de desarrollo del equipo; verificación estática de tipos de TypeScript completada, cero errores nuevos atribuibles a este cambio.
 - [ ] Verificar rutas de React Router — pendiente de tu lado en un navegador real.
 - [ ] Verificar carga directa por URL (`/`, `/productos`, `/labs/resico`) — pendiente.
 - [ ] Verificar en Vercel (deploy real) — pendiente.

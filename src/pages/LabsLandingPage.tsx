@@ -1,18 +1,22 @@
 import EcosystemCard from '../components/EcosystemCard'
 import { useNoIndex } from '../labs/useNoIndex'
 
-// Estructura conceptual de Labs (v4.8): organizada por suite. Todos los
-// "Beta" listados aquí son SOLO placeholders — no tienen ruta, no se
-// desarrollan todavía, no son productos. Ver ROADMAP-FISCAL-SUITE-PRO.md.
-const FISCAL_SUITE_BETA = ['XML CFDI Beta', 'Retenciones Beta']
-const LABORAL_SUITE_BETA = ['Liquidación Beta', 'SDI Beta']
+// Estructura conceptual de Labs (v4.9.2): organizada por suite. Los
+// "Beta" listados aquí siguen siendo SOLO placeholders — no tienen
+// ruta, no se desarrollan todavía. Ver ROADMAP-FISCAL-SUITE-PRO.md.
+//
+// Liquidación y SDI se quitaron de aquí (existían erróneamente como
+// "Beta" en Labs desde v4.8): son herramientas reales y funcionales de
+// Laboral Suite desde el inicio del proyecto, no experimentos. Mostrarlas
+// como "Beta" en Labs contradecía su propio estado real.
+const FISCAL_SUITE_BETA = ['Retenciones Beta']
 
 /**
  * Página de ROMANUS Labs. No es una sección pública (v4.3): sin enlace
  * en ningún menú/catálogo/landing, solo accesible por URL directa, con
- * noindex/nofollow. v4.8: se reorganiza conceptualmente por suite
- * (Fiscal Suite, Laboral Suite) para preparar el crecimiento futuro,
- * sin desarrollar ni exponer ninguna herramienta nueva todavía.
+ * noindex/nofollow. Organizada conceptualmente por suite (Fiscal Suite)
+ * para preparar el crecimiento futuro, sin desarrollar ni exponer
+ * ninguna herramienta nueva todavía.
  */
 export default function LabsLandingPage() {
   useNoIndex()
@@ -44,26 +48,13 @@ export default function LabsLandingPage() {
             disponible
             destacado
           />
-          <div className="grid sm:grid-cols-2 gap-3">
-            {FISCAL_SUITE_BETA.map((nombre) => (
-              <div key={nombre} className="rounded-lg border border-gray-200 bg-gray-50 p-4 opacity-80">
-                <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-1">
-                  Próximamente
-                </p>
-                <p className="font-medium text-gray-500">{nombre}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Laboral Suite (experimentos) */}
-      <div>
-        <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-3">
-          Laboral Suite
-        </p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {LABORAL_SUITE_BETA.map((nombre) => (
+          <EcosystemCard
+            to="/labs/xml-cfdi"
+            nombre="XML CFDI Beta"
+            descripcion="Convierte tus archivos XML de CFDI (incluye Nómina) a un libro de Excel, sin salir de tu navegador."
+            disponible
+          />
+          {FISCAL_SUITE_BETA.map((nombre) => (
             <div key={nombre} className="rounded-lg border border-gray-200 bg-gray-50 p-4 opacity-80">
               <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-1">
                 Próximamente

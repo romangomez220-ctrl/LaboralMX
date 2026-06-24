@@ -12,7 +12,7 @@ export default function About() {
           Nuestro objetivo es acercar herramientas jurídicas prácticas a trabajadores, estudiantes
           de Derecho, abogados y profesionales de recursos humanos.
         </p>
-        <p>Proyecto fundado por Román Gómez.</p>
+        <p>ROMANUS es un proyecto fundado y dirigido por Román Gómez.</p>
         <p>
           Instagram:{' '}
           <a
@@ -27,7 +27,11 @@ export default function About() {
       </div>
 
       <p className="text-sm text-gray-500 italic">
-        Laboral Suite no sustituye asesoría legal profesional.
+        Esta identificación tiene fines de transparencia institucional. Ni ROMANUS ni su
+        responsable asumen responsabilidad por el uso que los usuarios hagan de los resultados,
+        por decisiones tomadas con base en ellos, por interpretarlos como definitivos, ni por
+        asesoría profesional no prestada formalmente. Laboral Suite ofrece estimaciones
+        orientativas y no sustituye asesoría legal profesional.
       </p>
     </div>
   )

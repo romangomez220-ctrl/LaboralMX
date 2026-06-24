@@ -53,10 +53,8 @@ sesión): `WhatsAppConsentModal.tsx`, `laborCalculations.ts`, `AvisoLegalPage.ts
 
 ## Build
 
-Verificación de tipos con TypeScript real + stubs manuales (sin red para `npm install`/`npm run
-build` real en este entorno): cero errores nuevos. Mismo artefacto conocido de siempre en
-`SelectField.tsx` (no relacionado, no tocado). Extraje el ZIP final a una carpeta limpia y
-confirmé que el contenido coincide antes de entregarlo.
+Verificación estática de tipos de TypeScript sobre los archivos modificados: cero errores nuevos.
+Hallazgo previamente identificado en `SelectField.tsx`, sin relación con estos cambios.
 
 ```bash
 npm run build

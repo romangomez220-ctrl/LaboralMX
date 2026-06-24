@@ -8,6 +8,7 @@ import type {
   ResultadoSDI,
   ResultadoVacacionesEstimadas,
   SDIFormData,
+  TipoCapturaSalarial,
   VacacionesFormData,
   ZonaSalarioMinimo,
 } from '../types/labor'
@@ -25,6 +26,17 @@ const DIAS_INDEMNIZACION_CONSTITUCIONAL = 90
 const DIAS_PRIMA_ANTIGUEDAD = 12
 const DIAS_VEINTE_POR_ANIO = 20
 const PORCENTAJE_PRIMA_VACACIONAL = 0.25
+
+/**
+ * Única fuente de verdad para convertir lo que el usuario capturó
+ * (salario diario o mensual) a salario diario. Si ya es diario, se usa
+ * tal cual; si es mensual, se divide entre 30 — el mismo criterio que
+ * ROMANUS ha usado siempre, ahora explícito y reutilizado en un solo
+ * lugar en vez de repetido en cada función de cálculo.
+ */
+function obtenerSalarioDiario(salarioBase: number, tipoSalario: TipoCapturaSalarial): number {
+  return tipoSalario === 'diario' ? round2(salarioBase) : round2(salarioBase / 30)
+}
 
 /**
  * Salarios mínimos generales vigentes a partir del 1 de enero de 2026,
@@ -59,20 +71,34 @@ interface ResultadoPrimaAntiguedad {
 
 /**
  * Casos jurídicos reconocidos para la procedencia de la prima de
- * antigüedad (Art. 162 LFT). "otro" cubre supuestos de terminación que no
- * son ni renuncia voluntaria ni un despido (p. ej. mutuo acuerdo,
- * vencimiento de contrato), donde la prima procede igual que en un
- * despido pero conviene que el usuario confirme las circunstancias.
+ * antigüedad (Art. 162 LFT).
+ *
+ * - "fallecimiento": el Art. 162 LFT la incluye expresamente, sin mínimo
+ *   de años, igual que en un despido — es un caso cierto.
+ * - "mutuo_acuerdo" e "incapacidad": el tratamiento puede variar según
+ *   las circunstancias documentadas del caso (p. ej. el tipo exacto de
+ *   incapacidad, o si el mutuo acuerdo se trata como una renuncia
+ *   encubierta). No son casos ciertos como despido o fallecimiento, así
+ *   que el monto se muestra de forma informativa, separada del total.
+ * - "otro" cubre cualquier supuesto de Finiquito que no sea renuncia
+ *   (Finiquito no distingue despido/mutuo acuerdo/etc. con su propio
+ *   campo todavía) — por la misma razón de incertidumbre, también es
+ *   informativo.
  */
 type CasoPrimaAntiguedad =
   | 'renuncia_insuficiente'
   | 'renuncia_suficiente'
   | 'despido_injustificado'
   | 'despido_justificado'
+  | 'fallecimiento'
+  | 'mutuo_acuerdo'
+  | 'incapacidad'
   | 'otro'
 
+type ResultadoEvaluacionPrimaAntiguedad = 'incluir' | 'informativo' | 'excluir'
+
 interface EvaluacionPrimaAntiguedad {
-  aplica: boolean
+  resultado: ResultadoEvaluacionPrimaAntiguedad
   nota: string
 }
 
@@ -88,30 +114,41 @@ const NOTA_PRIMA_ANTIGUEDAD_DESPIDO_INJUSTIFICADO =
 const NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO =
   'Se incluye la prima de antigüedad: aunque en un despido justificado no proceden otras prestaciones por la causa de la terminación, la prima de antigüedad no depende de la causa de separación, solo de la antigüedad acumulada, por lo que sigue siendo exigible conforme al Art. 162 LFT.'
 
-const NOTA_PRIMA_ANTIGUEDAD_OTRO_SUPUESTO =
-  'Se incluye la prima de antigüedad: fuera de una renuncia voluntaria, la ley no exige un mínimo de años de antigüedad (Art. 162 LFT). Verifica que la causa real de tu separación corresponda a este supuesto, ya que distintos supuestos de terminación pueden tener tratamiento distinto.'
+const NOTA_PRIMA_ANTIGUEDAD_FALLECIMIENTO =
+  'Se incluye la prima de antigüedad: el Art. 162 LFT la reconoce expresamente en caso de fallecimiento del trabajador, sin exigir un mínimo de años de antigüedad.'
+
+const NOTA_PRIMA_ANTIGUEDAD_INFORMATIVA =
+  'La prima de antigüedad puede depender del motivo de terminación y de la antigüedad. Este cálculo es orientativo y debe revisarse según el caso concreto.'
 
 /**
  * Determina si la prima de antigüedad es legalmente exigible para el
- * caso indicado, y devuelve SIEMPRE una nota explicando el porqué (se
- * incluya o no), para que el usuario nunca asuma automáticamente que le
- * corresponde. Es la ÚNICA fuente de verdad para esta regla; la usan
- * tanto calcularFiniquito como calcularLiquidacion, para evitar que
- * ambas calculadoras lleguen a resultados distintos ante el mismo
- * supuesto jurídico.
+ * caso indicado, y devuelve SIEMPRE una nota explicando el porqué, para
+ * que el usuario nunca asuma automáticamente que le corresponde. Es la
+ * ÚNICA fuente de verdad para esta regla; la usan tanto
+ * calcularFiniquito como calcularLiquidacion.
+ *
+ * "incluir": se suma al total principal, porque el supuesto tiene un
+ * tratamiento legal cierto (renuncia con 15+ años, despido,
+ * fallecimiento). "informativo": se calcula y se muestra, pero NO se
+ * suma al total principal, porque el supuesto no tiene un tratamiento
+ * automático y cierto. "excluir": no se calcula ni se muestra monto.
  */
 function evaluarPrimaAntiguedad(caso: CasoPrimaAntiguedad): EvaluacionPrimaAntiguedad {
   switch (caso) {
     case 'renuncia_insuficiente':
-      return { aplica: false, nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE }
+      return { resultado: 'excluir', nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_INSUFICIENTE }
     case 'renuncia_suficiente':
-      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_SUFICIENTE }
+      return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_RENUNCIA_SUFICIENTE }
     case 'despido_injustificado':
-      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_INJUSTIFICADO }
+      return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_INJUSTIFICADO }
     case 'despido_justificado':
-      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO }
+      return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO }
+    case 'fallecimiento':
+      return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_FALLECIMIENTO }
+    case 'mutuo_acuerdo':
+    case 'incapacidad':
     case 'otro':
-      return { aplica: true, nota: NOTA_PRIMA_ANTIGUEDAD_OTRO_SUPUESTO }
+      return { resultado: 'informativo', nota: NOTA_PRIMA_ANTIGUEDAD_INFORMATIVA }
   }
 }
 
@@ -147,14 +184,13 @@ interface ConceptosBase {
 function calcularConceptosBase(
   ingresoStr: string,
   salidaStr: string,
-  salarioMensual: number,
+  salarioDiario: number,
   diasPendientes: number,
   vacacionesDisfrutadas: number,
 ): ConceptosBase {
   const ingreso = parseDate(ingresoStr)
   const salida = parseDate(salidaStr)
 
-  const salarioDiario = round2(salarioMensual / 30)
   const antiguedad = calcularAntiguedad(ingreso, salida)
   const diasTrabajadosAnioActual = diasTrabajadosAnioCalendario(ingreso, salida)
 
@@ -190,10 +226,11 @@ function calcularConceptosBase(
 }
 
 export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
+  const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
   const base = calcularConceptosBase(
     data.fechaIngreso,
     data.fechaSalida,
-    data.salarioMensual,
+    salarioDiario,
     data.diasPendientes,
     data.vacacionesDisfrutadas,
   )
@@ -223,6 +260,7 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
   ]
 
   const notas: string[] = []
+  let primaAntiguedadInformativa: ConceptoResultado | undefined
   const casoPrimaAntiguedad: CasoPrimaAntiguedad = data.renunciaVoluntaria
     ? base.antiguedadDecimal >= 15
       ? 'renuncia_suficiente'
@@ -230,18 +268,23 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
     : 'otro'
 
   if (data.incluirPrimaAntiguedad) {
-    const { aplica, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
-    if (aplica) {
+    const { resultado, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
+    if (resultado !== 'excluir') {
       const { monto, topeAplicado } = calcularPrimaAntiguedad(
         base.salarioDiario,
         base.antiguedadDecimal,
         data.zonaSalarioMinimo,
       )
-      conceptos.push({
+      const conceptoPrima: ConceptoResultado = {
         etiqueta: 'Prima de antigüedad',
         monto,
         formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
-      })
+      }
+      if (resultado === 'incluir') {
+        conceptos.push(conceptoPrima)
+      } else {
+        primaAntiguedadInformativa = conceptoPrima
+      }
       notas.push(nota)
       if (topeAplicado) {
         notas.push(
@@ -257,20 +300,24 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
 
   return {
     tipo: 'finiquito',
+    salarioBase: data.salarioBase,
+    tipoSalario: data.tipoSalario,
     salarioDiario: base.salarioDiario,
     antiguedadAnios: round2(base.antiguedadDecimal),
     antiguedadTexto: base.antiguedadTexto,
     conceptos,
     totalEstimado,
+    primaAntiguedadInformativa,
     notas,
   }
 }
 
 export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo {
+  const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
   const base = calcularConceptosBase(
     data.fechaIngreso,
     data.fechaSalida,
-    data.salarioMensual,
+    salarioDiario,
     data.diasPendientes,
     data.vacacionesDisfrutadas,
   )
@@ -310,6 +357,8 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     })
   }
 
+  let primaAntiguedadInformativa: ConceptoResultado | undefined
+
   if (data.incluirPrimaAntiguedad) {
     const casoPrimaAntiguedad: CasoPrimaAntiguedad =
       data.tipoSalida === 'renuncia'
@@ -318,21 +367,32 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
           : 'renuncia_insuficiente'
         : data.tipoSalida === 'despido_injustificado'
           ? 'despido_injustificado'
-          : 'despido_justificado'
+          : data.tipoSalida === 'despido_justificado'
+            ? 'despido_justificado'
+            : data.tipoSalida === 'fallecimiento'
+              ? 'fallecimiento'
+              : data.tipoSalida === 'incapacidad'
+                ? 'incapacidad'
+                : 'mutuo_acuerdo'
 
-    const { aplica, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
+    const { resultado, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
 
-    if (aplica) {
+    if (resultado !== 'excluir') {
       const { monto, topeAplicado } = calcularPrimaAntiguedad(
         base.salarioDiario,
         base.antiguedadDecimal,
         data.zonaSalarioMinimo,
       )
-      conceptos.push({
+      const conceptoPrima: ConceptoResultado = {
         etiqueta: 'Prima de antigüedad',
         monto,
         formula: 'Salario diario (con tope Art. 162 LFT) × 12 días × años de antigüedad',
-      })
+      }
+      if (resultado === 'incluir') {
+        conceptos.push(conceptoPrima)
+      } else {
+        primaAntiguedadInformativa = conceptoPrima
+      }
       notas.push(nota)
       if (topeAplicado) {
         notas.push(
@@ -367,6 +427,8 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
 
   return {
     tipo: 'liquidacion',
+    salarioBase: data.salarioBase,
+    tipoSalario: data.tipoSalario,
     salarioDiario: base.salarioDiario,
     antiguedadAnios: round2(base.antiguedadDecimal),
     antiguedadTexto: base.antiguedadTexto,
@@ -374,6 +436,7 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     totalEstimado,
     veinteDiasInformativo,
     totalConEscenarioInformativo,
+    primaAntiguedadInformativa,
     notas,
   }
 }
@@ -398,10 +461,12 @@ export function calcularSDI(data: SDIFormData): ResultadoSDI {
   const antiguedad = calcularAntiguedad(ingreso, hoy)
   const diasVacacionesAplicados = diasVacacionesPorAnio(antiguedad.aniosCompletos)
   const factorIntegracion = 1 + DIAS_AGUINALDO / 365 + (diasVacacionesAplicados * PORCENTAJE_PRIMA_VACACIONAL) / 365
-  const salarioDiario = round2(data.salarioMensual / 30)
+  const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
   const sdi = round2(salarioDiario * factorIntegracion)
 
   return {
+    salarioBase: data.salarioBase,
+    tipoSalario: data.tipoSalario,
     salarioDiario,
     diasVacacionesAplicados,
     factorIntegracion,
@@ -421,10 +486,12 @@ export function calcularAguinaldoEstimado(data: AguinaldoFormData): ResultadoAgu
   const hoy = obtenerFechaHoyUTC()
   const finDeAnio = new Date(Date.UTC(hoy.getUTCFullYear(), 11, 31))
   const diasComputados = diasTrabajadosAnioCalendario(ingreso, finDeAnio)
-  const salarioDiario = round2(data.salarioMensual / 30)
+  const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
   const aguinaldoEstimado = round2((salarioDiario * DIAS_AGUINALDO * diasComputados) / 365)
 
   return {
+    salarioBase: data.salarioBase,
+    tipoSalario: data.tipoSalario,
     salarioDiario,
     diasComputados,
     aguinaldoEstimado,
@@ -447,12 +514,14 @@ export function calcularVacacionesEstimadas(data: VacacionesFormData): Resultado
   const anioLaboralEnCurso = antiguedad.aniosCompletos + 1
   const diasVacacionesCorrespondientes = diasVacacionesPorAnio(anioLaboralEnCurso)
   const diasPendientes = Math.max(0, diasVacacionesCorrespondientes - data.diasDisfrutados)
-  const salarioDiario = round2(data.salarioMensual / 30)
+  const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
   const valorPendiente = round2(salarioDiario * diasPendientes)
   const primaVacacional = round2(valorPendiente * PORCENTAJE_PRIMA_VACACIONAL)
   const totalEstimado = round2(valorPendiente + primaVacacional)
 
   return {
+    salarioBase: data.salarioBase,
+    tipoSalario: data.tipoSalario,
     salarioDiario,
     antiguedadTexto: formatAntiguedad(ingreso, hoy),
     diasVacacionesCorrespondientes,

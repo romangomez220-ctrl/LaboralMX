@@ -69,10 +69,12 @@ El motor de cálculo (`resicoCalculations.ts`) sigue el mismo patrón que `labor
 3. **El campo "Otra" en actividad principal** reduce la confianza pero no impide el cálculo — vale la pena que un contador revise si ese supuesto debería bloquear el diagnóstico en vez de solo advertir.
 4. **No se modela el efecto real de la retención de personas morales** en el ISR neto — se dejó como recomendación textual para no introducir un cálculo que pudiera ser incorrecto sin más validación.
 5. **No hay pruebas automatizadas** para `calcularDiagnosticoResico` ni para `evaluarConfianza` — dado que es lógica fiscal con consecuencias reales, debería ser la primera candidata a cobertura de pruebas antes de salir de fase privada.
-6. **Build no verificado de forma real** (sin red en este entorno): se hizo verificación de tipos con TypeScript real + stubs manuales de las librerías. Cero errores nuevos; el único hallazgo es el artefacto ya conocido de los stubs en `SelectField.tsx` (no relacionado con RESICO). Falta la confirmación con `npm run build` real.
+6. **Build pendiente de confirmación real.** Se completó una verificación estática de tipos de TypeScript. Cero errores nuevos; el único hallazgo es un artefacto ya conocido en `SelectField.tsx` (no relacionado con RESICO). Falta la confirmación con `npm run build` en el entorno de desarrollo del equipo.
 
 ---
 
 ## 7. Validación de build
 
-Verificación de tipos con TypeScript real (vía symlinks a React global) + stubs manuales de `react-router-dom`, `jspdf` y `vite/client`. Resultado: cero errores nuevos atribuibles al código de RESICO Labs. Pendiente: `npm install && npm run build` real de tu lado para confirmación definitiva.
+Verificación estática de tipos de TypeScript completada. Resultado: cero errores nuevos atribuibles
+al código de RESICO Labs. Pendiente: `npm install && npm run build` en el entorno de desarrollo
+del equipo, para confirmación definitiva.

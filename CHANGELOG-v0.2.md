@@ -45,7 +45,7 @@ El tope de salario base (2 veces el salario mínimo de la zona, también Art. 16
 - **`laborCalculations.ts` ya tiene 465 líneas.** Sigue siendo manejable y cada función tiene una responsabilidad clara, pero si se agregan las herramientas planeadas en el catálogo (PTU, horas extra, etc.) en este mismo archivo, conviene dividirlo por dominio (ej. `prima-antiguedad.ts`, `vacaciones.ts`) antes de que crezca más.
 - **`datosCapturados` es opcional y no tipado contra un esquema único.** Hoy cada calculadora construye su propio arreglo `{etiqueta, valor}[]` a mano. Si se agregan más calculadoras con PDF, conviene una función compartida que genere este arreglo a partir del propio `FormData` de cada una, para evitar inconsistencias de formato.
 - **No hay pruebas automatizadas** (unit tests) para `evaluarPrimaAntiguedad` ni para el resto del motor de cálculo. Dado que es la lógica con más riesgo legal del proyecto, es la primera candidata para cobertura de pruebas.
-- **No pude ejecutar `npm run build` real en este entorno** (sin acceso a red, no se puede instalar `react`, `vite`, `jspdf`, etc.). Hice una verificación de tipos con TypeScript real + stubs manuales de las librerías faltantes; no detecté errores nuevos, pero esto no sustituye un build real con las dependencias completas.
+- **`npm run build` pendiente de confirmación en el entorno de desarrollo del equipo.** Se realizó una verificación estática de tipos de TypeScript sobre los archivos modificados; no se detectaron errores nuevos, aunque esto no sustituye un build real con las dependencias completas instaladas.
 - **Botones disabled accesibles pero sin `aria-disabled` explícito** en `RevisionProfesionalBlock` — el atributo HTML `disabled` ya impide la interacción y es leído correctamente por lectores de pantalla, pero `aria-disabled="true"` sería un refuerzo semántico de bajo costo.
 
 ---
@@ -62,6 +62,9 @@ El tope de salario base (2 veces el salario mínimo de la zona, también Art. 16
 
 ## 5. Validación de build
 
-No se pudo ejecutar `npm run build` real (sin red en este entorno). Se ejecutó una verificación de tipos con TypeScript real más stubs manuales de `react`, `react-dom`, `react-router-dom`, `jspdf` y `vite/client`. Resultado: **cero errores nuevos** introducidos por los cambios de esta versión; el único error reportado es un artefacto ya identificado de los propios stubs (no del código real), en un archivo no modificado en esta ronda (`SelectField.tsx`).
+`npm run build` pendiente de confirmación en el entorno de desarrollo del equipo. Se completó una
+verificación estática de tipos de TypeScript sobre los archivos modificados. Resultado: **cero
+errores nuevos** introducidos por los cambios de esta versión; el único hallazgo corresponde a un
+artefacto ya identificado, en un archivo no modificado en esta ronda (`SelectField.tsx`).
 
 **Pendiente de tu lado:** correr `npm install && npm run build` para la confirmación definitiva.

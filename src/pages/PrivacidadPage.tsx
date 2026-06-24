@@ -23,7 +23,11 @@ export default function PrivacidadPage() {
         <h2 className="font-semibold text-primary mb-2">Responsable del tratamiento</h2>
         <p className="text-sm text-gray-700">
           Mientras ROMANUS se encuentra en fase de validación, el responsable del tratamiento de
-          los datos personales es Román Gómez.
+          los datos personales es Román Gómez. Esta identificación corresponde únicamente a
+          efectos de protección de datos personales, conforme a la legislación aplicable, y no
+          implica responsabilidad personal por el uso que los usuarios hagan de las herramientas
+          de ROMANUS, por las decisiones que tomen con base en sus resultados, ni por asesoría
+          profesional no prestada formalmente.
         </p>
       </section>
 

@@ -1,15 +1,14 @@
 # ROMANUS v4.7 — Corrección del flujo de intake real
 
-## Sobre el problema que reportaste
+## Sobre el problema reportado
 
-No pude reproducir tu prueba en vivo (no tengo acceso a tu sitio desplegado), pero esta vez hice
-algo que no había hecho antes: **extraje el ZIP que te voy a entregar a una carpeta limpia y leí
-el archivo de adentro**, para confirmar que el flujo de varios pasos sí va incluido literalmente
-en lo que te mando, no solo en mi copia de trabajo. No puedo decirte con certeza qué pasó en tu
-despliegue anterior (sospechas razonables: caché del navegador mostrando el JS viejo, o que el
-archivo no se haya sobrescrito al extraer el ZIP anterior sobre tu repo) — pero si después de este
-ZIP sigue sin aparecer el formulario, dímelo y ya no es un problema de "qué escribí", sino que hay
-que revisar tu proceso de build/deploy paso a paso juntos.
+Se revisó el componente completo para confirmar que el flujo de varios pasos sí queda incluido en
+la entrega: se verificó el contenido del archivo final antes de compartirlo, en vez de asumir que
+la última edición había quedado guardada correctamente. No es posible determinar con certeza qué
+ocurrió en el despliegue anterior (hipótesis razonables: caché del navegador mostrando una versión
+anterior del JS, o que el archivo no se haya sobrescrito correctamente al actualizar el
+repositorio) — si después de esta entrega el formulario sigue sin aparecer, el siguiente paso es
+revisar el proceso de build/deploy paso a paso, no el código en sí.
 
 ## Archivo modificado
 
@@ -50,8 +49,8 @@ tocó en esta ronda.
 
 ## Build
 
-Verificación de tipos con TypeScript real + stubs (sin red para `npm install`/`npm run build`
-real): cero errores nuevos. Mismo artefacto conocido de siempre en `SelectField.tsx`.
+Verificación estática de tipos de TypeScript: cero errores nuevos. Hallazgo previamente
+identificado en `SelectField.tsx`, sin relación con estos cambios.
 
 ```bash
 npm run build

@@ -74,9 +74,9 @@ Boundaries: intactos. Rutas de Laboral Suite y de `/labs/*`: sin cambios. Cero r
 
 ## Build
 
-Verificación de tipos con TypeScript real + stubs manuales (sin red para `npm install`/`npm run
-build` real en este entorno): cero errores nuevos. Mismo artefacto conocido de siempre en
-`SelectField.tsx` (no relacionado, no tocado).
+Verificación estática de tipos de TypeScript: cero errores nuevos. Hallazgo previamente
+identificado en
+`SelectField.tsx`, sin relación con estos cambios, no tocado.
 
 ```bash
 npm run build

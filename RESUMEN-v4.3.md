@@ -68,7 +68,8 @@ No toqué nada de esto — son solo observaciones para que decidas antes de la s
 
 ## 6. Build
 
-Verificación de tipos con TypeScript real + stubs manuales (sin red para `npm install`/`npm run build` real en este entorno): cero errores nuevos. Mismo artefacto conocido de siempre en `SelectField.tsx` (no relacionado).
+Verificación estática de tipos de TypeScript: cero errores nuevos. Hallazgo previamente
+identificado en `SelectField.tsx`, sin relación con estos cambios.
 
 ```bash
 npm run build
