@@ -166,6 +166,13 @@ export default function ResicoDiagnosticoPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Identificación conceptual (v4.8): RESICO ya no se presenta como
+          herramienta aislada, sino como parte de Fiscal Suite dentro de
+          Labs. Es solo una etiqueta visual — no cambia rutas ni lógica. */}
+      <p className="text-xs uppercase tracking-wide text-stone">
+        Fiscal Suite <span className="mx-1 text-gray-300">›</span> RESICO
+      </p>
+
       <LabsBadge />
 
       <div>
@@ -233,6 +240,13 @@ export default function ResicoDiagnosticoPage() {
             options={OPCIONES_IVA}
             onChange={(v) => actualizar('iva', v as SituacionIVA)}
           />
+          <div className="sm:col-span-2 text-xs text-gray-500">
+            Esta herramienta se enfoca principalmente en una estimación orientativa relacionada
+            con ISR. El IVA tiene implicaciones fiscales independientes y no modifica
+            directamente el resultado principal de esta evaluación, pero puede ser relevante para
+            una revisión fiscal personalizada. Tu respuesta aquí sí puede influir en el nivel de
+            confianza mostrado más abajo (por ejemplo, si no estás seguro de tu situación de IVA).
+          </div>
           <SelectField
             label="Situación actual"
             name="situacion"
@@ -332,6 +346,62 @@ export default function ResicoDiagnosticoPage() {
                 <li key={r}>{r}</li>
               ))}
             </ul>
+            {resultado.recomendaciones.some((r) => r.includes('retención') || r.includes('acredita')) && (
+              <details className="mt-2 text-xs text-gray-600">
+                <summary className="cursor-pointer underline text-primary">
+                  ¿Qué es un crédito fiscal?
+                </summary>
+                <p className="mt-1">
+                  En esta herramienta, crédito fiscal se refiere a una cantidad que puede
+                  disminuir el impuesto estimado a pagar conforme a las reglas aplicables. No debe
+                  confundirse con un préstamo o financiamiento.
+                </p>
+              </details>
+            )}
+          </div>
+
+          {/* Factores considerados (v4.8) */}
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <h2 className="font-semibold text-primary mb-2">Factores considerados</h2>
+            <ul className="text-sm text-gray-700 space-y-1.5">
+              <li>
+                <span className={resultado.elegible ? 'text-success' : 'text-warning'}>
+                  {resultado.elegible ? '✓' : '⚠'}
+                </span>{' '}
+                Ingresos dentro del límite anual permitido.
+              </li>
+              <li>
+                <span className="text-success">✓</span> Compatibilidad preliminar con RESICO
+                evaluada.
+              </li>
+              <li>
+                <span className={resultado.confianza === 'alto' ? 'text-success' : 'text-warning'}>
+                  {resultado.confianza === 'alto' ? '✓' : '⚠'}
+                </span>{' '}
+                Restricciones detectadas:{' '}
+                {resultado.confianza === 'alto'
+                  ? 'ninguna relevante.'
+                  : resultado.factoresConfianza.join(' ')}
+              </li>
+              <li>
+                <span className="text-warning">⚠</span> Este resultado es orientativo.
+              </li>
+              <li>
+                <span className="text-warning">⚠</span> Situaciones particulares deben revisarse
+                con un contador o asesor fiscal.
+              </li>
+            </ul>
+
+            {/*
+              EASTER EGG TEMPORAL — fase privada de validación (v4.8).
+              Agradecimiento informal por feedback de un contador en beta.
+              NO es botón, NO lleva datos de contacto, NO presenta a
+              Josué como colaborador ni asesor oficial de ROMANUS.
+              ELIMINAR antes de cualquier lanzamiento público.
+            */}
+            <p className="text-xs text-gray-400 italic mt-4">
+              Si llegaste hasta aquí, probablemente sea momento de preguntarle a Josué. 😄
+            </p>
           </div>
 
           {datosUsados && (
@@ -350,7 +420,7 @@ export default function ResicoDiagnosticoPage() {
                 multiplicó por 12 para estimar el ingreso anual ({formatCurrency(resultado.ingresoAnual)}).
               </p>
               <p>
-                Con ese ingreso mensual se ubicó el tramo correspondiente en la tabla oficial de
+                Con ese ingreso mensual se ubicó el tramo correspondiente en la tarifa oficial de
                 RESICO (Art. 113-E LISR) para obtener la tasa de {(resultado.tasa * 100).toFixed(2)}%, que
                 se aplicó directamente sobre el ingreso mensual para obtener el ISR estimado.
               </p>
@@ -374,7 +444,7 @@ export default function ResicoDiagnosticoPage() {
             </summary>
             <div className="mt-4 text-sm text-gray-700 flex flex-col gap-3">
               <div>
-                <p className="font-semibold text-gray-800">Tabla de tasas utilizada (Art. 113-E LISR, RMF 2026 Anexo 8)</p>
+                <p className="font-semibold text-gray-800">Tarifa aplicable (Art. 113-E LISR, RMF 2026 Anexo 8)</p>
                 <table className="w-full text-xs mt-2 border border-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -398,7 +468,7 @@ export default function ResicoDiagnosticoPage() {
               <div>
                 <p className="font-semibold text-gray-800">Supuestos y simplificaciones</p>
                 <ul className="list-disc pl-4 space-y-1 mt-1">
-                  <li>Se asume que el ingreso mensual capturado es constante durante el año, para ubicar el tramo de la tabla. En la práctica, RESICO se calcula sobre el ingreso acumulado real desde enero, por lo que el tramo puede cambiar mes a mes según la facturación real.</li>
+                  <li>Se asume que el ingreso mensual capturado es constante durante el año, para ubicar el tramo de la tarifa. En la práctica, RESICO se calcula sobre el ingreso acumulado real desde enero, por lo que el tramo puede cambiar mes a mes según la facturación real.</li>
                   <li>El ingreso capturado se asume sin IVA (RESICO grava ingresos cobrados sin IVA).</li>
                   <li>No se modelan retenciones de personas morales ({(RETENCION_PERSONAS_MORALES * 100).toFixed(2)}%) como crédito contra el ISR calculado; se menciona como recomendación, no como ajuste numérico.</li>
                   <li>No se valida el cumplimiento de todos los requisitos de permanencia en RESICO (solo el límite de ingresos), ni restricciones por tipo de socio, fideicomisos u otras actividades incompatibles.</li>

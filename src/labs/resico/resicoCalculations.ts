@@ -7,7 +7,7 @@ import type {
 } from './resicoTypes'
 
 /**
- * Tabla oficial de tasas de ISR para personas físicas en RESICO,
+ * Tarifa oficial de ISR para personas físicas en RESICO,
  * conforme al Art. 113-E LISR y al Anexo 8 de la RMF 2026 (DOF, 9 de
  * diciembre de 2025). Las tasas no han cambiado desde el lanzamiento de
  * RESICO en 2022; se aplican sobre los ingresos efectivamente cobrados
@@ -167,7 +167,7 @@ function generarRecomendaciones(form: ResicoFormData, ingresoAnual: number): str
 /**
  * Calcula el diagnóstico completo de RESICO. Simplificación deliberada:
  * usa el ingreso mensual capturado como referencia constante para
- * ubicar el tramo de la tabla, en vez de simular el ingreso acumulado
+ * ubicar el tramo de la tarifa, en vez de simular el ingreso acumulado
  * real mes a mes durante el ejercicio (que es como funciona RESICO en la
  * práctica). Esta simplificación se explica en "Modo contador" y en la
  * leyenda legal, conforme al principio de ser una herramienta

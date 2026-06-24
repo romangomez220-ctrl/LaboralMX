@@ -34,6 +34,16 @@ export default function ConfidenceCard({
       <p className={`text-lg font-bold ${estilo.color}`}>{estilo.texto}</p>
       <p className="text-sm text-gray-700 mt-2">{explanation}</p>
 
+      {/* v4.8: explicación genérica del puntaje, reutilizable por
+          cualquier herramienta futura que use esta tarjeta (no es texto
+          específico de RESICO). */}
+      <p className="text-xs text-gray-500 mt-2">
+        Esta puntuación es una estimación orientativa basada en la información proporcionada. No
+        constituye una determinación fiscal oficial. Aumenta cuando la información capturada es
+        completa y consistente; disminuye cuando hay datos inciertos, valores cercanos a un
+        límite relevante, o respuestas ambiguas.
+      </p>
+
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-3 mb-1">
         Factores evaluados
       </p>
