@@ -167,10 +167,10 @@ export default function ResicoDiagnosticoPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Identificación conceptual (v4.8): RESICO ya no se presenta como
-          herramienta aislada, sino como parte de Fiscal Suite dentro de
+          herramienta aislada, sino como parte de Contable Suite dentro de
           Labs. Es solo una etiqueta visual — no cambia rutas ni lógica. */}
       <p className="text-xs uppercase tracking-wide text-stone">
-        Fiscal Suite <span className="mx-1 text-gray-300">›</span> RESICO
+        Contable Suite <span className="mx-1 text-gray-300">›</span> RESICO
       </p>
 
       <LabsBadge />

@@ -11,6 +11,7 @@ interface InputFieldProps {
   min?: number
   step?: number
   placeholder?: string
+  disabled?: boolean
 }
 
 export default function InputField({
@@ -21,6 +22,7 @@ export default function InputField({
   onChange,
   error,
   placeholder,
+  disabled = false,
 }: InputFieldProps) {
   const esNumerico = type === 'number'
 
@@ -55,7 +57,8 @@ export default function InputField({
         placeholder={placeholder}
         onChange={manejarCambio}
         onFocus={manejarFoco}
-        className={`w-full rounded-md border px-3 py-2 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary ${
+        disabled={disabled}
+        className={`w-full rounded-md border px-3 py-2 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed ${
           type === 'date' ? '[&::-webkit-date-and-time-value]:text-left' : ''
         } ${error ? 'border-red-400' : 'border-gray-300'}`}
       />

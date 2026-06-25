@@ -5,7 +5,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 import RomanusHome from './pages/RomanusHome'
 import ProductosListing from './pages/ProductosListing'
 import LaboralSuiteCatalogPage from './pages/LaboralSuiteCatalogPage'
-import LabsLandingPage from './pages/LabsLandingPage'
 import ConCausaPage from './pages/ConCausaPage'
 import AcercaDeRomanusPage from './pages/AcercaDeRomanusPage'
 import AvisoLegalPage from './pages/AvisoLegalPage'
@@ -13,7 +12,21 @@ import PrivacidadPage from './pages/PrivacidadPage'
 import TerminosPage from './pages/TerminosPage'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
 import ConverterPage from './labs/xml-cfdi/ConverterPage'
+import DevolucionImpuestosPage from './labs/contable-suite/pages/DevolucionImpuestosPage'
+import ResicoAnualPage from './labs/contable-suite/pages/ResicoAnualPage'
+import ArrendamientoComparadorPage from './labs/contable-suite/pages/ArrendamientoComparadorPage'
+import PlataformasDigitalesPage from './labs/contable-suite/pages/PlataformasDigitalesPage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
+import RequireValidatorAuth from './labs-portal/components/RequireValidatorAuth'
+import RequireAdminAuth from './labs-portal/components/RequireAdminAuth'
+import ValidadorLoginPage from './labs-portal/pages/ValidadorLoginPage'
+import ValidadorPortalPage from './labs-portal/pages/ValidadorPortalPage'
+import AdminLoginPage from './labs-portal/admin/AdminLoginPage'
+import AdminDashboardPage from './labs-portal/admin/AdminDashboardPage'
+import AdminValidadoresPage from './labs-portal/admin/AdminValidadoresPage'
+import AdminHerramientasPage from './labs-portal/admin/AdminHerramientasPage'
+import AdminFeedbackPage from './labs-portal/admin/AdminFeedbackPage'
+import AdminEstadisticasPage from './labs-portal/admin/AdminEstadisticasPage'
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
 import LiquidacionCalculator from './pages/LiquidacionCalculator'
@@ -68,23 +81,120 @@ export default function App() {
         <Route path="/privacidad" element={<PrivacidadPage />} />
         <Route path="/terminos" element={<TerminosPage />} />
 
-        {/* LABORATORIO INTERNO (oculto de toda navegación pública, con
-            noindex/nofollow; sigue funcionando por URL directa) */}
-        <Route path="/labs" element={<LabsLandingPage />} />
+        {/* LABORATORIO INTERNO — ROMANUS Labs (v6.0: Portal de Validadores).
+            Oculto de toda navegación pública (noindex/nofollow), pero ahora
+            además requiere sesión de validador para entrar — antes solo
+            dependía de no tener enlace público. El login y el panel admin
+            quedan fuera del guard (si no, nadie podría llegar a loguearse). */}
+        <Route path="/labs/login" element={<ValidadorLoginPage />} />
+        <Route path="/labs/admin/login" element={<AdminLoginPage />} />
+        <Route
+          path="/labs/admin"
+          element={
+            <RequireAdminAuth>
+              <AdminDashboardPage />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/labs/admin/validadores"
+          element={
+            <RequireAdminAuth>
+              <AdminValidadoresPage />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/labs/admin/herramientas"
+          element={
+            <RequireAdminAuth>
+              <AdminHerramientasPage />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/labs/admin/feedback"
+          element={
+            <RequireAdminAuth>
+              <AdminFeedbackPage />
+            </RequireAdminAuth>
+          }
+        />
+        <Route
+          path="/labs/admin/estadisticas"
+          element={
+            <RequireAdminAuth>
+              <AdminEstadisticasPage />
+            </RequireAdminAuth>
+          }
+        />
+
+        <Route
+          path="/labs"
+          element={
+            <RequireValidatorAuth>
+              <ValidadorPortalPage />
+            </RequireValidatorAuth>
+          }
+        />
         <Route
           path="/labs/resico"
           element={
-            <LabsErrorBoundary moduleName="resico">
-              <ResicoDiagnosticoPage />
-            </LabsErrorBoundary>
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="resico">
+                <ResicoDiagnosticoPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
           }
         />
         <Route
           path="/labs/xml-cfdi"
           element={
-            <LabsErrorBoundary moduleName="xml-cfdi">
-              <ConverterPage />
-            </LabsErrorBoundary>
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="xml-cfdi">
+                <ConverterPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
+          }
+        />
+        <Route
+          path="/labs/devolucion-impuestos"
+          element={
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="devolucion-impuestos">
+                <DevolucionImpuestosPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
+          }
+        />
+        <Route
+          path="/labs/resico-anual"
+          element={
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="resico-anual">
+                <ResicoAnualPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
+          }
+        />
+        <Route
+          path="/labs/arrendamiento"
+          element={
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="arrendamiento">
+                <ArrendamientoComparadorPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
+          }
+        />
+        <Route
+          path="/labs/plataformas-digitales"
+          element={
+            <RequireValidatorAuth>
+              <LabsErrorBoundary moduleName="plataformas-digitales">
+                <PlataformasDigitalesPage />
+              </LabsErrorBoundary>
+            </RequireValidatorAuth>
           }
         />
 

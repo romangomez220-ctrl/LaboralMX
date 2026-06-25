@@ -126,10 +126,10 @@ export default function ConverterPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Identificación conceptual, igual que RESICO: parte de Fiscal Suite
+      {/* Identificación conceptual, igual que RESICO: parte de Contable Suite
           dentro de Labs. Solo etiqueta visual, no cambia rutas ni lógica. */}
       <p className="text-xs uppercase tracking-wide text-stone">
-        Fiscal Suite <span className="mx-1 text-gray-300">›</span> Conversor XML CFDI
+        Contable Suite <span className="mx-1 text-gray-300">›</span> Conversor XML CFDI
       </p>
 
       <LabsBadge />
