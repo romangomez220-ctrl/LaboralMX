@@ -26,11 +26,11 @@
  * -----------------------------------------------------------------------------
  */
 
-import type { Asignacion, Feedback, Herramienta, RegistroActividad, Validador } from '../types'
+import type { Asignacion, EstadoOperativoHerramienta, Feedback, RegistroActividad, Validador } from '../types'
 
 const KEYS = {
   validadores: 'romanus_labs_validadores',
-  herramientas: 'romanus_labs_herramientas',
+  estadosHerramientas: 'romanus_labs_estados_herramientas',
   asignaciones: 'romanus_labs_asignaciones',
   feedback: 'romanus_labs_feedback',
   actividad: 'romanus_labs_actividad',
@@ -106,29 +106,40 @@ export function crearValidador(datos: Omit<Validador, 'id' | 'fechaCreacion' | '
   return nuevo
 }
 
-// ---------- Herramientas ----------
+// ---------- Estado operativo de Herramientas (overlay editable sobre el Registro) ----------
+// La estructura (nombre, ruta, suite...) viene siempre de src/catalog/registry.ts.
+// Aquí solo se guarda lo que el admin puede cambiar en vivo. La combinación
+// de ambas ("vista") vive en repositories/toolsView.ts, no aquí — porque
+// usa el repositorio, y este archivo es justamente lo que el repositorio
+// envuelve (no al revés).
 
-export function listarHerramientas(): Herramienta[] {
-  return leer<Herramienta[]>(KEYS.herramientas, [])
-}
-
-export function obtenerHerramientaPorId(id: string): Herramienta | null {
-  return listarHerramientas().find((h) => h.id === id) ?? null
-}
-
-export function obtenerHerramientaPorRuta(ruta: string): Herramienta | null {
-  return listarHerramientas().find((h) => h.ruta === ruta) ?? null
-}
-
-export function guardarHerramienta(herramienta: Herramienta): void {
-  const lista = listarHerramientas()
-  const idx = lista.findIndex((h) => h.id === herramienta.id)
-  if (idx >= 0) {
-    lista[idx] = herramienta
-  } else {
-    lista.push(herramienta)
+function estadoOperativoDefault(herramientaId: string): EstadoOperativoHerramienta {
+  return {
+    herramientaId,
+    estado: 'en_validacion',
+    visiblePublicamente: false,
+    disponibleSoloLabs: true,
+    nivelMinimoRequerido: null,
   }
-  escribir(KEYS.herramientas, lista)
+}
+
+export function listarEstadosOperativos(): EstadoOperativoHerramienta[] {
+  return leer<EstadoOperativoHerramienta[]>(KEYS.estadosHerramientas, [])
+}
+
+export function obtenerEstadoOperativo(herramientaId: string): EstadoOperativoHerramienta {
+  return listarEstadosOperativos().find((e) => e.herramientaId === herramientaId) ?? estadoOperativoDefault(herramientaId)
+}
+
+export function guardarEstadoOperativo(estado: EstadoOperativoHerramienta): void {
+  const lista = listarEstadosOperativos()
+  const idx = lista.findIndex((e) => e.herramientaId === estado.herramientaId)
+  if (idx >= 0) {
+    lista[idx] = estado
+  } else {
+    lista.push(estado)
+  }
+  escribir(KEYS.estadosHerramientas, lista)
 }
 
 // ---------- Asignaciones ----------
@@ -255,5 +266,5 @@ export function cerrarSesionAdmin(): void {
 // que el portal nunca arranque completamente vacío. Ver seedData.ts.
 
 export function estaInicializado(): boolean {
-  return listarHerramientas().length > 0
+  return listarValidadores().length > 0
 }

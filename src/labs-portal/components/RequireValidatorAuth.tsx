@@ -9,13 +9,17 @@
  *     ruta) — best-effort, no captura cierres abruptos de pestaña.
  *   - Muestra una barra superior con el nombre del validador y un botón
  *     de feedback flotante para la herramienta actual.
+ *
+ * Fase 2: la búsqueda de la herramienta actual y el registro de actividad
+ * pasan por repositories/, no por localStore directamente.
  * -----------------------------------------------------------------------------
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useValidatorSession } from '../auth/useValidatorSession'
-import { obtenerHerramientaPorRuta, registrarActividad } from '../storage/localStore'
+import { activityRepository } from '../../repositories'
+import { obtenerHerramientaVistaPorRuta, type HerramientaVista } from '../../repositories/toolsView'
 import { useNoIndex } from '../../labs/useNoIndex'
 import FeedbackModal from './FeedbackModal'
 
@@ -24,26 +28,34 @@ export default function RequireValidatorAuth({ children }: { children: ReactNode
   const { validador, estaAutenticado, cargando } = useValidatorSession()
   const location = useLocation()
   const [feedbackAbierto, setFeedbackAbierto] = useState(false)
+  const [herramientaActual, setHerramientaActual] = useState<HerramientaVista | null>(null)
   const inicioRef = useRef<number>(Date.now())
 
-  const herramientaActual = obtenerHerramientaPorRuta(location.pathname)
+  useEffect(() => {
+    obtenerHerramientaVistaPorRuta(location.pathname).then(setHerramientaActual)
+  }, [location.pathname])
 
   useEffect(() => {
     if (!validador) return
     inicioRef.current = Date.now()
-    registrarActividad({
-      validadorId: validador.id,
-      tipo: 'herramienta_abierta',
-      herramientaId: herramientaActual?.id ?? null,
-      duracionAproxSegundos: null,
+    let herramientaIdParaCierre: string | null = null
+
+    obtenerHerramientaVistaPorRuta(location.pathname).then((h) => {
+      herramientaIdParaCierre = h?.id ?? null
+      activityRepository.registrar({
+        validadorId: validador.id,
+        tipo: 'herramienta_abierta',
+        herramientaId: herramientaIdParaCierre,
+        duracionAproxSegundos: null,
+      })
     })
 
     return () => {
       const duracion = Math.round((Date.now() - (inicioRef.current ?? Date.now())) / 1000)
-      registrarActividad({
+      activityRepository.registrar({
         validadorId: validador.id,
         tipo: 'herramienta_abierta',
-        herramientaId: herramientaActual?.id ?? null,
+        herramientaId: herramientaIdParaCierre,
         duracionAproxSegundos: duracion,
       })
     }
@@ -81,7 +93,7 @@ export default function RequireValidatorAuth({ children }: { children: ReactNode
           abierto={feedbackAbierto}
           onCerrar={() => setFeedbackAbierto(false)}
           herramientaId={herramientaActual.id}
-          herramientaNombre={herramientaActual.nombre}
+          herramientaNombre={herramientaActual.nombreVisible}
           validadorId={validador.id}
         />
       )}

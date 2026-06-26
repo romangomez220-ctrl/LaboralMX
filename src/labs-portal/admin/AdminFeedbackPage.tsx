@@ -1,31 +1,51 @@
-import { useMemo, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import AdminLayout from './AdminLayout'
 import EstadoBadge from '../components/EstadoBadge'
-import { actualizarEstadoFeedback, listarFeedback, obtenerHerramientaPorId, obtenerValidadorPorId } from '../storage/localStore'
-import type { EstadoFeedback, TipoFeedback } from '../types'
+import { feedbackRepository, validatorsRepository } from '../../repositories'
+import { listarHerramientasVista, type HerramientaVista } from '../../repositories/toolsView'
+import type { EstadoFeedback, Feedback, TipoFeedback, Validador } from '../types'
 
 type FiltroEstado = 'todos' | EstadoFeedback
 type FiltroTipo = 'todos' | TipoFeedback
 
 export default function AdminFeedbackPage() {
-  const [, forceUpdate] = useState(0)
-  const refrescar = () => forceUpdate((n) => n + 1)
+  const [todoElFeedback, setTodoElFeedback] = useState<Feedback[]>([])
+  const [herramientas, setHerramientas] = useState<HerramientaVista[]>([])
+  const [validadores, setValidadores] = useState<Validador[]>([])
+  const [cargando, setCargando] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos')
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('todos')
 
-  const todoElFeedback = listarFeedback()
+  async function cargar() {
+    const [f, h, v] = await Promise.all([feedbackRepository.listar(), listarHerramientasVista(), validatorsRepository.listar()])
+    setTodoElFeedback(f)
+    setHerramientas(h)
+    setValidadores(v)
+    setCargando(false)
+  }
+
+  useEffect(() => {
+    cargar()
+  }, [])
 
   const filtrado = useMemo(() => {
     return todoElFeedback
       .filter((f) => filtroEstado === 'todos' || f.estado === filtroEstado)
       .filter((f) => filtroTipo === 'todos' || f.tipo === filtroTipo)
       .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todoElFeedback, filtroEstado, filtroTipo])
 
-  function cambiarEstado(id: string, estado: EstadoFeedback) {
-    actualizarEstadoFeedback(id, estado)
-    refrescar()
+  async function cambiarEstado(id: string, estado: EstadoFeedback) {
+    await feedbackRepository.actualizarEstado(id, estado)
+    cargar()
+  }
+
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <p className="text-sm text-stone">Cargando…</p>
+      </AdminLayout>
+    )
   }
 
   return (
@@ -57,13 +77,13 @@ export default function AdminFeedbackPage() {
 
       <div className="flex flex-col gap-2">
         {filtrado.map((f) => {
-          const herramienta = obtenerHerramientaPorId(f.herramientaId)
-          const validador = obtenerValidadorPorId(f.validadorId)
+          const herramienta = herramientas.find((h) => h.id === f.herramientaId)
+          const validador = validadores.find((v) => v.id === f.validadorId)
           return (
             <div key={f.id} className="rounded-lg border border-gray-200 bg-white p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-gray-800">{herramienta?.nombre ?? f.herramientaId}</p>
+                  <p className="font-semibold text-gray-800">{herramienta?.nombreVisible ?? f.herramientaId}</p>
                   <p className="text-xs text-stone">
                     {validador?.nombre ?? 'Validador desconocido'} · {new Date(f.fecha).toLocaleString('es-MX')} ·
                     Calificación {f.calificacion}/5 · {f.tipo.replace('_', ' ')}

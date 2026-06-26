@@ -1,111 +1,29 @@
 /**
  * seedData.ts — datos de arranque del Portal de Validadores
  * -----------------------------------------------------------------------------
- * Se ejecuta una sola vez, la primera vez que alguien visita /labs, si la
- * "tabla" de herramientas está vacía. Crea:
- *   - El registro de las 6 herramientas que YA EXISTEN en Labs (RESICO,
- *     XML CFDI, y las 4 de Contable Suite v5.0) — no se duplica ninguna
- *     ruta, solo se les agrega metadata para el portal.
- *   - Un validador de prueba y un administrador de prueba, para que el
- *     equipo pueda entrar de inmediato. Ver credenciales en RESUMEN-v6.0.md.
+ * Se ejecuta una sola vez. Crea:
+ *   - El ESTADO OPERATIVO inicial de cada herramienta de Labs que ya existe
+ *     en el Registro Central (src/catalog/registry.ts) — la estructura
+ *     (nombre, ruta, suite) ya no se duplica aquí, viene del registro.
+ *   - Un validador de prueba y un administrador de prueba.
  * -----------------------------------------------------------------------------
  */
 
-import type { Herramienta, Validador } from '../types'
+import type { EstadoHerramienta, Validador } from '../types'
+import { listarToolsDeLabs } from '../../catalog/registry'
 import {
   crearAsignacion,
   estaInicializado,
-  guardarHerramienta,
+  guardarEstadoOperativo,
   guardarValidador,
   listarValidadores,
 } from './localStore'
 
-const HERRAMIENTAS_SEED: Herramienta[] = [
-  {
-    id: 'tool_resico',
-    nombre: 'Diagnóstico RESICO',
-    suite: 'contable',
-    version: '4.8',
-    estado: 'en_validacion',
-    categoria: 'diagnostico',
-    descripcion: 'Estima si el Régimen Simplificado de Confianza es adecuado para la situación fiscal del usuario.',
-    ruta: '/labs/resico',
-    perfilRecomendado: 'Contador, fiscalista',
-    nivelMinimoRequerido: 'validador_beta',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-  {
-    id: 'tool_xml_cfdi',
-    nombre: 'Conversor XML CFDI',
-    suite: 'contable',
-    version: '4.8',
-    estado: 'en_validacion',
-    categoria: 'conversor',
-    descripcion: 'Convierte archivos XML de CFDI (incluye Nómina) a un libro de Excel, en el navegador.',
-    ruta: '/labs/xml-cfdi',
-    perfilRecomendado: 'Contador, auxiliar contable',
-    nivelMinimoRequerido: 'validador_beta',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-  {
-    id: 'tool_devolucion_impuestos',
-    nombre: 'Calculadora de Devolución de Impuestos',
-    suite: 'contable',
-    version: '5.0',
-    estado: 'en_validacion',
-    categoria: 'calculadora',
-    descripcion: 'Calcula deducciones personales y base gravable para la declaración anual de asalariados.',
-    ruta: '/labs/devolucion-impuestos',
-    perfilRecomendado: 'Contador, fiscalista',
-    nivelMinimoRequerido: 'validador_beta',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-  {
-    id: 'tool_resico_anual',
-    nombre: 'Declaración Anual RESICO',
-    suite: 'contable',
-    version: '5.0',
-    estado: 'en_validacion',
-    categoria: 'diagnostico',
-    descripcion: 'Determina si un contribuyente RESICO está obligado a presentar declaración anual.',
-    ruta: '/labs/resico-anual',
-    perfilRecomendado: 'Fiscalista, abogado',
-    nivelMinimoRequerido: 'validador_especialista',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-  {
-    id: 'tool_arrendamiento',
-    nombre: 'Comparador de Arrendamiento',
-    suite: 'contable',
-    version: '5.0',
-    estado: 'en_validacion',
-    categoria: 'comparador',
-    descripcion: 'Compara deducción ciega (35%) vs. gastos reales para arrendadores personas físicas.',
-    ruta: '/labs/arrendamiento',
-    perfilRecomendado: 'Contador, fiscalista',
-    nivelMinimoRequerido: 'validador_beta',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-  {
-    id: 'tool_plataformas_digitales',
-    nombre: 'Retenciones por Plataformas Digitales 2026',
-    suite: 'contable',
-    version: '5.0',
-    estado: 'pendiente',
-    categoria: 'calculadora',
-    descripcion: 'Calcula retenciones de ISR/IVA por plataformas digitales — contiene un punto legal disputado, requiere revisión prioritaria.',
-    ruta: '/labs/plataformas-digitales',
-    perfilRecomendado: 'Abogado, fiscalista, secretario de tribunal',
-    nivelMinimoRequerido: 'validador_especialista',
-    visiblePublicamente: false,
-    disponibleSoloLabs: true,
-  },
-]
+// Estado inicial por herramienta (solo lo que NO es estructura). Las que no
+// se listan aquí usan el default ('en_validacion') al consultarse.
+const ESTADO_INICIAL_POR_HERRAMIENTA: Record<string, EstadoHerramienta> = {
+  tool_plataformas_digitales: 'pendiente',
+}
 
 const VALIDADOR_DEMO: Omit<Validador, 'id' | 'fechaCreacion' | 'ultimoAcceso'> = {
   usuario: 'validador.demo',
@@ -133,7 +51,15 @@ export function validarCredencialesAdmin(usuario: string, password: string): boo
 export function inicializarDatosDePrueba(): void {
   if (estaInicializado()) return
 
-  HERRAMIENTAS_SEED.forEach(guardarHerramienta)
+  listarToolsDeLabs().forEach((tool) => {
+    guardarEstadoOperativo({
+      herramientaId: tool.id,
+      estado: ESTADO_INICIAL_POR_HERRAMIENTA[tool.id] ?? 'en_validacion',
+      visiblePublicamente: false,
+      disponibleSoloLabs: true,
+      nivelMinimoRequerido: null,
+    })
+  })
 
   if (listarValidadores().length === 0) {
     const validador = {

@@ -13,9 +13,9 @@ export default function AdminLoginPage() {
 
   if (autenticado) return <Navigate to="/labs/admin" replace />
 
-  function manejarEnvio(ev: FormEvent) {
+  async function manejarEnvio(ev: FormEvent) {
     ev.preventDefault()
-    const resultado = iniciarSesion(usuario.trim(), password)
+    const resultado = await iniciarSesion(usuario.trim(), password)
     if (!resultado.ok) {
       setError(resultado.error ?? 'No se pudo iniciar sesión.')
       return
@@ -33,13 +33,13 @@ export default function AdminLoginPage() {
 
         <form onSubmit={manejarEnvio} className="rounded-lg border border-gray-200 bg-white p-6 flex flex-col gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700">Usuario administrador</label>
+            <label className="text-sm font-medium text-gray-700">Correo del administrador</label>
             <input
-              type="text"
+              type="email"
               value={usuario}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setUsuario(e.target.value)}
               className="w-full mt-1 rounded-md border border-gray-300 px-3 py-2.5 text-base"
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
           <div>

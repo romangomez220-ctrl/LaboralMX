@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react'
-import { crearFeedback, registrarActividad } from '../storage/localStore'
+import { activityRepository, feedbackRepository } from '../../repositories'
 import type { TipoFeedback } from '../types'
 
 interface FeedbackModalProps {
@@ -30,10 +30,10 @@ export default function FeedbackModal({
 
   if (!abierto) return null
 
-  function manejarEnvio() {
+  async function manejarEnvio() {
     if (comentario.trim() === '') return
-    crearFeedback({ herramientaId, validadorId, calificacion, tipo, comentario: comentario.trim() })
-    registrarActividad({ validadorId, tipo: 'feedback_enviado', herramientaId, duracionAproxSegundos: null })
+    await feedbackRepository.crear({ herramientaId, validadorId, calificacion, tipo, comentario: comentario.trim() })
+    await activityRepository.registrar({ validadorId, tipo: 'feedback_enviado', herramientaId, duracionAproxSegundos: null })
     setEnviado(true)
     setTimeout(() => {
       setEnviado(false)

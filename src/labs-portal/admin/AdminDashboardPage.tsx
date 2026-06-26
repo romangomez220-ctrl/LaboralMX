@@ -1,13 +1,8 @@
+import { useEffect, useState } from 'react'
 import AdminLayout from './AdminLayout'
-import {
-  listarActividad,
-  listarAsignaciones,
-  listarFeedback,
-  listarHerramientas,
-  listarValidadores,
-  obtenerHerramientaPorId,
-  obtenerValidadorPorId,
-} from '../storage/localStore'
+import { activityRepository, assignmentsRepository, feedbackRepository, validatorsRepository } from '../../repositories'
+import { listarHerramientasVista, type HerramientaVista } from '../../repositories/toolsView'
+import type { RegistroActividad, Validador, Feedback, Asignacion } from '../types'
 
 function Tarjeta({ titulo, valor }: { titulo: string; valor: number | string }) {
   return (
@@ -18,16 +13,58 @@ function Tarjeta({ titulo, valor }: { titulo: string; valor: number | string }) 
   )
 }
 
+interface ActividadConNombres extends RegistroActividad {
+  nombreValidador: string
+  nombreHerramienta: string | null
+}
+
 export default function AdminDashboardPage() {
-  const validadores = listarValidadores()
-  const herramientas = listarHerramientas()
-  const asignaciones = listarAsignaciones()
-  const feedback = listarFeedback()
-  const actividad = listarActividad().slice().reverse().slice(0, 10)
+  const [validadores, setValidadores] = useState<Validador[]>([])
+  const [herramientas, setHerramientas] = useState<HerramientaVista[]>([])
+  const [asignaciones, setAsignaciones] = useState<Asignacion[]>([])
+  const [feedback, setFeedback] = useState<Feedback[]>([])
+  const [actividad, setActividad] = useState<ActividadConNombres[]>([])
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    async function cargar() {
+      const [v, h, a, f, act] = await Promise.all([
+        validatorsRepository.listar(),
+        listarHerramientasVista(),
+        assignmentsRepository.listar(),
+        feedbackRepository.listar(),
+        activityRepository.listar(),
+      ])
+      const actividadConNombres = act
+        .slice()
+        .reverse()
+        .slice(0, 10)
+        .map((reg) => ({
+          ...reg,
+          nombreValidador: v.find((val) => val.id === reg.validadorId)?.nombre ?? 'Validador desconocido',
+          nombreHerramienta: reg.herramientaId ? h.find((tool) => tool.id === reg.herramientaId)?.nombreVisible ?? null : null,
+        }))
+      setValidadores(v)
+      setHerramientas(h)
+      setAsignaciones(a)
+      setFeedback(f)
+      setActividad(actividadConNombres)
+      setCargando(false)
+    }
+    cargar()
+  }, [])
+
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <p className="text-sm text-stone">Cargando…</p>
+      </AdminLayout>
+    )
+  }
 
   const validadoresActivos = validadores.filter((v) => v.estado === 'activo').length
-  const herramientasActivas = herramientas.filter((h) => h.estado === 'en_validacion').length
-  const herramientasPendientes = herramientas.filter((h) => h.estado === 'pendiente').length
+  const herramientasActivas = herramientas.filter((h) => h.estadoOperativo.estado === 'en_validacion').length
+  const herramientasPendientes = herramientas.filter((h) => h.estadoOperativo.estado === 'pendiente').length
   const erroresReportados = feedback.filter((f) => f.tipo === 'error').length
   const ideasPropuestas = feedback.filter((f) => f.tipo === 'idea').length
 
@@ -52,19 +89,15 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-stone">Sin actividad registrada todavía.</p>
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-            {actividad.map((a) => {
-              const validador = obtenerValidadorPorId(a.validadorId)
-              const herramienta = a.herramientaId ? obtenerHerramientaPorId(a.herramientaId) : null
-              return (
-                <div key={a.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                  <span className="text-gray-700">
-                    <strong>{validador?.nombre ?? 'Validador desconocido'}</strong> — {a.tipo.replace('_', ' ')}
-                    {herramienta ? ` · ${herramienta.nombre}` : ''}
-                  </span>
-                  <span className="text-xs text-stone">{new Date(a.fecha).toLocaleString('es-MX')}</span>
-                </div>
-              )
-            })}
+            {actividad.map((a) => (
+              <div key={a.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                <span className="text-gray-700">
+                  <strong>{a.nombreValidador}</strong> — {a.tipo.replace('_', ' ')}
+                  {a.nombreHerramienta ? ` · ${a.nombreHerramienta}` : ''}
+                </span>
+                <span className="text-xs text-stone">{new Date(a.fecha).toLocaleString('es-MX')}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

@@ -1,18 +1,9 @@
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import AdminLayout from './AdminLayout'
 import EstadoBadge from '../components/EstadoBadge'
-import {
-  crearAsignacion,
-  crearValidador,
-  eliminarAsignacion,
-  eliminarValidador,
-  guardarValidador,
-  listarAsignacionesPorValidador,
-  listarFeedback,
-  listarHerramientas,
-  listarValidadores,
-} from '../storage/localStore'
-import { NIVELES_VALIDADOR, type NivelValidador, type Validador } from '../types'
+import { assignmentsRepository, authRepository, activityRepository, feedbackRepository, validatorsRepository } from '../../repositories'
+import { listarHerramientasVista, type HerramientaVista } from '../../repositories/toolsView'
+import { NIVELES_VALIDADOR, type Asignacion, type Feedback, type NivelValidador, type RegistroActividad, type Validador } from '../types'
 
 interface NuevoValidadorForm {
   usuario: string
@@ -33,19 +24,41 @@ const FORM_VACIO: NuevoValidadorForm = {
 }
 
 export default function AdminValidadoresPage() {
-  const [, forceUpdate] = useState(0)
-  const refrescar = () => forceUpdate((n) => n + 1)
-
+  const [validadores, setValidadores] = useState<Validador[]>([])
+  const [herramientas, setHerramientas] = useState<HerramientaVista[]>([])
+  const [feedback, setFeedback] = useState<Feedback[]>([])
+  const [cargando, setCargando] = useState(true)
   const [form, setForm] = useState<NuevoValidadorForm>(FORM_VACIO)
   const [seleccionado, setSeleccionado] = useState<string | null>(null)
+  const [asignacionesSeleccionado, setAsignacionesSeleccionado] = useState<Asignacion[]>([])
+  const [actividadSeleccionado, setActividadSeleccionado] = useState<RegistroActividad[]>([])
+  const [mensajeRestablecer, setMensajeRestablecer] = useState('')
 
-  const validadores = listarValidadores()
-  const herramientas = listarHerramientas()
-  const feedback = listarFeedback()
+  async function cargar() {
+    const [v, h, f] = await Promise.all([validatorsRepository.listar(), listarHerramientasVista(), feedbackRepository.listar()])
+    setValidadores(v)
+    setHerramientas(h)
+    setFeedback(f)
+    setCargando(false)
+  }
 
-  function crear() {
+  useEffect(() => {
+    cargar()
+  }, [])
+
+  useEffect(() => {
+    if (!seleccionado) {
+      setAsignacionesSeleccionado([])
+      setActividadSeleccionado([])
+      return
+    }
+    assignmentsRepository.listarPorValidador(seleccionado).then(setAsignacionesSeleccionado)
+    activityRepository.listarPorValidador(seleccionado).then((a) => setActividadSeleccionado(a.slice(0, 10)))
+  }, [seleccionado])
+
+  async function crear() {
     if (!form.usuario.trim() || !form.passwordTemporal.trim() || !form.nombre.trim()) return
-    crearValidador({
+    await validatorsRepository.crear({
       usuario: form.usuario.trim(),
       passwordTemporal: form.passwordTemporal.trim(),
       nombre: form.nombre.trim(),
@@ -57,44 +70,61 @@ export default function AdminValidadoresPage() {
       notasAdmin: '',
     })
     setForm(FORM_VACIO)
-    refrescar()
+    cargar()
   }
 
-  function toggleEstado(v: Validador) {
-    guardarValidador({ ...v, estado: v.estado === 'activo' ? 'inactivo' : 'activo' })
-    refrescar()
+  async function toggleEstado(v: Validador) {
+    await validatorsRepository.guardar({ ...v, estado: v.estado === 'activo' ? 'inactivo' : 'activo' })
+    cargar()
   }
 
-  function eliminar(id: string) {
-    eliminarValidador(id)
+  async function eliminar(id: string) {
+    await validatorsRepository.eliminar(id)
     if (seleccionado === id) setSeleccionado(null)
-    refrescar()
+    cargar()
   }
 
-  function cambiarNivel(v: Validador, nivel: NivelValidador) {
-    guardarValidador({ ...v, nivel })
-    refrescar()
+  async function cambiarNivel(v: Validador, nivel: NivelValidador) {
+    await validatorsRepository.guardar({ ...v, nivel })
+    cargar()
   }
 
-  function cambiarCalificacion(v: Validador, calificacion: number) {
-    guardarValidador({ ...v, calificacionInterna: calificacion })
-    refrescar()
+  async function cambiarCalificacion(v: Validador, calificacion: number) {
+    await validatorsRepository.guardar({ ...v, calificacionInterna: calificacion })
+    cargar()
   }
 
-  function cambiarNotas(v: Validador, notasAdmin: string) {
-    guardarValidador({ ...v, notasAdmin })
-    refrescar()
+  async function cambiarNotas(v: Validador, notasAdmin: string) {
+    await validatorsRepository.guardar({ ...v, notasAdmin })
+    cargar()
   }
 
-  function toggleAsignacion(validadorId: string, herramientaId: string) {
-    const existentes = listarAsignacionesPorValidador(validadorId)
-    const existente = existentes.find((a) => a.herramientaId === herramientaId)
+  async function toggleAsignacion(validadorId: string, herramientaId: string) {
+    const existente = asignacionesSeleccionado.find((a) => a.herramientaId === herramientaId)
     if (existente) {
-      eliminarAsignacion(existente.id)
+      await assignmentsRepository.eliminar(existente.id)
     } else {
-      crearAsignacion(validadorId, herramientaId)
+      await assignmentsRepository.crear(validadorId, herramientaId)
     }
-    refrescar()
+    assignmentsRepository.listarPorValidador(validadorId).then(setAsignacionesSeleccionado)
+  }
+
+  async function restablecerPassword(v: Validador) {
+    setMensajeRestablecer('Enviando…')
+    const resultado = await authRepository.solicitarRestablecerPassword(v.usuario)
+    setMensajeRestablecer(
+      resultado.ok
+        ? `Correo de recuperación enviado a ${v.usuario}.`
+        : `No se pudo enviar: ${resultado.error}`,
+    )
+  }
+
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <p className="text-sm text-stone">Cargando…</p>
+      </AdminLayout>
+    )
   }
 
   const validadorDetalle = validadores.find((v) => v.id === seleccionado) ?? null
@@ -107,7 +137,8 @@ export default function AdminValidadoresPage() {
         <p className="text-sm font-semibold text-gray-700 mb-3">Crear nuevo validador</p>
         <div className="grid sm:grid-cols-3 gap-3">
           <input
-            placeholder="Usuario"
+            type="email"
+            placeholder="Correo electrónico"
             value={form.usuario}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, usuario: e.target.value })}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
@@ -247,6 +278,16 @@ export default function AdminValidadoresPage() {
             </div>
           </div>
 
+          <div className="flex items-center gap-3 mt-3">
+            <button
+              onClick={() => restablecerPassword(validadorDetalle)}
+              className="rounded-md border border-gold text-gold-dark px-3 py-1.5 text-xs font-semibold hover:bg-warning-light transition"
+            >
+              Restablecer contraseña (envía correo)
+            </button>
+            {mensajeRestablecer && <span className="text-xs text-stone">{mensajeRestablecer}</span>}
+          </div>
+
           <div className="mt-3">
             <label className="text-xs font-semibold text-stone uppercase">Notas administrativas</label>
             <textarea
@@ -261,19 +302,30 @@ export default function AdminValidadoresPage() {
             <p className="text-xs font-semibold text-stone uppercase mb-2">Herramientas asignadas</p>
             <div className="flex flex-col gap-1">
               {herramientas.map((h) => {
-                const asignada = listarAsignacionesPorValidador(validadorDetalle.id).some((a) => a.herramientaId === h.id)
+                const asignada = asignacionesSeleccionado.some((a) => a.herramientaId === h.id)
                 return (
                   <label key={h.id} className="flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={asignada}
-                      onChange={() => toggleAsignacion(validadorDetalle.id, h.id)}
-                    />
-                    {h.nombre}
+                    <input type="checkbox" checked={asignada} onChange={() => toggleAsignacion(validadorDetalle.id, h.id)} />
+                    {h.nombreVisible}
                   </label>
                 )
               })}
             </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-stone uppercase mb-2">Actividad reciente</p>
+            {actividadSeleccionado.length === 0 ? (
+              <p className="text-xs text-stone">Sin actividad registrada.</p>
+            ) : (
+              <ul className="text-xs text-gray-600 flex flex-col gap-1">
+                {actividadSeleccionado.map((a) => (
+                  <li key={a.id} className="flex justify-between border-b border-gray-100 py-1">
+                    <span>{a.tipo.replace('_', ' ')}</span>
+                    <span className="text-stone">{new Date(a.fecha).toLocaleString('es-MX')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

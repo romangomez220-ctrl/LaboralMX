@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import LaboralMXLayout from './components/LaboralMXLayout'
@@ -20,6 +21,7 @@ import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import RequireValidatorAuth from './labs-portal/components/RequireValidatorAuth'
 import RequireAdminAuth from './labs-portal/components/RequireAdminAuth'
 import ValidadorLoginPage from './labs-portal/pages/ValidadorLoginPage'
+import RestablecerPasswordPage from './labs-portal/pages/RestablecerPasswordPage'
 import ValidadorPortalPage from './labs-portal/pages/ValidadorPortalPage'
 import AdminLoginPage from './labs-portal/admin/AdminLoginPage'
 import AdminDashboardPage from './labs-portal/admin/AdminDashboardPage'
@@ -27,6 +29,20 @@ import AdminValidadoresPage from './labs-portal/admin/AdminValidadoresPage'
 import AdminHerramientasPage from './labs-portal/admin/AdminHerramientasPage'
 import AdminFeedbackPage from './labs-portal/admin/AdminFeedbackPage'
 import AdminEstadisticasPage from './labs-portal/admin/AdminEstadisticasPage'
+import { listarToolsDeLabs } from './catalog/registry'
+
+// Mapa clave (del Registro Central) → componente real. Es el único lugar
+// donde el Registro (datos) se conecta con la implementación (código) —
+// el propio Registro nunca importa React ni sabe que estos componentes
+// existen (principio "referencia de implementación opaca").
+const COMPONENTES_LABS: Record<string, ComponentType> = {
+  resico: ResicoDiagnosticoPage,
+  'xml-cfdi': ConverterPage,
+  'devolucion-impuestos': DevolucionImpuestosPage,
+  'resico-anual': ResicoAnualPage,
+  arrendamiento: ArrendamientoComparadorPage,
+  'plataformas-digitales': PlataformasDigitalesPage,
+}
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
 import LiquidacionCalculator from './pages/LiquidacionCalculator'
@@ -87,6 +103,7 @@ export default function App() {
             dependía de no tener enlace público. El login y el panel admin
             quedan fuera del guard (si no, nadie podría llegar a loguearse). */}
         <Route path="/labs/login" element={<ValidadorLoginPage />} />
+        <Route path="/labs/restablecer-password" element={<RestablecerPasswordPage />} />
         <Route path="/labs/admin/login" element={<AdminLoginPage />} />
         <Route
           path="/labs/admin"
@@ -137,66 +154,29 @@ export default function App() {
             </RequireValidatorAuth>
           }
         />
-        <Route
-          path="/labs/resico"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="resico">
-                <ResicoDiagnosticoPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
-        <Route
-          path="/labs/xml-cfdi"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="xml-cfdi">
-                <ConverterPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
-        <Route
-          path="/labs/devolucion-impuestos"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="devolucion-impuestos">
-                <DevolucionImpuestosPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
-        <Route
-          path="/labs/resico-anual"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="resico-anual">
-                <ResicoAnualPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
-        <Route
-          path="/labs/arrendamiento"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="arrendamiento">
-                <ArrendamientoComparadorPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
-        <Route
-          path="/labs/plataformas-digitales"
-          element={
-            <RequireValidatorAuth>
-              <LabsErrorBoundary moduleName="plataformas-digitales">
-                <PlataformasDigitalesPage />
-              </LabsErrorBoundary>
-            </RequireValidatorAuth>
-          }
-        />
+        {/* Las rutas de las herramientas de Contable Suite en Labs se generan
+            desde el Registro Central (src/catalog/registry.ts) — antes
+            existían aquí 6 bloques de <Route> escritos a mano, que era
+            exactamente la doble fuente de verdad (rutas vs. metadata de
+            seedData.ts) que la Fase 1 de la Constitución Técnica v1.0
+            identificó como deuda técnica. */}
+        {listarToolsDeLabs().map((tool) => {
+          const Componente = COMPONENTES_LABS[tool.clave]
+          if (!Componente) return null
+          return (
+            <Route
+              key={tool.id}
+              path={tool.ruta}
+              element={
+                <RequireValidatorAuth>
+                  <LabsErrorBoundary moduleName={tool.clave}>
+                    <Componente />
+                  </LabsErrorBoundary>
+                </RequireValidatorAuth>
+              }
+            />
+          )
+        })}
 
         {/* Producto: Laboral Suite (sección anidada con su propia sub-navegación).
             Cada calculadora tiene su propio Error Boundary: si una falla,

@@ -60,25 +60,25 @@ export interface Validador {
   notasAdmin: string
 }
 
-// ---------- Herramienta (metadata, independiente de su implementación real) ----------
+// ---------- Estado operativo de Herramienta ----------
+// La ESTRUCTURA de una herramienta (nombre, suite, ruta, categoría...) ahora
+// vive en el Registro Central (src/catalog/registry.ts), que es código, no
+// datos editables. Lo que el admin SÍ puede editar en vivo —estado de
+// publicación, visibilidad, nivel mínimo— vive aquí, referenciando al
+// registro por su id estable. Esto es la separación "el registro declara
+// qué existe; el estado operativo declara su situación actual" de la
+// Constitución Técnica v1.0 (documento 3 de la serie de arquitectura).
 
-export type SuiteHerramienta = 'laboral' | 'contable'
 export type EstadoHerramienta = 'pendiente' | 'en_validacion' | 'lista_para_publico' | 'publicada'
-export type CategoriaHerramienta = 'calculadora' | 'diagnostico' | 'conversor' | 'comparador'
 
-export interface Herramienta {
-  id: string
-  nombre: string
-  suite: SuiteHerramienta
-  version: string
+export interface EstadoOperativoHerramienta {
+  /** Referencia al id estable de ToolManifest en src/catalog/registry.ts */
+  herramientaId: string
   estado: EstadoHerramienta
-  categoria: CategoriaHerramienta
-  descripcion: string
-  ruta: string
-  perfilRecomendado: string
-  nivelMinimoRequerido: NivelValidador
   visiblePublicamente: boolean
   disponibleSoloLabs: boolean
+  /** Override del nivelMinimoAccesoDefault del registro; null = usar el default. */
+  nivelMinimoRequerido: NivelValidador | null
 }
 
 // ---------- Asignación (validador ↔ herramienta) ----------

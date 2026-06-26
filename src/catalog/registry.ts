@@ -1,0 +1,218 @@
+/**
+ * catalog/registry.ts — el Registro Central en sí
+ * -----------------------------------------------------------------------------
+ * Única fuente de verdad de qué Suites y qué Herramientas existen. Labs,
+ * Admin y el Router leen de aquí — ninguno mantiene su propia lista.
+ *
+ * Alcance de esta fase (justificado explícitamente, ver mensaje de entrega):
+ *   - Las 6 herramientas de Contable Suite en Labs generan sus <Route> desde
+ *     este registro (eran las que tenían doble fuente de verdad real:
+ *     App.tsx por un lado, seedData.ts por otro).
+ *   - Las 5 calculadoras públicas de Laboral Suite quedan registradas aquí
+ *     como metadata (para que el catálogo esté completo), pero sus rutas
+ *     siguen siendo las mismas líneas de JSX ya existentes en App.tsx,
+ *     anidadas bajo su layout propio — refactorizar esa anidación está
+ *     fuera del alcance de esta fase y no era parte del problema reportado.
+ * -----------------------------------------------------------------------------
+ */
+
+import type { SuiteManifest, ToolManifest } from './types'
+
+export type { SuiteManifest, ToolManifest } from './types'
+
+export const SUITES: SuiteManifest[] = [
+  {
+    id: 'suite_laboral',
+    clave: 'laboral',
+    nombreVisible: 'Laboral Suite',
+    descripcion: 'Calculadoras de finiquito, liquidación, aguinaldo, vacaciones y SDI.',
+    areaDePractica: 'Laboral',
+  },
+  {
+    id: 'suite_contable',
+    clave: 'contable',
+    nombreVisible: 'Contable Suite',
+    descripcion: 'Herramientas fiscales y contables para personas físicas y empresas.',
+    areaDePractica: 'Fiscal',
+  },
+]
+
+export const TOOLS: ToolManifest[] = [
+  // --- Laboral Suite (pública, sin validador) ---
+  {
+    id: 'tool_finiquito',
+    clave: 'finiquito',
+    nombreVisible: 'Finiquito',
+    suiteId: 'suite_laboral',
+    descripcion: 'Calculadora de finiquito laboral.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/productos/laboralmx/finiquito',
+    requiereValidador: false,
+    nivelMinimoAccesoDefault: 'publico',
+    perfilRecomendado: 'Trabajador, RH',
+    versionSoftware: '4.9.2',
+  },
+  {
+    id: 'tool_liquidacion',
+    clave: 'liquidacion',
+    nombreVisible: 'Liquidación',
+    suiteId: 'suite_laboral',
+    descripcion: 'Calculadora de liquidación laboral.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/productos/laboralmx/liquidacion',
+    requiereValidador: false,
+    nivelMinimoAccesoDefault: 'publico',
+    perfilRecomendado: 'Trabajador, RH',
+    versionSoftware: '4.9.2',
+  },
+  {
+    id: 'tool_aguinaldo',
+    clave: 'aguinaldo',
+    nombreVisible: 'Aguinaldo',
+    suiteId: 'suite_laboral',
+    descripcion: 'Calculadora de aguinaldo proporcional.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/productos/laboralmx/aguinaldo',
+    requiereValidador: false,
+    nivelMinimoAccesoDefault: 'publico',
+    perfilRecomendado: 'Trabajador, RH',
+    versionSoftware: '4.9.2',
+  },
+  {
+    id: 'tool_vacaciones',
+    clave: 'vacaciones',
+    nombreVisible: 'Vacaciones y prima vacacional',
+    suiteId: 'suite_laboral',
+    descripcion: 'Calculadora de vacaciones y prima vacacional.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/productos/laboralmx/vacaciones',
+    requiereValidador: false,
+    nivelMinimoAccesoDefault: 'publico',
+    perfilRecomendado: 'Trabajador, RH',
+    versionSoftware: '4.9.2',
+  },
+  {
+    id: 'tool_sdi',
+    clave: 'sdi',
+    nombreVisible: 'Salario Diario Integrado (SDI)',
+    suiteId: 'suite_laboral',
+    descripcion: 'Calculadora de SDI con prestaciones mínimas de ley.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/productos/laboralmx/sdi',
+    requiereValidador: false,
+    nivelMinimoAccesoDefault: 'publico',
+    perfilRecomendado: 'Trabajador, RH',
+    versionSoftware: '4.9.2',
+  },
+
+  // --- Contable Suite (Labs, requiere validador) ---
+  {
+    id: 'tool_resico',
+    clave: 'resico',
+    nombreVisible: 'Diagnóstico RESICO',
+    suiteId: 'suite_contable',
+    descripcion: 'Estima si el Régimen Simplificado de Confianza es adecuado para la situación fiscal del usuario.',
+    categoria: 'diagnostico',
+    audiencia: 'personal',
+    ruta: '/labs/resico',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_beta',
+    perfilRecomendado: 'Contador, fiscalista',
+    versionSoftware: '4.8',
+  },
+  {
+    id: 'tool_xml_cfdi',
+    clave: 'xml-cfdi',
+    nombreVisible: 'Conversor XML CFDI',
+    suiteId: 'suite_contable',
+    descripcion: 'Convierte archivos XML de CFDI (incluye Nómina) a un libro de Excel, en el navegador.',
+    categoria: 'conversor',
+    audiencia: 'ambas',
+    ruta: '/labs/xml-cfdi',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_beta',
+    perfilRecomendado: 'Contador, auxiliar contable',
+    versionSoftware: '4.8',
+  },
+  {
+    id: 'tool_devolucion_impuestos',
+    clave: 'devolucion-impuestos',
+    nombreVisible: 'Calculadora de Devolución de Impuestos',
+    suiteId: 'suite_contable',
+    descripcion: 'Calcula deducciones personales y base gravable para la declaración anual de asalariados.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/labs/devolucion-impuestos',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_beta',
+    perfilRecomendado: 'Contador, fiscalista',
+    versionSoftware: '5.0',
+  },
+  {
+    id: 'tool_resico_anual',
+    clave: 'resico-anual',
+    nombreVisible: 'Declaración Anual RESICO',
+    suiteId: 'suite_contable',
+    descripcion: 'Determina si un contribuyente RESICO está obligado a presentar declaración anual.',
+    categoria: 'diagnostico',
+    audiencia: 'personal',
+    ruta: '/labs/resico-anual',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_especialista',
+    perfilRecomendado: 'Fiscalista, abogado',
+    versionSoftware: '5.0',
+  },
+  {
+    id: 'tool_arrendamiento',
+    clave: 'arrendamiento',
+    nombreVisible: 'Comparador de Arrendamiento',
+    suiteId: 'suite_contable',
+    descripcion: 'Compara deducción ciega (35%) vs. gastos reales para arrendadores personas físicas.',
+    categoria: 'comparador',
+    audiencia: 'personal',
+    ruta: '/labs/arrendamiento',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_beta',
+    perfilRecomendado: 'Contador, fiscalista',
+    versionSoftware: '5.0',
+  },
+  {
+    id: 'tool_plataformas_digitales',
+    clave: 'plataformas-digitales',
+    nombreVisible: 'Retenciones por Plataformas Digitales 2026',
+    suiteId: 'suite_contable',
+    descripcion: 'Calcula retenciones de ISR/IVA por plataformas digitales — contiene un punto legal disputado, requiere revisión prioritaria.',
+    categoria: 'calculadora',
+    audiencia: 'personal',
+    ruta: '/labs/plataformas-digitales',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_especialista',
+    perfilRecomendado: 'Abogado, fiscalista, secretario de tribunal',
+    versionSoftware: '5.0',
+  },
+]
+
+export function obtenerSuitePorId(id: string): SuiteManifest | undefined {
+  return SUITES.find((s) => s.id === id)
+}
+
+export function obtenerToolPorId(id: string): ToolManifest | undefined {
+  return TOOLS.find((t) => t.id === id)
+}
+
+export function obtenerToolPorRuta(ruta: string): ToolManifest | undefined {
+  return TOOLS.find((t) => t.ruta === ruta)
+}
+
+export function listarToolsDeLabs(): ToolManifest[] {
+  return TOOLS.filter((t) => t.requiereValidador)
+}
+
+export function listarToolsPorSuite(suiteId: string): ToolManifest[] {
+  return TOOLS.filter((t) => t.suiteId === suiteId)
+}

@@ -1,42 +1,38 @@
 /**
  * useAdminSession.ts
  * -----------------------------------------------------------------------------
- * Sesión del administrador, completamente separada de la sesión de
- * validador (distinta llave de localStorage, distinto formulario de
- * login). Al migrar a Supabase, esto se reemplaza por un rol/claim de
- * Supabase Auth (ej. una columna `es_admin` o una tabla de roles), no por
- * una contraseña compartida como ahora.
+ * Consume authRepository (Fase 2) en vez de localStore directamente.
  * -----------------------------------------------------------------------------
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { cerrarSesionAdmin, haySesionAdminActiva, iniciarSesionAdmin } from '../storage/localStore'
-import { validarCredencialesAdmin } from '../storage/seedData'
+import { authRepository } from '../../repositories'
 
 export function useAdminSession() {
   const [autenticado, setAutenticado] = useState(false)
   const [cargando, setCargando] = useState(true)
 
   const recargar = useCallback(() => {
-    setAutenticado(haySesionAdminActiva())
-    setCargando(false)
+    setCargando(true)
+    authRepository
+      .haySesionAdminActiva()
+      .then(setAutenticado)
+      .finally(() => setCargando(false))
   }, [])
 
   useEffect(() => {
     recargar()
   }, [recargar])
 
-  function iniciarSesion(usuario: string, password: string): { ok: boolean; error?: string } {
-    if (!validarCredencialesAdmin(usuario, password)) {
-      return { ok: false, error: 'Usuario o contraseña incorrectos.' }
-    }
-    iniciarSesionAdmin()
+  async function iniciarSesion(usuario: string, password: string): Promise<{ ok: boolean; error?: string }> {
+    const resultado = await authRepository.loginAdmin(usuario, password)
+    if (!resultado.ok) return { ok: false, error: resultado.error }
     setAutenticado(true)
     return { ok: true }
   }
 
-  function cerrarSesion() {
-    cerrarSesionAdmin()
+  async function cerrarSesion() {
+    await authRepository.logoutAdmin()
     setAutenticado(false)
   }
 

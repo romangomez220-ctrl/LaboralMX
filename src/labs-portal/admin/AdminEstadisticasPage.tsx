@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
 import AdminLayout from './AdminLayout'
-import { listarAsignacionesPorHerramienta, listarFeedback, listarHerramientas, listarValidadores } from '../storage/localStore'
+import { feedbackRepository, validatorsRepository } from '../../repositories'
+import { listarHerramientasVista } from '../../repositories/toolsView'
+import type { Feedback, Validador } from '../types'
 
 function BarraMetrica({ etiqueta, valor, max }: { etiqueta: string; valor: number; max: number }) {
   const pct = max > 0 ? Math.round((valor / max) * 100) : 0
@@ -17,20 +20,42 @@ function BarraMetrica({ etiqueta, valor, max }: { etiqueta: string; valor: numbe
 }
 
 export default function AdminEstadisticasPage() {
-  const validadores = listarValidadores()
-  const herramientas = listarHerramientas()
-  const feedback = listarFeedback()
+  const [validadores, setValidadores] = useState<Validador[]>([])
+  const [feedback, setFeedback] = useState<Feedback[]>([])
+  const [feedbackPorHerramienta, setFeedbackPorHerramienta] = useState<{ nombre: string; cantidad: number }[]>([])
+  const [erroresPorHerramienta, setErroresPorHerramienta] = useState<{ nombre: string; cantidad: number }[]>([])
+  const [listasParaPublico, setListasParaPublico] = useState(0)
+  const [cargando, setCargando] = useState(true)
 
-  const feedbackPorHerramienta = herramientas
-    .map((h) => ({ nombre: h.nombre, cantidad: feedback.filter((f) => f.herramientaId === h.id).length }))
-    .sort((a, b) => b.cantidad - a.cantidad)
+  useEffect(() => {
+    async function cargar() {
+      const [v, f, h] = await Promise.all([validatorsRepository.listar(), feedbackRepository.listar(), listarHerramientasVista()])
+      setValidadores(v)
+      setFeedback(f)
+      setFeedbackPorHerramienta(
+        h
+          .map((tool) => ({ nombre: tool.nombreVisible, cantidad: f.filter((fb) => fb.herramientaId === tool.id).length }))
+          .sort((a, b) => b.cantidad - a.cantidad),
+      )
+      setErroresPorHerramienta(
+        h
+          .map((tool) => ({ nombre: tool.nombreVisible, cantidad: f.filter((fb) => fb.herramientaId === tool.id && fb.tipo === 'error').length }))
+          .sort((a, b) => b.cantidad - a.cantidad)
+          .filter((tool) => tool.cantidad > 0),
+      )
+      setListasParaPublico(h.filter((tool) => tool.estadoOperativo.estado === 'lista_para_publico' || tool.estadoOperativo.estado === 'publicada').length)
+      setCargando(false)
+    }
+    cargar()
+  }, [])
 
-  const erroresPorHerramienta = herramientas
-    .map((h) => ({ nombre: h.nombre, cantidad: feedback.filter((f) => f.herramientaId === h.id && f.tipo === 'error').length }))
-    .sort((a, b) => b.cantidad - a.cantidad)
-    .filter((h) => h.cantidad > 0)
-
-  const listasParaPublico = herramientas.filter((h) => h.estado === 'lista_para_publico' || h.estado === 'publicada')
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <p className="text-sm text-stone">Cargando…</p>
+      </AdminLayout>
+    )
+  }
 
   const especialidadesConteo: Record<string, number> = {}
   validadores.forEach((v) => {
@@ -57,7 +82,7 @@ export default function AdminEstadisticasPage() {
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs text-stone uppercase">Herramientas listas para público</p>
-          <p className="text-2xl font-bold text-primary">{listasParaPublico.length}</p>
+          <p className="text-2xl font-bold text-primary">{listasParaPublico}</p>
         </div>
       </div>
 
