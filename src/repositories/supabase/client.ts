@@ -37,6 +37,17 @@ export const supabase: SupabaseClient = createClient(SUPABASE_URL ?? '', SUPABAS
 
 export function crearClienteDesechable(): SupabaseClient {
   return createClient(SUPABASE_URL ?? '', SUPABASE_ANON_KEY ?? '', {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      // Llave de almacenamiento única y distinta a la del cliente
+      // principal. `persistSession: false` debería bastar para que este
+      // cliente nunca escriba ni comparta sesión — pero darle también una
+      // storageKey propia elimina por completo cualquier posibilidad de
+      // que una sincronización de sesión entre instancias del mismo
+      // origen "pise" la sesión del admin en el cliente principal mientras
+      // se da de alta a un nuevo validador.
+      storageKey: 'romanus-labs-alta-temporal',
+    },
   })
 }

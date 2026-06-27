@@ -131,6 +131,49 @@ as $$
 $$;
 
 -- -----------------------------------------------------------------------------
+-- 7b. RPC para crear el perfil de un validador (SECURITY DEFINER)
+-- -----------------------------------------------------------------------------
+-- Crear un validador combina dos pasos: el alta en Supabase Auth (la app la
+-- hace con un cliente desechable, ver src/repositories/supabase/client.ts)
+-- y la creación de este perfil. Esta función hace el segundo paso con
+-- privilegios propios, verificando is_admin() explícitamente adentro — así
+-- esta operación queda protegida incluso si el GRANT de la sección 8 se
+-- desconfigurara en el futuro.
+
+create or replace function public.crear_perfil_validador(
+  p_id uuid,
+  p_usuario text,
+  p_nombre text,
+  p_profesion text,
+  p_especialidad text,
+  p_nivel text,
+  p_estado text,
+  p_calificacion_interna int,
+  p_notas_admin text
+)
+returns public.validators
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  fila public.validators;
+begin
+  if not public.is_admin() then
+    raise exception 'Solo un administrador puede crear perfiles de validador.';
+  end if;
+
+  insert into public.validators
+    (id, usuario, nombre, profesion, especialidad, nivel, estado, calificacion_interna, notas_admin)
+  values
+    (p_id, p_usuario, p_nombre, p_profesion, p_especialidad, p_nivel, p_estado, p_calificacion_interna, p_notas_admin)
+  returning * into fila;
+
+  return fila;
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
 -- 8. Activar RLS en todas las tablas (negar todo por defecto)
 -- -----------------------------------------------------------------------------
 
@@ -140,6 +183,25 @@ alter table public.tools_state enable row level security;
 alter table public.validator_tool_assignments enable row level security;
 alter table public.feedback enable row level security;
 alter table public.activity_logs enable row level security;
+
+-- -----------------------------------------------------------------------------
+-- 8b. Permisos base para el rol `authenticated`
+-- -----------------------------------------------------------------------------
+-- IMPORTANTE: activar RLS y escribir políticas NO otorga por sí solo los
+-- permisos base (GRANT) sobre una tabla — son dos capas independientes en
+-- Postgres. Sin este GRANT, toda operación falla con "permission denied
+-- for table X" ANTES de que las políticas de RLS de abajo lleguen a
+-- evaluarse. Las políticas de RLS siguen siendo las que de verdad
+-- restringen qué fila puede tocar cada quien — este GRANT solo abre la
+-- puerta para que esa evaluación ocurra.
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.validators to authenticated;
+grant select, insert, update, delete on public.tools_state to authenticated;
+grant select, insert, update, delete on public.validator_tool_assignments to authenticated;
+grant select, insert, update, delete on public.feedback to authenticated;
+grant select, insert on public.activity_logs to authenticated;
+grant select on public.admins to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- 9. Políticas — admins
@@ -260,7 +322,7 @@ create policy "actividad_insert_propia_activo" on public.activity_logs
 -- FIN DEL ESQUEMA. Después de ejecutar esto, sigue:
 --   1. Crear tu primer administrador (ver instrucciones en RESUMEN-v7.0.md,
 --      sección "Pasos exactos para configurar Supabase", paso 4).
---   2. Sembrar tools_state con las 6 herramientas de Labs (mismo documento,
+--   2. Sembrar tools_state con las herramientas de Labs (mismo documento,
 --      paso 5) — opcional, la app usa un valor por default si una fila no
 --      existe todavía.
 -- =============================================================================

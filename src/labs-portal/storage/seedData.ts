@@ -23,6 +23,8 @@ import {
 // se listan aquí usan el default ('en_validacion') al consultarse.
 const ESTADO_INICIAL_POR_HERRAMIENTA: Record<string, EstadoHerramienta> = {
   tool_plataformas_digitales: 'pendiente',
+  tool_terminos_procesales: 'en_validacion',
+  tool_familiar_urgente: 'en_validacion',
 }
 
 const VALIDADOR_DEMO: Omit<Validador, 'id' | 'fechaCreacion' | 'ultimoAcceso'> = {

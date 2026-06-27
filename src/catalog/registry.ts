@@ -5,8 +5,8 @@
  * Admin y el Router leen de aquí — ninguno mantiene su propia lista.
  *
  * Alcance de esta fase (justificado explícitamente, ver mensaje de entrega):
- *   - Las 6 herramientas de Contable Suite en Labs generan sus <Route> desde
- *     este registro (eran las que tenían doble fuente de verdad real:
+ *   - Las herramientas internas de Labs generan sus <Route> desde
+ *     este registro (la doble fuente de verdad real antes era:
  *     App.tsx por un lado, seedData.ts por otro).
  *   - Las 5 calculadoras públicas de Laboral Suite quedan registradas aquí
  *     como metadata (para que el catálogo esté completo), pero sus rutas
@@ -34,6 +34,13 @@ export const SUITES: SuiteManifest[] = [
     nombreVisible: 'Contable Suite',
     descripcion: 'Herramientas fiscales y contables para personas físicas y empresas.',
     areaDePractica: 'Fiscal',
+  },
+  {
+    id: 'suite_juridica',
+    clave: 'juridica',
+    nombreVisible: 'Jurídico Suite',
+    descripcion: 'Herramientas de apoyo operativo para abogados litigantes y despachos.',
+    areaDePractica: 'Jurídica',
   },
 ]
 
@@ -194,6 +201,36 @@ export const TOOLS: ToolManifest[] = [
     nivelMinimoAccesoDefault: 'validador_especialista',
     perfilRecomendado: 'Abogado, fiscalista, secretario de tribunal',
     versionSoftware: '5.0',
+  },
+
+  // --- Jurídico Suite (Labs, requiere validador) ---
+  {
+    id: 'tool_terminos_procesales',
+    clave: 'terminos-procesales',
+    nombreVisible: 'ROMANUS Términos',
+    suiteId: 'suite_juridica',
+    descripcion: 'Calcula vencimientos procesales base y documenta las hipótesis que el abogado debe validar.',
+    categoria: 'calculadora',
+    audiencia: 'ambas',
+    ruta: '/labs/terminos-procesales',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_beta',
+    perfilRecomendado: 'Abogado litigante, pasante jurídico, coordinador de despacho',
+    versionSoftware: '0.1',
+  },
+  {
+    id: 'tool_familiar_urgente',
+    clave: 'familiar-urgente',
+    nombreVisible: 'Asistente Familiar Urgente',
+    suiteId: 'suite_juridica',
+    descripcion: 'Ordena hechos, pruebas y medidas provisionales en asuntos familiares sensibles.',
+    categoria: 'asistente',
+    audiencia: 'personal',
+    ruta: '/labs/familiar-urgente',
+    requiereValidador: true,
+    nivelMinimoAccesoDefault: 'validador_especialista',
+    perfilRecomendado: 'Abogado familiar, litigante civil, defensoría',
+    versionSoftware: '0.1',
   },
 ]
 

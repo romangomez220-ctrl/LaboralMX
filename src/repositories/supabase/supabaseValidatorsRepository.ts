@@ -4,16 +4,30 @@
  * `crear()` es el método delicado: tiene que (1) crear la cuenta de Auth
  * del nuevo validador con un correo y contraseña temporal, y (2) crear su
  * fila de perfil en `validators` — sin tocar la sesión del admin que está
- * haciendo la operación. Por eso el paso (1) usa un cliente DESECHABLE
- * (ver client.ts) y el paso (2) usa el cliente PRINCIPAL (la sesión real
- * del admin, que es la que tiene permiso de RLS para insertar perfiles).
+ * haciendo la operación. La creación vive en la Edge Function
+ * `crear-validador`, donde se valida la sesión/admin y solo ahí se usa
+ * `SUPABASE_SERVICE_ROLE_KEY` para crear el usuario de Auth.
  * -----------------------------------------------------------------------------
  */
 
 import type { ValidatorsRepository } from '../validatorsRepository'
 import type { Validador } from '../../labs-portal/types'
-import { supabase, crearClienteDesechable } from './client'
+import { supabase } from './client'
 import { filaASupabaseValidador, validadorAFilaSupabase } from './mappers'
+
+async function obtenerMensajeEdgeFunction(error: unknown): Promise<string> {
+  const contexto = (error as { context?: Response }).context
+  if (!contexto) return error instanceof Error ? error.message : 'No se pudo crear el validador.'
+
+  try {
+    const cuerpo = await contexto.clone().json()
+    if (typeof cuerpo?.error === 'string') return cuerpo.error
+  } catch {
+    // Si la Edge Function no devuelve JSON, usamos el mensaje original.
+  }
+
+  return error instanceof Error ? error.message : 'No se pudo crear el validador.'
+}
 
 export const supabaseValidatorsRepository: ValidatorsRepository = {
   async listar() {
@@ -35,33 +49,24 @@ export const supabaseValidatorsRepository: ValidatorsRepository = {
   },
 
   async crear(datos): Promise<Validador> {
-    // Paso 1: crear la cuenta de Auth en un cliente desechable, para no
-    // pisar la sesión del admin actual.
-    const clienteTemporal = crearClienteDesechable()
-    const { data: altaAuth, error: errorAuth } = await clienteTemporal.auth.signUp({
-      email: datos.usuario,
-      password: datos.passwordTemporal,
+    const { data: filaCreada, error } = await supabase.functions.invoke('crear-validador', {
+      body: {
+        usuario: datos.usuario,
+        passwordTemporal: datos.passwordTemporal,
+        nombre: datos.nombre,
+        profesion: datos.profesion,
+        especialidad: datos.especialidad,
+        nivel: datos.nivel,
+        estado: datos.estado,
+        calificacionInterna: datos.calificacionInterna,
+        notasAdmin: datos.notasAdmin,
+      },
     })
-    if (errorAuth || !altaAuth.user) {
-      throw new Error(`No se pudo crear la cuenta de autenticación: ${errorAuth?.message ?? 'error desconocido'}`)
+
+    if (error || !filaCreada) {
+      throw new Error(error ? await obtenerMensajeEdgeFunction(error) : 'No se pudo crear el validador.')
     }
 
-    // Paso 2: crear el perfil, con el cliente principal (sesión del admin).
-    const fila = {
-      id: altaAuth.user.id,
-      usuario: datos.usuario,
-      nombre: datos.nombre,
-      profesion: datos.profesion,
-      especialidad: datos.especialidad,
-      nivel: datos.nivel,
-      estado: datos.estado,
-      calificacion_interna: datos.calificacionInterna,
-      notas_admin: datos.notasAdmin,
-    }
-    const { data: filaCreada, error: errorPerfil } = await supabase.from('validators').insert(fila).select().single()
-    if (errorPerfil || !filaCreada) {
-      throw new Error(`Se creó la cuenta de acceso, pero no el perfil: ${errorPerfil?.message ?? 'error desconocido'}`)
-    }
     return filaASupabaseValidador(filaCreada)
   },
 

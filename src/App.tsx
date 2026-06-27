@@ -17,6 +17,8 @@ import DevolucionImpuestosPage from './labs/contable-suite/pages/DevolucionImpue
 import ResicoAnualPage from './labs/contable-suite/pages/ResicoAnualPage'
 import ArrendamientoComparadorPage from './labs/contable-suite/pages/ArrendamientoComparadorPage'
 import PlataformasDigitalesPage from './labs/contable-suite/pages/PlataformasDigitalesPage'
+import TerminosProcesalesPage from './labs/juridico-suite/pages/TerminosProcesalesPage'
+import FamiliarUrgentePage from './labs/juridico-suite/pages/FamiliarUrgentePage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import RequireValidatorAuth from './labs-portal/components/RequireValidatorAuth'
 import RequireAdminAuth from './labs-portal/components/RequireAdminAuth'
@@ -42,6 +44,8 @@ const COMPONENTES_LABS: Record<string, ComponentType> = {
   'resico-anual': ResicoAnualPage,
   arrendamiento: ArrendamientoComparadorPage,
   'plataformas-digitales': PlataformasDigitalesPage,
+  'terminos-procesales': TerminosProcesalesPage,
+  'familiar-urgente': FamiliarUrgentePage,
 }
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
@@ -154,9 +158,9 @@ export default function App() {
             </RequireValidatorAuth>
           }
         />
-        {/* Las rutas de las herramientas de Contable Suite en Labs se generan
+        {/* Las rutas de las herramientas internas de Labs se generan
             desde el Registro Central (src/catalog/registry.ts) — antes
-            existían aquí 6 bloques de <Route> escritos a mano, que era
+            existían aquí bloques de <Route> escritos a mano, que era
             exactamente la doble fuente de verdad (rutas vs. metadata de
             seedData.ts) que la Fase 1 de la Constitución Técnica v1.0
             identificó como deuda técnica. */}

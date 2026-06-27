@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import AdminLayout from './AdminLayout'
 import EstadoBadge from '../components/EstadoBadge'
 import { assignmentsRepository, authRepository, activityRepository, feedbackRepository, validatorsRepository } from '../../repositories'
@@ -23,6 +23,23 @@ const FORM_VACIO: NuevoValidadorForm = {
   nivel: 'validador_beta',
 }
 
+const COOLDOWN_CREACION_VALIDADORES_MS = 60 * 60 * 1000
+
+function obtenerUltimaCreacion(validadores: Validador[]) {
+  return validadores.reduce<number | null>((ultima, validador) => {
+    const fecha = new Date(validador.fechaCreacion).getTime()
+    if (Number.isNaN(fecha)) return ultima
+    return ultima === null ? fecha : Math.max(ultima, fecha)
+  }, null)
+}
+
+function formatearCooldown(msRestantes: number) {
+  const segundosTotales = Math.max(0, Math.ceil(msRestantes / 1000))
+  const minutos = Math.floor(segundosTotales / 60)
+  const segundos = segundosTotales % 60
+  return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`
+}
+
 export default function AdminValidadoresPage() {
   const [validadores, setValidadores] = useState<Validador[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaVista[]>([])
@@ -33,6 +50,14 @@ export default function AdminValidadoresPage() {
   const [asignacionesSeleccionado, setAsignacionesSeleccionado] = useState<Asignacion[]>([])
   const [actividadSeleccionado, setActividadSeleccionado] = useState<RegistroActividad[]>([])
   const [mensajeRestablecer, setMensajeRestablecer] = useState('')
+  const [errorCreacion, setErrorCreacion] = useState('')
+  const [ahora, setAhora] = useState(() => Date.now())
+
+  const ultimaCreacion = useMemo(() => obtenerUltimaCreacion(validadores), [validadores])
+  const cooldownRestante = ultimaCreacion === null
+    ? 0
+    : Math.max(0, ultimaCreacion + COOLDOWN_CREACION_VALIDADORES_MS - ahora)
+  const cooldownActivo = cooldownRestante > 0
 
   async function cargar() {
     const [v, h, f] = await Promise.all([validatorsRepository.listar(), listarHerramientasVista(), feedbackRepository.listar()])
@@ -47,6 +72,11 @@ export default function AdminValidadoresPage() {
   }, [])
 
   useEffect(() => {
+    const intervalo = window.setInterval(() => setAhora(Date.now()), 1000)
+    return () => window.clearInterval(intervalo)
+  }, [])
+
+  useEffect(() => {
     if (!seleccionado) {
       setAsignacionesSeleccionado([])
       setActividadSeleccionado([])
@@ -58,19 +88,25 @@ export default function AdminValidadoresPage() {
 
   async function crear() {
     if (!form.usuario.trim() || !form.passwordTemporal.trim() || !form.nombre.trim()) return
-    await validatorsRepository.crear({
-      usuario: form.usuario.trim(),
-      passwordTemporal: form.passwordTemporal.trim(),
-      nombre: form.nombre.trim(),
-      profesion: form.profesion.trim(),
-      especialidad: form.especialidad.trim(),
-      nivel: form.nivel,
-      estado: 'activo',
-      calificacionInterna: null,
-      notasAdmin: '',
-    })
-    setForm(FORM_VACIO)
-    cargar()
+    setErrorCreacion('')
+    try {
+      await validatorsRepository.crear({
+        usuario: form.usuario.trim(),
+        passwordTemporal: form.passwordTemporal.trim(),
+        nombre: form.nombre.trim(),
+        profesion: form.profesion.trim(),
+        especialidad: form.especialidad.trim(),
+        nivel: form.nivel,
+        estado: 'activo',
+        calificacionInterna: null,
+        notasAdmin: '',
+      })
+      setForm(FORM_VACIO)
+      await cargar()
+      setAhora(Date.now())
+    } catch (err) {
+      setErrorCreacion(err instanceof Error ? err.message : 'No se pudo crear el validador (error desconocido).')
+    }
   }
 
   async function toggleEstado(v: Validador) {
@@ -135,6 +171,11 @@ export default function AdminValidadoresPage() {
 
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <p className="text-sm font-semibold text-gray-700 mb-3">Crear nuevo validador</p>
+        <p className={`mb-3 text-sm font-medium ${cooldownActivo ? 'text-amber-700' : 'text-green-700'}`}>
+          {cooldownActivo
+            ? `🟡 Podrás crear otro validador en ${formatearCooldown(cooldownRestante)}.`
+            : '🟢 Puedes crear un validador ahora.'}
+        </p>
         <div className="grid sm:grid-cols-3 gap-3">
           <input
             type="email"
@@ -185,6 +226,7 @@ export default function AdminValidadoresPage() {
         >
           Crear validador
         </button>
+        {errorCreacion && <p className="mt-2 text-sm text-red-600">{errorCreacion}</p>}
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">

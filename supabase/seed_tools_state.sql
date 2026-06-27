@@ -19,5 +19,7 @@ values
   ('tool_devolucion_impuestos', 'en_validacion', false, true, null),
   ('tool_resico_anual', 'en_validacion', false, true, null),
   ('tool_arrendamiento', 'en_validacion', false, true, null),
-  ('tool_plataformas_digitales', 'pendiente', false, true, null)
+  ('tool_plataformas_digitales', 'pendiente', false, true, null),
+  ('tool_terminos_procesales', 'en_validacion', false, true, null),
+  ('tool_familiar_urgente', 'en_validacion', false, true, null)
 on conflict (herramienta_id) do nothing;

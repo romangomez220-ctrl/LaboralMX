@@ -19,9 +19,9 @@
  * -----------------------------------------------------------------------------
  */
 
-export type ClaveSuite = 'laboral' | 'contable'
+export type ClaveSuite = 'laboral' | 'contable' | 'juridica'
 
-export type CategoriaHerramienta = 'calculadora' | 'diagnostico' | 'conversor' | 'comparador'
+export type CategoriaHerramienta = 'calculadora' | 'diagnostico' | 'conversor' | 'comparador' | 'asistente'
 export type AudienciaHerramienta = 'personal' | 'empresa' | 'ambas'
 
 export interface SuiteManifest {

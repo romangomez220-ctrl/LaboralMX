@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
+import { Link } from 'react-router-dom'
 import AdminLayout from './AdminLayout'
 import EstadoBadge from '../components/EstadoBadge'
 import { assignmentsRepository, toolsRepository, validatorsRepository } from '../../repositories'
@@ -68,7 +69,12 @@ export default function AdminHerramientasPage() {
           <div key={h.id} className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-semibold text-gray-800">{h.nombreVisible}</p>
+                <Link
+                  to={h.ruta}
+                  className="font-semibold text-primary underline decoration-primary/30 underline-offset-2 hover:text-primary-light hover:decoration-primary-light transition"
+                >
+                  {h.nombreVisible}
+                </Link>
                 <p className="text-sm text-stone">{h.descripcion}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Suite: {h.suiteId} · Versión: {h.versionSoftware} · Categoría: {h.categoria} · Ruta: <code>{h.ruta}</code>
