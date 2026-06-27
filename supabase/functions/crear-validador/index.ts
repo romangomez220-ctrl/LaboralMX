@@ -14,6 +14,18 @@ type CrearValidadorPayload = {
 
 type SupabaseAdminClient = ReturnType<typeof createClient>
 
+type PerfilValidadorRpc = {
+  p_id: string
+  p_usuario: string
+  p_nombre: string
+  p_profesion: string
+  p_especialidad: string
+  p_nivel: string
+  p_estado: string
+  p_calificacion_interna: number | null
+  p_notas_admin: string
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -128,42 +140,31 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'No se pudo obtener el usuario de autenticacion.' }, 500)
   }
 
-  const { data: perfilExistente, error: errorPerfilExistente } = await supabaseAdmin
-    .from('validators')
-    .select('*')
-    .or(`id.eq.${authUser.id},usuario.eq.${usuario}`)
-    .maybeSingle()
-
-  if (errorPerfilExistente) {
-    return jsonResponse({ error: `No se pudo verificar el perfil existente: ${errorPerfilExistente.message}` }, 500)
+  const perfilPayload: PerfilValidadorRpc = {
+    p_id: authUser.id,
+    p_usuario: usuario,
+    p_nombre: nombre,
+    p_profesion: payload.profesion?.trim() ?? '',
+    p_especialidad: payload.especialidad?.trim() ?? '',
+    p_nivel: payload.nivel ?? 'validador_beta',
+    p_estado: payload.estado ?? 'activo',
+    p_calificacion_interna: payload.calificacionInterna ?? null,
+    p_notas_admin: payload.notasAdmin ?? '',
   }
 
-  if (perfilExistente) {
-    return jsonResponse({ error: 'Este usuario ya tiene un perfil de validador.' }, 409)
-  }
-
-  const fila = {
-    id: authUser.id,
-    usuario,
-    nombre,
-    profesion: payload.profesion?.trim() ?? '',
-    especialidad: payload.especialidad?.trim() ?? '',
-    nivel: payload.nivel ?? 'junior',
-    estado: payload.estado ?? 'activo',
-    calificacion_interna: payload.calificacionInterna ?? null,
-    notas_admin: payload.notasAdmin ?? '',
-  }
-
-  const { data: filaCreada, error: errorPerfil } = await supabaseAdmin
-    .from('validators')
-    .insert(fila)
-    .select()
+  const { data: filaCreada, error: errorPerfil } = await supabaseUsuario
+    .rpc('crear_perfil_validador', perfilPayload)
     .single()
 
   if (errorPerfil || !filaCreada) {
     if (usuarioFueCreadoAhora) {
       await supabaseAdmin.auth.admin.deleteUser(authUser.id)
     }
+
+    if (errorPerfil?.code === '23505') {
+      return jsonResponse({ error: 'Este usuario ya tiene un perfil de validador.' }, 409)
+    }
+
     return jsonResponse(
       { error: `Se creo la cuenta de acceso, pero no el perfil: ${errorPerfil?.message ?? 'error desconocido'}` },
       500,

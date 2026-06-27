@@ -173,6 +173,18 @@ begin
 end;
 $$;
 
+grant execute on function public.crear_perfil_validador(
+  uuid,
+  text,
+  text,
+  text,
+  text,
+  text,
+  text,
+  int,
+  text
+) to authenticated;
+
 -- -----------------------------------------------------------------------------
 -- 8. Activar RLS en todas las tablas (negar todo por defecto)
 -- -----------------------------------------------------------------------------

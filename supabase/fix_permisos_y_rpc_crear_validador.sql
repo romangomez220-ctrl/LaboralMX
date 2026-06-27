@@ -74,6 +74,18 @@ begin
 end;
 $$;
 
+grant execute on function public.crear_perfil_validador(
+  uuid,
+  text,
+  text,
+  text,
+  text,
+  text,
+  text,
+  int,
+  text
+) to authenticated;
+
 -- =============================================================================
 -- FIN. Después de ejecutar esto, vuelve a intentar crear un validador desde
 -- el panel admin — debería funcionar sin desactivar RLS en ningún momento.
