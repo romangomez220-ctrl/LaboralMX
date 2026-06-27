@@ -208,8 +208,10 @@ alter table public.activity_logs enable row level security;
 -- puerta para que esa evaluación ocurra.
 
 grant usage on schema public to authenticated;
+grant usage on schema public to anon;
 grant select, insert, update, delete on public.validators to authenticated;
 grant select, insert, update, delete on public.tools_state to authenticated;
+grant select on public.tools_state to anon;
 grant select, insert, update, delete on public.validator_tool_assignments to authenticated;
 grant select, insert, update, delete on public.feedback to authenticated;
 grant select, insert on public.activity_logs to authenticated;
@@ -261,6 +263,13 @@ create policy "tools_state_select_validador_activo_o_admin" on public.tools_stat
   for select using (
     public.is_admin()
     or exists (select 1 from public.validators v where v.id = auth.uid() and v.estado = 'activo')
+  );
+
+create policy "tools_state_select_publicadas" on public.tools_state
+  for select using (
+    visible_publicamente = true
+    and disponible_solo_labs = false
+    and estado in ('lista_para_publico', 'publicada')
   );
 
 create policy "tools_state_write_solo_admin" on public.tools_state

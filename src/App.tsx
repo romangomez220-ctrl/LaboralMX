@@ -5,6 +5,8 @@ import LaboralMXLayout from './components/LaboralMXLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 import RomanusHome from './pages/RomanusHome'
 import ProductosListing from './pages/ProductosListing'
+import HerramientasPublicasPage from './pages/HerramientasPublicasPage'
+import HerramientaPublicaPage from './pages/HerramientaPublicaPage'
 import LaboralSuiteCatalogPage from './pages/LaboralSuiteCatalogPage'
 import ConCausaPage from './pages/ConCausaPage'
 import AcercaDeRomanusPage from './pages/AcercaDeRomanusPage'
@@ -86,6 +88,8 @@ export default function App() {
             solo que ahora se llega a ella desde /productos, no desde el
             menú principal directamente. */}
         <Route path="/productos" element={<ProductosListing />} />
+        <Route path="/herramientas" element={<HerramientasPublicasPage />} />
+        <Route path="/herramientas/:clave" element={<HerramientaPublicaPage />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
 
         {/* INICIATIVAS */}

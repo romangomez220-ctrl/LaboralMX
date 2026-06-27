@@ -22,9 +22,11 @@
 -- la puerta para que esa evaluación de RLS pueda ocurrir en absoluto.
 
 grant usage on schema public to authenticated;
+grant usage on schema public to anon;
 
 grant select, insert, update, delete on public.validators to authenticated;
 grant select, insert, update, delete on public.tools_state to authenticated;
+grant select on public.tools_state to anon;
 grant select, insert, update, delete on public.validator_tool_assignments to authenticated;
 grant select, insert, update, delete on public.feedback to authenticated;
 grant select, insert on public.activity_logs to authenticated;
@@ -85,6 +87,47 @@ grant execute on function public.crear_perfil_validador(
   int,
   text
 ) to authenticated;
+
+drop policy if exists "tools_state_select_publicadas" on public.tools_state;
+
+create policy "tools_state_select_publicadas" on public.tools_state
+  for select using (
+    visible_publicamente = true
+    and disponible_solo_labs = false
+    and estado in ('lista_para_publico', 'publicada')
+  );
+
+-- Asegura que cada herramienta del Registro Central tenga una fila real en
+-- Supabase. Sin esta fila, Admin puede mostrar valores por defecto, pero el
+-- público no tiene un estado operativo persistido que leer.
+insert into public.tools_state (herramienta_id, estado, visible_publicamente, disponible_solo_labs, nivel_minimo_requerido)
+values
+  ('tool_finiquito', 'publicada', true, false, null),
+  ('tool_liquidacion', 'publicada', true, false, null),
+  ('tool_aguinaldo', 'publicada', true, false, null),
+  ('tool_vacaciones', 'publicada', true, false, null),
+  ('tool_sdi', 'publicada', true, false, null),
+  ('tool_resico', 'en_validacion', false, true, null),
+  ('tool_xml_cfdi', 'en_validacion', false, true, null),
+  ('tool_devolucion_impuestos', 'en_validacion', false, true, null),
+  ('tool_resico_anual', 'en_validacion', false, true, null),
+  ('tool_arrendamiento', 'en_validacion', false, true, null),
+  ('tool_plataformas_digitales', 'pendiente', false, true, null),
+  ('tool_terminos_procesales', 'en_validacion', false, true, null),
+  ('tool_familiar_urgente', 'en_validacion', false, true, null)
+on conflict (herramienta_id) do nothing;
+
+-- Normaliza filas creadas antes de que "Visible públicamente" tuviera
+-- semántica completa en Admin: si una herramienta ya fue marcada como
+-- visible, no debe seguir limitada a Labs y debe quedar lista para público.
+update public.tools_state
+set
+  disponible_solo_labs = false,
+  estado = case
+    when estado in ('pendiente', 'en_validacion') then 'lista_para_publico'
+    else estado
+  end
+where visible_publicamente = true;
 
 -- =============================================================================
 -- FIN. Después de ejecutar esto, vuelve a intentar crear un validador desde

@@ -9,8 +9,10 @@ import { useEffect } from 'react'
  * tener una etiqueta por-ruta es inyectarla/quitarla en tiempo de
  * ejecución.
  */
-export function useNoIndex(): void {
+export function useNoIndex(enabled = true): void {
   useEffect(() => {
+    if (!enabled) return undefined
+
     const meta = document.createElement('meta')
     meta.name = 'robots'
     meta.content = 'noindex, nofollow'
@@ -19,5 +21,5 @@ export function useNoIndex(): void {
     return () => {
       document.head.removeChild(meta)
     }
-  }, [])
+  }, [enabled])
 }

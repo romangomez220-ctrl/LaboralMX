@@ -85,8 +85,12 @@ function ListaResultado({ titulo, items }: { titulo: string; items: string[] }) 
   )
 }
 
-export default function FamiliarUrgentePage() {
-  useNoIndex()
+interface FamiliarUrgentePageProps {
+  publicMode?: boolean
+}
+
+export default function FamiliarUrgentePage({ publicMode = false }: FamiliarUrgentePageProps) {
+  useNoIndex(!publicMode)
   const { validador } = useValidatorSession()
   const [form, setForm] = useState<FamiliarUrgenteFormData>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<FamiliarUrgenteResultado | null>(null)
@@ -119,7 +123,17 @@ export default function FamiliarUrgentePage() {
       <p className="text-xs uppercase tracking-wide text-stone">
         Jurídico Suite <span className="mx-1 text-gray-300">›</span> Familiar urgente
       </p>
-      <LabsBadge />
+      {publicMode ? (
+        <div className="rounded-lg border border-gold bg-white p-3 text-sm text-gray-700">
+          <p className="font-semibold text-primary">Herramienta pública validada por ROMANUS Labs</p>
+          <p className="mt-1">
+            Organiza una primera revisión del caso. En situaciones de violencia o riesgo, acude
+            de inmediato a la autoridad competente.
+          </p>
+        </div>
+      ) : (
+        <LabsBadge />
+      )}
 
       <div>
         <h1 className="text-2xl font-bold text-primary">Asistente Familiar Urgente</h1>
@@ -207,7 +221,7 @@ export default function FamiliarUrgentePage() {
 
           <ListaResultado titulo="Fundamentos base" items={resultado.fundamentos} />
           <ListaResultado titulo="Advertencias de validación" items={resultado.advertencias} />
-          <Disclaimer />
+          <Disclaimer variante="juridico" />
         </div>
       )}
 

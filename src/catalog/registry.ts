@@ -213,6 +213,7 @@ export const TOOLS: ToolManifest[] = [
     categoria: 'calculadora',
     audiencia: 'ambas',
     ruta: '/labs/terminos-procesales',
+    rutaPublica: '/herramientas/terminos-procesales',
     requiereValidador: true,
     nivelMinimoAccesoDefault: 'validador_beta',
     perfilRecomendado: 'Abogado litigante, pasante jurídico, coordinador de despacho',
@@ -227,6 +228,7 @@ export const TOOLS: ToolManifest[] = [
     categoria: 'asistente',
     audiencia: 'personal',
     ruta: '/labs/familiar-urgente',
+    rutaPublica: '/herramientas/familiar-urgente',
     requiereValidador: true,
     nivelMinimoAccesoDefault: 'validador_especialista',
     perfilRecomendado: 'Abogado familiar, litigante civil, defensoría',
@@ -243,7 +245,11 @@ export function obtenerToolPorId(id: string): ToolManifest | undefined {
 }
 
 export function obtenerToolPorRuta(ruta: string): ToolManifest | undefined {
-  return TOOLS.find((t) => t.ruta === ruta)
+  return TOOLS.find((t) => t.ruta === ruta || t.rutaPublica === ruta)
+}
+
+export function obtenerToolPorClave(clave: string): ToolManifest | undefined {
+  return TOOLS.find((t) => t.clave === clave)
 }
 
 export function listarToolsDeLabs(): ToolManifest[] {

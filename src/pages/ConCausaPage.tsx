@@ -46,18 +46,40 @@ const PRECISIONES = [
 export default function ConCausaPage() {
   return (
     <div className="flex flex-col gap-10">
-      <div className="text-center pt-4 max-w-xl mx-auto">
+      <div className="pt-4 max-w-3xl">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Iniciativa social de ROMANUS
         </p>
-        <h1 className="text-3xl font-semibold text-primary">ROMANUS con Causa</h1>
-        <p className="text-sm text-gray-700 mt-3">
+        <h1 className="text-4xl font-semibold text-primary">ROMANUS con Causa</h1>
+        <p className="text-base text-gray-700 mt-3 max-w-2xl">
           Iniciativa social orientada a acercar orientación jurídica inicial a personas en
-          situación vulnerable.
+          situación vulnerable, mediante herramientas públicas, talleres gratuitos y contenido
+          comprensible.
         </p>
       </div>
 
-      <section className="max-w-xl mx-auto w-full">
+      <section className="rounded-lg border-2 border-gold bg-white p-6">
+        <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+          Primer taller gratuito en preparación
+        </p>
+        <h2 className="text-2xl font-semibold text-primary">
+          Derechos básicos al terminar una relación laboral
+        </h2>
+        <p className="text-sm text-gray-700 mt-2 max-w-2xl">
+          Una sesión introductoria sobre finiquito, liquidación, documentos que conviene revisar
+          antes de firmar y cuándo buscar asesoría profesional. La fecha, modalidad y ponente se
+          anunciarán próximamente.
+        </p>
+        <div className="grid sm:grid-cols-3 gap-3 mt-5">
+          {['Finiquito y liquidación', 'Documentos antes de firmar', 'Preguntas frecuentes'].map((item) => (
+            <div key={item} className="rounded-lg border border-gray-200 bg-ivory px-4 py-3 text-sm text-primary font-medium">
+              {item}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-3xl w-full">
         <h2 className="font-semibold text-primary mb-2">Propósito</h2>
         <p className="text-sm text-gray-700">
           Creemos que el acceso a orientación jurídica básica no debería depender únicamente de la
@@ -66,7 +88,7 @@ export default function ConCausaPage() {
         </p>
       </section>
 
-      <section className="max-w-xl mx-auto w-full">
+      <section className="max-w-3xl w-full">
         <h2 className="font-semibold text-primary mb-2">Misión social</h2>
         <p className="text-sm text-gray-700">
           Acercar información y orientación jurídica comprensible a quienes más la necesitan,
@@ -74,7 +96,7 @@ export default function ConCausaPage() {
         </p>
       </section>
 
-      <section className="max-w-xl mx-auto w-full">
+      <section className="max-w-3xl w-full">
         <h2 className="font-semibold text-primary mb-2">Áreas de atención consideradas</h2>
         <p className="text-sm text-gray-700 mb-3">
           Por ahora, ROMANUS con Causa contempla orientación inicial en:
@@ -91,7 +113,7 @@ export default function ConCausaPage() {
         </ul>
       </section>
 
-      <section className="max-w-xl mx-auto w-full">
+      <section className="max-w-3xl w-full">
         <h2 className="font-semibold text-primary mb-2">
           Programa de orientación gratuita <span className="text-stone font-normal">(próximamente)</span>
         </h2>
@@ -108,7 +130,7 @@ export default function ConCausaPage() {
         </div>
       </section>
 
-      <section className="max-w-xl mx-auto w-full rounded-lg border-2 border-primary bg-white p-5">
+      <section className="max-w-3xl w-full rounded-lg border-2 border-primary bg-white p-5">
         <h2 className="font-semibold text-primary mb-3">Antes de contactarnos, es importante que sepas:</h2>
         <ul className="flex flex-col gap-1.5 text-sm text-gray-700">
           {PRECISIONES.map((p) => (
@@ -120,7 +142,7 @@ export default function ConCausaPage() {
         </ul>
       </section>
 
-      <section className="max-w-xl mx-auto w-full rounded-lg border border-amber-300 bg-warning-light p-5">
+      <section className="max-w-3xl w-full rounded-lg border border-amber-300 bg-warning-light p-5">
         <h2 className="font-semibold text-warning mb-2">ROMANUS no es un servicio de emergencia</h2>
         <p className="text-sm text-gray-700">
           Si tu situación involucra violencia activa, una detención, riesgo para tu integridad

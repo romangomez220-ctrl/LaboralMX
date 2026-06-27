@@ -4,48 +4,61 @@ import ContactWhatsAppButton from '../components/ContactWhatsAppButton'
 const PROXIMAMENTE = [
   {
     nombre: 'Contable Suite',
-    descripcion: 'Herramientas fiscales y contables para emprendedores y profesionistas.',
+    descripcion: 'Herramientas fiscales y contables en validación privada dentro de ROMANUS Labs.',
   },
   {
-    nombre: 'Empresarial Suite',
-    descripcion: 'Recursos digitales para gestión y toma de decisiones.',
+    nombre: 'Jurídico Suite',
+    descripcion: 'Asistentes y matrices de trabajo para abogados, en proceso de publicación gradual.',
   },
 ]
 
 export default function ProductosListing() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold text-primary">Productos</h1>
-        <p className="text-sm text-stone mt-1">
-          Soluciones digitales de ROMANUS para el ámbito jurídico, fiscal y empresarial.
+        <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+          Ecosistema ROMANUS
+        </p>
+        <h1 className="text-3xl font-semibold text-primary">Productos y suites</h1>
+        <p className="text-sm text-stone mt-2 max-w-2xl">
+          ROMANUS organiza sus herramientas por áreas de práctica. Las suites públicas ya están
+          disponibles; las nuevas soluciones pasan primero por Labs antes de publicarse.
         </p>
       </div>
 
-      <div className="rounded-lg border-2 border-gold bg-white p-5">
+      <div className="rounded-lg border-2 border-gold bg-white p-6">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Disponible
         </p>
-        <p className="font-serif text-xl font-semibold text-primary mb-1">Laboral Suite</p>
-        <p className="text-sm text-gray-600 mb-4">
-          Calculadoras laborales gratuitas para México.
+        <p className="font-serif text-2xl font-semibold text-primary mb-1">Laboral Suite</p>
+        <p className="text-sm text-gray-600 mb-5 max-w-2xl">
+          Calculadoras laborales gratuitas para México: finiquito, liquidación, aguinaldo,
+          vacaciones, prima vacacional y salario diario integrado.
         </p>
-        <Link
-          to="/laboral-suite"
-          className="inline-block rounded-lg bg-primary text-white px-5 py-2.5 font-semibold hover:bg-primary-light transition"
-        >
-          Ver Laboral Suite
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/laboral-suite"
+            className="inline-block rounded-lg bg-primary text-white px-5 py-2.5 font-semibold hover:bg-primary-light transition"
+          >
+            Ver Laboral Suite
+          </Link>
+          <Link
+            to="/herramientas"
+            className="inline-block rounded-lg border border-primary text-primary px-5 py-2.5 font-semibold hover:bg-primary hover:text-white transition"
+          >
+            Ver herramientas públicas
+          </Link>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {PROXIMAMENTE.map((p) => (
-          <div key={p.nombre} className="rounded-lg border border-gray-200 bg-gray-50 p-5 opacity-80">
+          <div key={p.nombre} className="rounded-lg border border-gray-200 bg-white p-5">
             <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
-              Próximamente
+              En validación
             </p>
-            <p className="font-serif text-lg font-semibold text-gray-500 mb-1">{p.nombre}</p>
-            <p className="text-sm text-gray-500">{p.descripcion}</p>
+            <p className="font-serif text-lg font-semibold text-primary mb-1">{p.nombre}</p>
+            <p className="text-sm text-gray-600">{p.descripcion}</p>
           </div>
         ))}
       </div>

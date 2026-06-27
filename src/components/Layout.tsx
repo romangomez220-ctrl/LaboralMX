@@ -9,11 +9,11 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col bg-ivory">
       <AnalyticsTracker />
       <Navbar />
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-8">
         <Outlet />
       </main>
       <footer className="border-t border-gray-200 bg-primary text-white">
-        <div className="max-w-3xl mx-auto px-4 py-8 text-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-8 text-center">
           <p className="font-display text-lg tracking-widest uppercase text-gold">ROMANUS</p>
           <p className="mt-2 text-sm text-gray-300">Tecnología. Estrategia. Conocimiento.</p>
 

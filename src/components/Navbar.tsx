@@ -7,6 +7,7 @@ import { Link, NavLink } from 'react-router-dom'
 const ENLACES = [
   { to: '/', label: 'Inicio' },
   { to: '/productos', label: 'Productos' },
+  { to: '/herramientas', label: 'Herramientas' },
   { to: '/con-causa', label: 'Con Causa' },
   { to: '/acerca-de', label: 'Acerca de' },
 ]

@@ -42,6 +42,8 @@ export interface ToolManifest {
   audiencia: AudienciaHerramienta
   /** Ruta pública/de Labs donde vive — el Router genera <Route> a partir de esto. */
   ruta: string
+  /** Ruta pública opcional cuando una herramienta de Labs sale del laboratorio. */
+  rutaPublica?: string
   /**
    * Si es false, la herramienta no pasa por el guard de validador (caso de
    * las 5 calculadoras públicas de Laboral Suite). Si es true, su ruta debe

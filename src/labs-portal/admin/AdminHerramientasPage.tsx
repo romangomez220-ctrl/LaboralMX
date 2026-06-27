@@ -18,19 +18,27 @@ export default function AdminHerramientasPage() {
   const [conteoAsignados, setConteoAsignados] = useState<Record<string, number>>({})
   const [totalValidadores, setTotalValidadores] = useState(0)
   const [cargando, setCargando] = useState(true)
+  const [guardandoId, setGuardandoId] = useState<string | null>(null)
+  const [error, setError] = useState('')
 
   async function cargar() {
-    const [h, v] = await Promise.all([listarHerramientasVista(), validatorsRepository.listar()])
-    const conteos: Record<string, number> = {}
-    await Promise.all(
-      h.map(async (tool) => {
-        conteos[tool.id] = (await assignmentsRepository.listarPorHerramienta(tool.id)).length
-      }),
-    )
-    setHerramientas(h)
-    setConteoAsignados(conteos)
-    setTotalValidadores(v.length)
-    setCargando(false)
+    try {
+      const [h, v] = await Promise.all([listarHerramientasVista(), validatorsRepository.listar()])
+      const conteos: Record<string, number> = {}
+      await Promise.all(
+        h.map(async (tool) => {
+          conteos[tool.id] = (await assignmentsRepository.listarPorHerramienta(tool.id)).length
+        }),
+      )
+      setHerramientas(h)
+      setConteoAsignados(conteos)
+      setTotalValidadores(v.length)
+    } catch (err) {
+      console.error(err)
+      setError('No se pudo cargar el estado de herramientas. Revisa la conexión o los permisos de Supabase.')
+    } finally {
+      setCargando(false)
+    }
   }
 
   useEffect(() => {
@@ -38,13 +46,45 @@ export default function AdminHerramientasPage() {
   }, [])
 
   async function cambiarEstado(h: HerramientaVista, estado: EstadoHerramienta) {
-    await toolsRepository.guardarEstado({ ...h.estadoOperativo, estado })
-    cargar()
+    setError('')
+    setGuardandoId(h.id)
+    try {
+      await toolsRepository.guardarEstado({ ...h.estadoOperativo, estado })
+      await cargar()
+    } catch (err) {
+      console.error(err)
+      setError(`No se pudo guardar el estado de ${h.nombreVisible}. Intenta de nuevo o revisa permisos de Supabase.`)
+    } finally {
+      setGuardandoId(null)
+    }
   }
 
   async function toggleVisibilidad(h: HerramientaVista, campo: 'visiblePublicamente' | 'disponibleSoloLabs') {
-    await toolsRepository.guardarEstado({ ...h.estadoOperativo, [campo]: !h.estadoOperativo[campo] })
-    cargar()
+    const siguienteValor = !h.estadoOperativo[campo]
+    const siguiente = { ...h.estadoOperativo, [campo]: siguienteValor }
+
+    if (campo === 'visiblePublicamente' && siguienteValor) {
+      siguiente.disponibleSoloLabs = false
+      if (siguiente.estado === 'pendiente' || siguiente.estado === 'en_validacion') {
+        siguiente.estado = 'lista_para_publico'
+      }
+    }
+
+    if (campo === 'disponibleSoloLabs' && siguienteValor) {
+      siguiente.visiblePublicamente = false
+    }
+
+    setError('')
+    setGuardandoId(h.id)
+    try {
+      await toolsRepository.guardarEstado(siguiente)
+      await cargar()
+    } catch (err) {
+      console.error(err)
+      setError(`No se pudo guardar la visibilidad de ${h.nombreVisible}. Intenta de nuevo o revisa permisos de Supabase.`)
+    } finally {
+      setGuardandoId(null)
+    }
   }
 
   if (cargando) {
@@ -63,6 +103,11 @@ export default function AdminHerramientasPage() {
         Central (<code>src/catalog/registry.ts</code>) y solo cambia desplegando código nuevo. Lo
         que se edita aquí es su estado operativo.
       </p>
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <div className="flex flex-col gap-3">
         {herramientas.map((h) => (
@@ -90,6 +135,7 @@ export default function AdminHerramientasPage() {
               <select
                 value={h.estadoOperativo.estado}
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => cambiarEstado(h, e.target.value as EstadoHerramienta)}
+                disabled={guardandoId === h.id}
                 className="rounded-md border border-gray-300 px-2 py-1.5 text-xs"
               >
                 {ESTADOS.map((e) => (
@@ -103,6 +149,7 @@ export default function AdminHerramientasPage() {
                   type="checkbox"
                   checked={h.estadoOperativo.visiblePublicamente}
                   onChange={() => toggleVisibilidad(h, 'visiblePublicamente')}
+                  disabled={guardandoId === h.id}
                 />
                 Visible públicamente
               </label>
@@ -111,9 +158,11 @@ export default function AdminHerramientasPage() {
                   type="checkbox"
                   checked={h.estadoOperativo.disponibleSoloLabs}
                   onChange={() => toggleVisibilidad(h, 'disponibleSoloLabs')}
+                  disabled={guardandoId === h.id}
                 />
                 Solo en Labs
               </label>
+              {guardandoId === h.id && <span className="text-xs text-stone">Guardando…</span>}
               <span className="text-xs text-stone">
                 {conteoAsignados[h.id] ?? 0} validador{(conteoAsignados[h.id] ?? 0) === 1 ? '' : 'es'} asignado{(conteoAsignados[h.id] ?? 0) === 1 ? '' : 's'}
               </span>

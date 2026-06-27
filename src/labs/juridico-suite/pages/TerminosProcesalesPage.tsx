@@ -69,8 +69,12 @@ function normalizarInhabiles(texto: string): string[] {
     .filter(Boolean)
 }
 
-export default function TerminosProcesalesPage() {
-  useNoIndex()
+interface TerminosProcesalesPageProps {
+  publicMode?: boolean
+}
+
+export default function TerminosProcesalesPage({ publicMode = false }: TerminosProcesalesPageProps) {
+  useNoIndex(!publicMode)
   const { validador } = useValidatorSession()
   const [form, setForm] = useState<FormState>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<TerminosProcesalesResultado | null>(null)
@@ -135,7 +139,17 @@ export default function TerminosProcesalesPage() {
       <p className="text-xs uppercase tracking-wide text-stone">
         Jurídico Suite <span className="mx-1 text-gray-300">›</span> Términos procesales
       </p>
-      <LabsBadge />
+      {publicMode ? (
+        <div className="rounded-lg border border-gold bg-white p-3 text-sm text-gray-700">
+          <p className="font-semibold text-primary">Herramienta pública validada por ROMANUS Labs</p>
+          <p className="mt-1">
+            Úsala como apoyo operativo. Revisa siempre calendario oficial, órgano competente y
+            reglas aplicables al caso concreto.
+          </p>
+        </div>
+      ) : (
+        <LabsBadge />
+      )}
 
       <div>
         <h1 className="text-2xl font-bold text-primary">ROMANUS Términos</h1>
@@ -284,7 +298,7 @@ export default function TerminosProcesalesPage() {
             </div>
           </div>
 
-          <Disclaimer />
+          <Disclaimer variante="juridico" />
         </div>
       )}
 

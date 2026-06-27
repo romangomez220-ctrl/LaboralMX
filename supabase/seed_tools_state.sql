@@ -14,6 +14,11 @@
 
 insert into public.tools_state (herramienta_id, estado, visible_publicamente, disponible_solo_labs, nivel_minimo_requerido)
 values
+  ('tool_finiquito', 'publicada', true, false, null),
+  ('tool_liquidacion', 'publicada', true, false, null),
+  ('tool_aguinaldo', 'publicada', true, false, null),
+  ('tool_vacaciones', 'publicada', true, false, null),
+  ('tool_sdi', 'publicada', true, false, null),
   ('tool_resico', 'en_validacion', false, true, null),
   ('tool_xml_cfdi', 'en_validacion', false, true, null),
   ('tool_devolucion_impuestos', 'en_validacion', false, true, null),
