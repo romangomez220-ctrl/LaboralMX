@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 
 const RAZONES = [
-  'Herramientas con metodología jurídica visible.',
-  'Laboratorio privado con validadores profesionales.',
-  'Publicación gradual de recursos confiables.',
-  'Iniciativa social conectada a educación jurídica gratuita.',
+  'Alcance jurídico delimitado antes de cada publicación.',
+  'Herramientas probadas en ROMANUS Labs antes de abrirse al público.',
+  'Avisos claros: información útil sin prometer asesoría personalizada.',
+  'Ruta social conectada a talleres gratuitos y educación jurídica.',
 ]
 
 const CHIPS_HERO = [
@@ -18,18 +18,18 @@ const CHIPS_HERO = [
 
 export default function RomanusHome() {
   return (
-    <div className="flex flex-col gap-16">
-      <section className="pt-10 sm:pt-14 grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+    <div className="flex flex-col gap-14">
+      <section className="pt-8 sm:pt-12 grid lg:grid-cols-[1.08fr_0.92fr] gap-8 lg:gap-10 items-stretch">
         <div>
           <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
             Plataforma jurídica y tecnológica
           </p>
           <h1 className="text-4xl sm:text-5xl font-semibold text-primary leading-tight">
-            Herramientas legales claras para tomar mejores decisiones.
+            ROMANUS: herramientas jurídicas claras para decisiones responsables.
           </h1>
           <p className="font-serif text-lg sm:text-xl text-stone mt-5 max-w-2xl leading-relaxed">
-            ROMANUS combina calculadoras, asistentes jurídicos y educación gratuita para acercar
-            información útil, verificable y comprensible al contexto mexicano.
+            Calculadoras, asistentes y recursos legales diseñados para México, con metodología
+            visible, avisos de alcance y publicación gradual después de validación.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Link
@@ -45,9 +45,17 @@ export default function RomanusHome() {
               Ver Con Causa
             </Link>
           </div>
+          <div className="mt-7 grid grid-cols-3 gap-3 max-w-xl">
+            {['México', 'Labs', 'Con Causa'].map((item) => (
+              <div key={item} className="border-l-2 border-gold pl-3">
+                <p className="text-xs uppercase tracking-widest text-stone">Enfoque</p>
+                <p className="font-semibold text-primary">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
+        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm flex flex-col justify-between">
           <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
             Disponible hoy
           </p>
@@ -70,6 +78,18 @@ export default function RomanusHome() {
           <Link to="/laboral-suite" className="text-sm text-primary underline mt-5 inline-block">
             Ver Laboral Suite
           </Link>
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-3">
+              Flujo de confianza
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-600">
+              {['Diseño', 'Validación', 'Publicación'].map((paso) => (
+                <div key={paso} className="rounded-md bg-ivory px-2 py-2">
+                  <span className="font-semibold text-primary">{paso}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -95,7 +115,17 @@ export default function RomanusHome() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold text-primary mb-5">Herramientas destacadas</h2>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+          <div>
+            <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+              Uso inmediato
+            </p>
+            <h2 className="text-2xl font-semibold text-primary">Herramientas destacadas</h2>
+          </div>
+          <Link to="/herramientas" className="text-sm text-primary underline">
+            Ver biblioteca pública
+          </Link>
+        </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CHIPS_HERO.slice(0, 6).map((c) => (
             <Link key={c.label} to={c.to} className="rounded-lg border border-gray-200 bg-white p-4 hover:border-gold transition">

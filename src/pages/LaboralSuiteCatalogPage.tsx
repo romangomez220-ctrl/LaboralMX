@@ -48,15 +48,26 @@ const ENLACES_UTILES = [
 export default function LaboralSuiteCatalogPage() {
   return (
     <div className="flex flex-col gap-8">
-      <div className="text-center pt-4">
+      <div className="grid lg:grid-cols-[1fr_0.75fr] gap-6 items-end pt-4">
+        <div>
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Producto disponible
         </p>
         <h1 className="text-3xl font-semibold text-primary">Laboral Suite</h1>
-        <p className="text-sm text-stone mt-2 max-w-md mx-auto">
-          Calculadoras laborales conforme a la Ley Federal del Trabajo. Elige la herramienta que
-          necesitas.
+        <p className="text-sm text-stone mt-2 max-w-2xl">
+          Calculadoras laborales para México. Úsalas como punto de partida para estimar conceptos
+          básicos y revisar escenarios comunes antes de tomar decisiones.
         </p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
+            Importante
+          </p>
+          <p className="text-sm text-gray-600">
+            Los resultados son estimaciones informativas y pueden variar por prestaciones,
+            documentos, convenios, impuestos o circunstancias del caso.
+          </p>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -64,8 +75,11 @@ export default function LaboralSuiteCatalogPage() {
           <Link
             key={h.nombre}
             to={h.to}
-            className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold transition"
+            className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold hover:shadow-sm transition"
           >
+            <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+              Calculadora
+            </p>
             <p className="font-serif text-xl font-semibold text-primary mb-1">{h.nombre}</p>
             <p className="text-sm text-gray-600">{h.descripcion}</p>
           </Link>

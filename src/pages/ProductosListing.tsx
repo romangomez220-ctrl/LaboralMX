@@ -5,17 +5,20 @@ const PROXIMAMENTE = [
   {
     nombre: 'Contable Suite',
     descripcion: 'Herramientas fiscales y contables en validación privada dentro de ROMANUS Labs.',
+    estado: 'Labs',
   },
   {
     nombre: 'Jurídico Suite',
     descripcion: 'Asistentes y matrices de trabajo para abogados, en proceso de publicación gradual.',
+    estado: 'Publicación gradual',
   },
 ]
 
 export default function ProductosListing() {
   return (
     <div className="flex flex-col gap-8">
-      <div>
+      <div className="grid lg:grid-cols-[1fr_0.72fr] gap-6 items-end">
+        <div>
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Ecosistema ROMANUS
         </p>
@@ -24,9 +27,19 @@ export default function ProductosListing() {
           ROMANUS organiza sus herramientas por áreas de práctica. Las suites públicas ya están
           disponibles; las nuevas soluciones pasan primero por Labs antes de publicarse.
         </p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
+            Criterio de publicación
+          </p>
+          <p className="text-sm text-gray-600">
+            Cada producto debe tener alcance claro, aviso legal visible y ruta funcional antes de
+            quedar disponible para el público.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-lg border-2 border-gold bg-white p-6">
+      <div className="rounded-lg border-2 border-gold bg-white p-6 shadow-sm">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Disponible
         </p>
@@ -55,7 +68,7 @@ export default function ProductosListing() {
         {PROXIMAMENTE.map((p) => (
           <div key={p.nombre} className="rounded-lg border border-gray-200 bg-white p-5">
             <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
-              En validación
+              {p.estado}
             </p>
             <p className="font-serif text-lg font-semibold text-primary mb-1">{p.nombre}</p>
             <p className="text-sm text-gray-600">{p.descripcion}</p>

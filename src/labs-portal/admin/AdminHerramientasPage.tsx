@@ -125,6 +125,14 @@ export default function AdminHerramientasPage() {
                   Suite: {h.suiteId} · Versión: {h.versionSoftware} · Categoría: {h.categoria} · Ruta: <code>{h.ruta}</code>
                 </p>
                 <p className="text-xs text-gray-500">
+                  Ruta pública:{' '}
+                  {h.requiereValidador ? (
+                    h.rutaPublica ? <code>{h.rutaPublica}</code> : 'sin vista pública dedicada'
+                  ) : (
+                    <code>{h.ruta}</code>
+                  )}
+                </p>
+                <p className="text-xs text-gray-500">
                   Perfil recomendado: {h.perfilRecomendado} · Nivel mínimo: {h.estadoOperativo.nivelMinimoRequerido ?? h.nivelMinimoAccesoDefault}
                 </p>
               </div>

@@ -130,6 +130,16 @@ as $$
   select exists (select 1 from public.admins where id = auth.uid());
 $$;
 
+create or replace function public.is_validador_activo()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from public.validators where id = auth.uid() and estado = 'activo');
+$$;
+
 -- -----------------------------------------------------------------------------
 -- 7b. RPC para crear el perfil de un validador (SECURITY DEFINER)
 -- -----------------------------------------------------------------------------
@@ -184,6 +194,9 @@ grant execute on function public.crear_perfil_validador(
   int,
   text
 ) to authenticated;
+
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.is_validador_activo() to authenticated, anon;
 
 -- -----------------------------------------------------------------------------
 -- 8. Activar RLS en todas las tablas (negar todo por defecto)
@@ -262,7 +275,7 @@ create policy "validators_delete_solo_admin" on public.validators
 create policy "tools_state_select_validador_activo_o_admin" on public.tools_state
   for select using (
     public.is_admin()
-    or exists (select 1 from public.validators v where v.id = auth.uid() and v.estado = 'activo')
+    or public.is_validador_activo()
   );
 
 create policy "tools_state_select_publicadas" on public.tools_state

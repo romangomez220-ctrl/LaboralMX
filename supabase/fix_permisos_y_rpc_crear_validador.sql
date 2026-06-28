@@ -32,6 +32,19 @@ grant select, insert, update, delete on public.feedback to authenticated;
 grant select, insert on public.activity_logs to authenticated;
 grant select on public.admins to authenticated;
 
+create or replace function public.is_validador_activo()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from public.validators where id = auth.uid() and estado = 'activo');
+$$;
+
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.is_validador_activo() to authenticated, anon;
+
 -- -----------------------------------------------------------------------------
 -- 2. RPC SECURITY DEFINER para crear el perfil de un validador
 -- -----------------------------------------------------------------------------
@@ -88,7 +101,14 @@ grant execute on function public.crear_perfil_validador(
   text
 ) to authenticated;
 
+drop policy if exists "tools_state_select_validador_activo_o_admin" on public.tools_state;
 drop policy if exists "tools_state_select_publicadas" on public.tools_state;
+
+create policy "tools_state_select_validador_activo_o_admin" on public.tools_state
+  for select using (
+    public.is_admin()
+    or public.is_validador_activo()
+  );
 
 create policy "tools_state_select_publicadas" on public.tools_state
   for select using (
@@ -128,6 +148,16 @@ set
     else estado
   end
 where visible_publicamente = true;
+
+-- ROMANUS Términos ya cuenta con vista pública dedicada
+-- (/herramientas/terminos-procesales), por lo que debe quedar disponible
+-- en el catálogo público.
+update public.tools_state
+set
+  estado = 'lista_para_publico',
+  visible_publicamente = true,
+  disponible_solo_labs = false
+where herramienta_id = 'tool_terminos_procesales';
 
 -- =============================================================================
 -- FIN. Después de ejecutar esto, vuelve a intentar crear un validador desde

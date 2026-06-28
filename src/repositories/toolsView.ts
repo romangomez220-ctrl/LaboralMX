@@ -24,6 +24,7 @@ export function obtenerRutaPublicaHerramienta(herramienta: ToolManifest): string
 
 export function esHerramientaVisiblePublicamente(herramienta: HerramientaVista): boolean {
   if (!herramienta.requiereValidador) return true
+  if (!herramienta.rutaPublica) return false
   return (
     herramienta.estadoOperativo.visiblePublicamente &&
     !herramienta.estadoOperativo.disponibleSoloLabs &&
