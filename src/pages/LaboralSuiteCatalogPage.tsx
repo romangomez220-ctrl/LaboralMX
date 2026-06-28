@@ -50,14 +50,14 @@ export default function LaboralSuiteCatalogPage() {
     <div className="flex flex-col gap-8">
       <div className="grid lg:grid-cols-[1fr_0.75fr] gap-6 items-end pt-4">
         <div>
-        <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-          Producto disponible
-        </p>
-        <h1 className="text-3xl font-semibold text-primary">Laboral Suite</h1>
-        <p className="text-sm text-stone mt-2 max-w-2xl">
-          Calculadoras laborales para México. Úsalas como punto de partida para estimar conceptos
-          básicos y revisar escenarios comunes antes de tomar decisiones.
-        </p>
+          <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+            Producto disponible
+          </p>
+          <h1 className="text-3xl font-semibold text-primary">Laboral Suite</h1>
+          <p className="text-sm text-stone mt-2 max-w-2xl">
+            Calculadoras laborales para México. Úsalas como punto de partida para estimar conceptos
+            básicos y revisar escenarios comunes antes de tomar decisiones.
+          </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
@@ -82,6 +82,7 @@ export default function LaboralSuiteCatalogPage() {
             </p>
             <p className="font-serif text-xl font-semibold text-primary mb-1">{h.nombre}</p>
             <p className="text-sm text-gray-600">{h.descripcion}</p>
+            <p className="text-sm text-primary underline mt-4">Abrir herramienta</p>
           </Link>
         ))}
       </div>

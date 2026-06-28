@@ -36,6 +36,12 @@ const PRECISIONES = [
   'No existe obligación de aceptar todos los casos que se reciban.',
 ]
 
+const PREPARATE_TALLER = [
+  'Ten a la mano fechas aproximadas de ingreso y salida.',
+  'Reúne recibos, contrato, cartas, mensajes o documentos firmados.',
+  'Anota tus preguntas antes de la sesión para aprovechar mejor el taller.',
+]
+
 /**
  * Landing institucional, sin formularios ni backend. v4.5: se agregaron
  * las áreas de atención jurídica, las precisiones obligatorias sobre la
@@ -73,6 +79,23 @@ export default function ConCausaPage() {
         <div className="grid sm:grid-cols-3 gap-3 mt-5">
           {['Finiquito y liquidación', 'Documentos antes de firmar', 'Preguntas frecuentes'].map((item) => (
             <div key={item} className="rounded-lg border border-gray-200 bg-ivory px-4 py-3 text-sm text-primary font-medium">
+              {item}
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
+          <ContactWhatsAppButton label="Quiero recibir aviso del taller" variant="solid" requireConsent />
+          <p className="text-xs text-stone">
+            El contacto es informativo y no implica asesoría personalizada ni representación legal.
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-3xl w-full">
+        <h2 className="font-semibold text-primary mb-2">Cómo prepararte para el taller</h2>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {PREPARATE_TALLER.map((item) => (
+            <div key={item} className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
               {item}
             </div>
           ))}
@@ -152,7 +175,7 @@ export default function ConCausaPage() {
       </section>
 
       <div className="text-center flex flex-col items-center gap-4">
-        <ContactWhatsAppButton label="Contáctanos" variant="outline" requireConsent />
+        <ContactWhatsAppButton label="Contactar a Con Causa" variant="outline" requireConsent />
         <span className="inline-block text-xs font-semibold text-gold-dark uppercase tracking-widest border border-gold rounded-full px-3 py-1">
           Próximamente
         </span>

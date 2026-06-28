@@ -7,6 +7,21 @@ const RAZONES = [
   'Ruta social conectada a talleres gratuitos y educación jurídica.',
 ]
 
+const PASOS = [
+  {
+    titulo: 'Elige una herramienta',
+    descripcion: 'Empieza con una calculadora pública o con ROMANUS Términos si necesitas ordenar un plazo.',
+  },
+  {
+    titulo: 'Revisa el alcance',
+    descripcion: 'Cada resultado incluye límites, supuestos y recordatorios para validar documentos y fechas.',
+  },
+  {
+    titulo: 'Da el siguiente paso',
+    descripcion: 'Consulta el taller gratuito, guarda tus resultados o busca orientación profesional cuando aplique.',
+  },
+]
+
 const CHIPS_HERO = [
   { to: '/productos/laboralmx/liquidacion', label: 'Liquidación' },
   { to: '/productos/laboralmx/finiquito', label: 'Finiquito' },
@@ -36,13 +51,13 @@ export default function RomanusHome() {
               to="/herramientas"
               className="rounded-lg bg-primary text-white px-8 py-3 font-semibold hover:bg-primary-light transition text-center"
             >
-              Explorar herramientas
+              Usar herramientas públicas
             </Link>
             <Link
               to="/con-causa"
               className="rounded-lg border-2 border-primary text-primary px-8 py-3 font-semibold hover:bg-primary hover:text-white transition text-center"
             >
-              Ver Con Causa
+              Ver taller gratuito
             </Link>
           </div>
           <div className="mt-7 grid grid-cols-3 gap-3 max-w-xl">
@@ -118,6 +133,31 @@ export default function RomanusHome() {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
           <div>
             <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+              Cómo funciona
+            </p>
+            <h2 className="text-2xl font-semibold text-primary">Una ruta clara, sin promesas indebidas</h2>
+          </div>
+          <Link to="/aviso-legal" className="text-sm text-primary underline">
+            Leer aviso legal
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {PASOS.map((paso, index) => (
+            <div key={paso.titulo} className="rounded-lg border border-gray-200 bg-white p-5">
+              <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+                Paso {index + 1}
+              </p>
+              <p className="font-semibold text-primary">{paso.titulo}</p>
+              <p className="text-sm text-gray-600 mt-1">{paso.descripcion}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+          <div>
+            <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
               Uso inmediato
             </p>
             <h2 className="text-2xl font-semibold text-primary">Herramientas destacadas</h2>
@@ -148,7 +188,7 @@ export default function RomanusHome() {
           firmar documentos al terminar una relación de trabajo.
         </p>
         <Link to="/con-causa" className="text-sm text-primary underline mt-4 inline-block">
-          Conocer el programa
+          Ver detalles del taller
         </Link>
       </section>
 

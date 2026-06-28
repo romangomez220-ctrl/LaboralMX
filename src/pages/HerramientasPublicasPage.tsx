@@ -39,14 +39,14 @@ export default function HerramientasPublicasPage() {
     <div className="flex flex-col gap-8">
       <section className="pt-4 grid lg:grid-cols-[1fr_0.72fr] gap-6 items-end">
         <div>
-        <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-          Biblioteca pública
-        </p>
-        <h1 className="text-3xl font-semibold text-primary">Herramientas ROMANUS</h1>
-        <p className="text-sm text-stone mt-2 max-w-2xl">
-          Calculadoras, asistentes y recursos jurídicos publicados después de pasar por el proceso
-          de validación de ROMANUS Labs.
-        </p>
+          <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+            Biblioteca pública
+          </p>
+          <h1 className="text-3xl font-semibold text-primary">Herramientas ROMANUS</h1>
+          <p className="text-sm text-stone mt-2 max-w-2xl">
+            Calculadoras, asistentes y recursos jurídicos publicados después de pasar por el proceso
+            de validación de ROMANUS Labs.
+          </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
@@ -90,6 +90,7 @@ export default function HerramientasPublicasPage() {
               <p className="text-xs text-stone mt-4">
                 Categoría: {h.categoria} · Versión: {h.versionSoftware}
               </p>
+              <p className="text-sm text-primary underline mt-4">Abrir herramienta</p>
             </Link>
           ))}
         </div>
