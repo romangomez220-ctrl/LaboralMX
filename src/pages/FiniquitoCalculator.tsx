@@ -8,6 +8,7 @@ import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted } from '../utils/analytics'
+import { obtenerFechaHoyInput } from '../utils/dateUtils'
 import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
@@ -49,10 +50,16 @@ const ZONAS_SALARIO_MINIMO = [
   { value: 'frontera_norte', label: 'Zona Libre de la Frontera Norte' },
 ]
 
-export default function FiniquitoCalculator() {
+interface FiniquitoCalculatorProps {
+  headingLevel?: 'h1' | 'h2'
+}
+
+export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCalculatorProps) {
   const [form, setForm] = useState<FiniquitoFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const navigate = useNavigate()
+  const fechaHoy = obtenerFechaHoyInput()
+  const Heading = headingLevel
 
   function actualizar<K extends keyof FiniquitoFormState>(campo: K, valor: FiniquitoFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -63,6 +70,12 @@ export default function FiniquitoCalculator() {
 
     if (!form.fechaIngreso) e.fechaIngreso = 'Indica la fecha de ingreso.'
     if (!form.fechaSalida) e.fechaSalida = 'Indica la fecha de salida.'
+    if (form.fechaIngreso && form.fechaIngreso > fechaHoy) {
+      e.fechaIngreso = 'La fecha de ingreso no puede estar en el futuro.'
+    }
+    if (form.fechaSalida && form.fechaSalida > fechaHoy) {
+      e.fechaSalida = 'La fecha de salida no puede estar en el futuro.'
+    }
     if (
       form.fechaIngreso &&
       form.fechaSalida &&
@@ -125,7 +138,7 @@ export default function FiniquitoCalculator() {
   return (
     <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-primary">Calculadora de Finiquito</h1>
+        <Heading className="text-2xl font-bold text-primary">Calculadora de Finiquito</Heading>
         <p className="text-sm text-gray-500 mt-1">
           Captura los datos de tu relación laboral para obtener una estimación.
         </p>
@@ -138,6 +151,7 @@ export default function FiniquitoCalculator() {
           label="Fecha de ingreso"
           name="fechaIngreso"
           type="date"
+          max={form.fechaSalida || fechaHoy}
           value={form.fechaIngreso}
           onChange={(v) => actualizar('fechaIngreso', v)}
           error={errores.fechaIngreso}
@@ -146,6 +160,8 @@ export default function FiniquitoCalculator() {
           label="Fecha de salida"
           name="fechaSalida"
           type="date"
+          min={form.fechaIngreso || undefined}
+          max={fechaHoy}
           value={form.fechaSalida}
           onChange={(v) => actualizar('fechaSalida', v)}
           error={errores.fechaSalida}
@@ -167,13 +183,14 @@ export default function FiniquitoCalculator() {
           error={errores.diasPendientes}
         />
         <InputField
-          label="Días de vacaciones disfrutados este año"
+          label="Vacaciones disfrutadas del periodo en curso"
           name="vacacionesDisfrutadas"
           type="number"
           placeholder="0"
           value={form.vacacionesDisfrutadas}
           onChange={(v) => actualizar('vacacionesDisfrutadas', v)}
           error={errores.vacacionesDisfrutadas}
+          helpText="Captura solo los días correspondientes al periodo iniciado en tu último aniversario laboral."
         />
         <SelectField
           label="¿Renuncia voluntaria?"
@@ -205,7 +222,7 @@ export default function FiniquitoCalculator() {
 
       <button
         type="submit"
-        className="rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition self-start"
+        className="w-full sm:w-auto rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition self-stretch sm:self-start"
       >
         Calcular finiquito
       </button>

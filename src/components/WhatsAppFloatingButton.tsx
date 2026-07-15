@@ -20,6 +20,15 @@ export default function WhatsAppFloatingButton() {
   const location = useLocation()
   const [modalAbierto, setModalAbierto] = useState(false)
   const requiereConsentimiento = location.pathname === '/con-causa'
+  const esFlujoCalculadora = [
+    '/calcular-finiquito',
+    '/calcular-liquidacion',
+    '/productos/laboralmx/finiquito',
+    '/productos/laboralmx/liquidacion',
+    '/productos/laboralmx/resultado',
+  ].includes(location.pathname)
+
+  if (esFlujoCalculadora) return null
 
   if (requiereConsentimiento) {
     return (
@@ -31,7 +40,7 @@ export default function WhatsAppFloatingButton() {
             setModalAbierto(true)
           }}
           aria-label="Contactar a ROMANUS por WhatsApp"
-          className="fixed bottom-5 right-5 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-gold shadow-lg border border-gold/40 hover:bg-primary-light transition"
+          className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 sm:bottom-5 sm:right-5 z-40 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-gold shadow-lg border border-gold/40 hover:bg-primary-light transition"
         >
           <WhatsAppIcon className="w-7 h-7" />
         </button>
@@ -46,7 +55,7 @@ export default function WhatsAppFloatingButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar a ROMANUS por WhatsApp"
-      className="fixed bottom-5 right-5 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-gold shadow-lg border border-gold/40 hover:bg-primary-light transition"
+      className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 sm:bottom-5 sm:right-5 z-40 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-gold shadow-lg border border-gold/40 hover:bg-primary-light transition"
       onClick={() => trackWhatsAppIntent('floating_button', 'direct')}
     >
       <WhatsAppIcon className="w-7 h-7" />

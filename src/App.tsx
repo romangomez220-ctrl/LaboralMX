@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { lazy, Suspense, type ComponentType } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import LaboralMXLayout from './components/LaboralMXLayout'
@@ -14,7 +14,6 @@ import AvisoLegalPage from './pages/AvisoLegalPage'
 import PrivacidadPage from './pages/PrivacidadPage'
 import TerminosPage from './pages/TerminosPage'
 import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
-import ConverterPage from './labs/xml-cfdi/ConverterPage'
 import DevolucionImpuestosPage from './labs/contable-suite/pages/DevolucionImpuestosPage'
 import ResicoAnualPage from './labs/contable-suite/pages/ResicoAnualPage'
 import ArrendamientoComparadorPage from './labs/contable-suite/pages/ArrendamientoComparadorPage'
@@ -35,6 +34,9 @@ import AdminFeedbackPage from './labs-portal/admin/AdminFeedbackPage'
 import AdminEstadisticasPage from './labs-portal/admin/AdminEstadisticasPage'
 import { listarToolsDeLabs } from './catalog/registry'
 
+const ConverterPage = lazy(() => import('./labs/xml-cfdi/ConverterPage'))
+const ResultPage = lazy(() => import('./pages/ResultPage'))
+
 // Mapa clave (del Registro Central) → componente real. Es el único lugar
 // donde el Registro (datos) se conecta con la implementación (código) —
 // el propio Registro nunca importa React ni sabe que estos componentes
@@ -52,7 +54,6 @@ const COMPONENTES_LABS: Record<string, ComponentType> = {
 import Home from './pages/Home'
 import FiniquitoCalculator from './pages/FiniquitoCalculator'
 import LiquidacionCalculator from './pages/LiquidacionCalculator'
-import ResultPage from './pages/ResultPage'
 import HowItWorks from './pages/HowItWorks'
 import LegalNotice from './pages/LegalNotice'
 import About from './pages/About'
@@ -60,6 +61,14 @@ import SDICalculator from './pages/SDICalculator'
 import AguinaldoCalculator from './pages/AguinaldoCalculator'
 import VacacionesCalculator from './pages/VacacionesCalculator'
 import CalculatorCampaignLanding from './pages/CalculatorCampaignLanding'
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-48 items-center justify-center" role="status" aria-live="polite">
+      <span className="text-sm text-stone">Preparando herramienta…</span>
+    </div>
+  )
+}
 
 export default function App() {
   return (
@@ -198,7 +207,9 @@ export default function App() {
               element={
                 <RequireValidatorAuth>
                   <LabsErrorBoundary moduleName={tool.clave}>
-                    <Componente />
+                    <Suspense fallback={<RouteFallback />}>
+                      <Componente />
+                    </Suspense>
                   </LabsErrorBoundary>
                 </RequireValidatorAuth>
               }
@@ -231,7 +242,9 @@ export default function App() {
             path="resultado"
             element={
               <ErrorBoundary moduleName="resultado">
-                <ResultPage />
+                <Suspense fallback={<RouteFallback />}>
+                  <ResultPage />
+                </Suspense>
               </ErrorBoundary>
             }
           />

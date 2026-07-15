@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /labs/
+
+Sitemap: https://www.romanus.mx/sitemap.xml

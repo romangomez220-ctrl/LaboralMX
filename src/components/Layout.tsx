@@ -44,9 +44,6 @@ export default function Layout() {
           </nav>
 
           <p className="mt-4 text-xs text-gray-400">© {new Date().getFullYear()} ROMANUS.</p>
-          <p className="mt-1 text-[10px] text-gray-500 tracking-wide">
-            ROMANUS v4.6 — Intake &amp; Privacy Hardening
-          </p>
         </div>
       </footer>
 

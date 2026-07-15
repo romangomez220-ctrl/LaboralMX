@@ -25,3 +25,100 @@ body {
   outline: 2px solid theme('colors.primary.DEFAULT');
   outline-offset: 2px;
 }
+
+body {
+  min-width: 320px;
+}
+
+.brand-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(212, 175, 55, 0.16), transparent 34%),
+    linear-gradient(145deg, #081623, #0f2744 55%, #163553);
+  opacity: 1;
+  transition: opacity 420ms ease, visibility 420ms ease;
+}
+
+.brand-intro--closing {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.brand-intro__halo {
+  position: absolute;
+  width: min(78vw, 680px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 999px;
+  animation: romanus-halo 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-intro__content {
+  position: relative;
+  padding: 2rem;
+  text-align: center;
+}
+
+.brand-intro__wordmark {
+  color: #f8f8f6;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(2.6rem, 10vw, 6.5rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.12em, 2.2vw, 0.28em);
+  line-height: 1;
+  text-indent: clamp(0.12em, 2.2vw, 0.28em);
+  animation: romanus-wordmark 920ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brand-intro__line {
+  width: min(62vw, 430px);
+  height: 1px;
+  margin: 1.5rem auto 1.1rem;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  transform-origin: center;
+  animation: romanus-line 700ms 180ms ease-out both;
+}
+
+.brand-intro__tagline {
+  color: rgba(248, 248, 246, 0.72);
+  font-size: clamp(0.65rem, 2.5vw, 0.9rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  animation: romanus-tagline 600ms 260ms ease-out both;
+}
+
+@keyframes romanus-wordmark {
+  from { opacity: 0; transform: scale(0.82); filter: blur(8px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes romanus-line {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes romanus-tagline {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes romanus-halo {
+  from { opacity: 0; transform: scale(0.55); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-intro,
+  .brand-intro__halo,
+  .brand-intro__wordmark,
+  .brand-intro__line,
+  .brand-intro__tagline {
+    animation: none;
+    transition-duration: 100ms;
+  }
+}

@@ -8,6 +8,7 @@ import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted } from '../utils/analytics'
+import { obtenerFechaHoyInput } from '../utils/dateUtils'
 import type {
   LiquidacionFormData,
   TipoCapturaSalarial,
@@ -76,10 +77,16 @@ const TIPOS_SALIDA_LABEL: Record<string, string> = {
   incapacidad: 'Incapacidad',
 }
 
-export default function LiquidacionCalculator() {
+interface LiquidacionCalculatorProps {
+  headingLevel?: 'h1' | 'h2'
+}
+
+export default function LiquidacionCalculator({ headingLevel = 'h1' }: LiquidacionCalculatorProps) {
   const [form, setForm] = useState<LiquidacionFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const navigate = useNavigate()
+  const fechaHoy = obtenerFechaHoyInput()
+  const Heading = headingLevel
 
   function actualizar<K extends keyof LiquidacionFormState>(
     campo: K,
@@ -93,6 +100,12 @@ export default function LiquidacionCalculator() {
 
     if (!form.fechaIngreso) e.fechaIngreso = 'Indica la fecha de ingreso.'
     if (!form.fechaSalida) e.fechaSalida = 'Indica la fecha de salida.'
+    if (form.fechaIngreso && form.fechaIngreso > fechaHoy) {
+      e.fechaIngreso = 'La fecha de ingreso no puede estar en el futuro.'
+    }
+    if (form.fechaSalida && form.fechaSalida > fechaHoy) {
+      e.fechaSalida = 'La fecha de salida no puede estar en el futuro.'
+    }
     if (
       form.fechaIngreso &&
       form.fechaSalida &&
@@ -158,7 +171,7 @@ export default function LiquidacionCalculator() {
   return (
     <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-primary">Calculadora de Liquidación</h1>
+        <Heading className="text-2xl font-bold text-primary">Calculadora de Liquidación</Heading>
         <p className="text-sm text-gray-500 mt-1">
           Incluye el finiquito más, en su caso, la indemnización por despido injustificado.
         </p>
@@ -171,6 +184,7 @@ export default function LiquidacionCalculator() {
           label="Fecha de ingreso"
           name="fechaIngreso"
           type="date"
+          max={form.fechaSalida || fechaHoy}
           value={form.fechaIngreso}
           onChange={(v) => actualizar('fechaIngreso', v)}
           error={errores.fechaIngreso}
@@ -179,6 +193,8 @@ export default function LiquidacionCalculator() {
           label="Fecha de salida"
           name="fechaSalida"
           type="date"
+          min={form.fechaIngreso || undefined}
+          max={fechaHoy}
           value={form.fechaSalida}
           onChange={(v) => actualizar('fechaSalida', v)}
           error={errores.fechaSalida}
@@ -200,13 +216,14 @@ export default function LiquidacionCalculator() {
           error={errores.diasPendientes}
         />
         <InputField
-          label="Días de vacaciones disfrutados este año"
+          label="Vacaciones disfrutadas del periodo en curso"
           name="vacacionesDisfrutadas"
           type="number"
           placeholder="0"
           value={form.vacacionesDisfrutadas}
           onChange={(v) => actualizar('vacacionesDisfrutadas', v)}
           error={errores.vacacionesDisfrutadas}
+          helpText="Captura solo los días correspondientes al periodo iniciado en tu último aniversario laboral."
         />
         <SelectField
           label="Tipo de salida"
@@ -257,7 +274,7 @@ export default function LiquidacionCalculator() {
 
       <button
         type="submit"
-        className="rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition self-start"
+        className="w-full sm:w-auto rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition self-stretch sm:self-start"
       >
         Calcular liquidación
       </button>

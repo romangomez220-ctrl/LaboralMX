@@ -110,3 +110,7 @@ export function obtenerFechaHoyUTC(): Date {
   const ahora = new Date()
   return new Date(Date.UTC(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()))
 }
+
+export function obtenerFechaHoyInput(): string {
+  return obtenerFechaHoyUTC().toISOString().slice(0, 10)
+}

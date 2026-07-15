@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { trackCtaClick } from '../utils/analytics'
+import PageMetadata from '../components/PageMetadata'
 import FiniquitoCalculator from './FiniquitoCalculator'
 import LiquidacionCalculator from './LiquidacionCalculator'
 
@@ -16,6 +16,7 @@ const CONTENT = {
     cta: 'Calcular mi finiquito',
     location: 'campaign_landing_finiquito',
     documentTitle: 'Calculadora de finiquito gratis en México | ROMANUS',
+    canonicalPath: '/calcular-finiquito',
   },
   liquidacion: {
     eyebrow: 'Calculadora laboral gratuita para México',
@@ -25,22 +26,20 @@ const CONTENT = {
     cta: 'Calcular mi liquidación',
     location: 'campaign_landing_liquidacion',
     documentTitle: 'Calculadora de liquidación laboral en México | ROMANUS',
+    canonicalPath: '/calcular-liquidacion',
   },
 } as const
 
 export default function CalculatorCampaignLanding({ calculator }: CalculatorCampaignLandingProps) {
   const content = CONTENT[calculator]
 
-  useEffect(() => {
-    const previousTitle = document.title
-    document.title = content.documentTitle
-    return () => {
-      document.title = previousTitle
-    }
-  }, [content.documentTitle])
-
   return (
     <div className="flex flex-col gap-8">
+      <PageMetadata
+        title={content.documentTitle}
+        description={content.description}
+        canonicalPath={content.canonicalPath}
+      />
       <section className="rounded-xl border border-gold/50 bg-white p-6 sm:p-8 shadow-sm">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
           {content.eyebrow}
@@ -65,8 +64,12 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
         </div>
       </section>
 
-      <section id="calculadora" className="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 sm:p-7">
-        {calculator === 'finiquito' ? <FiniquitoCalculator /> : <LiquidacionCalculator />}
+      <section id="calculadora" className="scroll-mt-24 rounded-xl border border-gray-200 bg-white p-5 sm:p-7">
+        {calculator === 'finiquito' ? (
+          <FiniquitoCalculator headingLevel="h2" />
+        ) : (
+          <LiquidacionCalculator headingLevel="h2" />
+        )}
       </section>
 
       <section className="grid sm:grid-cols-3 gap-4 text-sm text-gray-600">

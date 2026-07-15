@@ -17,6 +17,7 @@ export default function ResultPage() {
   const resultado = estadoNavegacion?.resultado
   const datosCapturados = estadoNavegacion?.datosCapturados ?? []
   const [copiado, setCopiado] = useState(false)
+  const [errorCopiar, setErrorCopiar] = useState(false)
   const [errorPDF, setErrorPDF] = useState(false)
 
   if (!resultado) {
@@ -33,7 +34,7 @@ export default function ResultPage() {
     )
   }
 
-  function copiarResultado() {
+  async function copiarResultado() {
     if (!resultado) return
     const lineas = [
       `Laboral Suite — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
@@ -55,11 +56,16 @@ export default function ResultPage() {
     }
     lineas.push('Estimación informativa, no asesoría legal.')
 
-    navigator.clipboard.writeText(lineas.join('\n')).then(() => {
+    try {
+      setErrorCopiar(false)
+      if (!navigator.clipboard) throw new Error('Clipboard API unavailable')
+      await navigator.clipboard.writeText(lineas.join('\n'))
       trackResultAction(resultado.tipo, 'copy')
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
-    })
+    } catch {
+      setErrorCopiar(true)
+    }
   }
 
   return (
@@ -143,6 +149,13 @@ export default function ResultPage() {
         <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
           No se pudo generar el PDF en este momento. Puedes usar "Copiar resultado" mientras
           tanto; el equipo de ROMANUS ya quedó notificado de este error.
+        </div>
+      )}
+
+      {errorCopiar && (
+        <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
+          Tu navegador no permitió copiar automáticamente. Puedes descargar el PDF o mantener
+          presionado el texto del resultado para copiarlo manualmente.
         </div>
       )}
 
