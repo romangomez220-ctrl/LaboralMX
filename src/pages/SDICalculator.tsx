@@ -6,6 +6,7 @@ import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularSDI } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
+import { trackCalculatorCompleted } from '../utils/analytics'
 import type { ResultadoSDI, SDIFormData, TipoCapturaSalarial } from '../types/labor'
 
 // Salario se captura como texto (no number) para que el campo pueda
@@ -56,6 +57,7 @@ export default function SDICalculator() {
       tipoSalario: form.tipoSalario,
     }
     setResultado(calcularSDI(datosParaCalcular))
+    trackCalculatorCompleted('sdi')
   }
 
   return (

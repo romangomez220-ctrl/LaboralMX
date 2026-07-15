@@ -5,6 +5,7 @@ import {
   obtenerRutaPublicaHerramienta,
   type HerramientaVista,
 } from '../repositories/toolsView'
+import { trackToolOpen } from '../utils/analytics'
 
 function nombreSuite(suiteId: string) {
   if (suiteId === 'suite_laboral') return 'Laboral Suite'
@@ -76,6 +77,7 @@ export default function HerramientasPublicasPage() {
               key={h.id}
               to={obtenerRutaPublicaHerramienta(h)}
               className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold hover:shadow-sm transition"
+              onClick={() => trackToolOpen(h.id, h.nombreVisible, '/herramientas')}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest">

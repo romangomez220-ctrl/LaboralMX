@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { trackCtaClick } from '../utils/analytics'
 
 const RAZONES = [
   'Alcance jurídico delimitado antes de cada publicación.',
@@ -49,12 +50,14 @@ export default function RomanusHome() {
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Link
               to="/herramientas"
+              onClick={() => trackCtaClick('Usar herramientas públicas', '/herramientas', 'home_hero')}
               className="rounded-lg bg-primary text-white px-8 py-3 font-semibold hover:bg-primary-light transition text-center"
             >
               Usar herramientas públicas
             </Link>
             <Link
               to="/con-causa"
+              onClick={() => trackCtaClick('Ver taller gratuito', '/con-causa', 'home_hero')}
               className="rounded-lg border-2 border-primary text-primary px-8 py-3 font-semibold hover:bg-primary hover:text-white transition text-center"
             >
               Ver taller gratuito
@@ -84,13 +87,18 @@ export default function RomanusHome() {
               <Link
                 key={c.label}
                 to={c.to}
+                onClick={() => trackCtaClick(c.label, c.to, 'home_available_today')}
                 className="rounded-full border border-gray-200 bg-ivory px-4 py-2 text-sm font-medium text-primary hover:border-gold hover:text-gold-dark transition"
               >
                 {c.label}
               </Link>
             ))}
           </div>
-          <Link to="/laboral-suite" className="text-sm text-primary underline mt-5 inline-block">
+          <Link
+            to="/laboral-suite"
+            onClick={() => trackCtaClick('Ver Laboral Suite', '/laboral-suite', 'home_available_today')}
+            className="text-sm text-primary underline mt-5 inline-block"
+          >
             Ver Laboral Suite
           </Link>
           <div className="mt-6 border-t border-gray-200 pt-4">
@@ -162,13 +170,22 @@ export default function RomanusHome() {
             </p>
             <h2 className="text-2xl font-semibold text-primary">Herramientas destacadas</h2>
           </div>
-          <Link to="/herramientas" className="text-sm text-primary underline">
+          <Link
+            to="/herramientas"
+            onClick={() => trackCtaClick('Ver biblioteca pública', '/herramientas', 'home_featured_tools')}
+            className="text-sm text-primary underline"
+          >
             Ver biblioteca pública
           </Link>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CHIPS_HERO.slice(0, 6).map((c) => (
-            <Link key={c.label} to={c.to} className="rounded-lg border border-gray-200 bg-white p-4 hover:border-gold transition">
+            <Link
+              key={c.label}
+              to={c.to}
+              onClick={() => trackCtaClick(c.label, c.to, 'home_featured_tools')}
+              className="rounded-lg border border-gray-200 bg-white p-4 hover:border-gold transition"
+            >
               <p className="font-semibold text-primary">{c.label}</p>
               <p className="text-sm text-stone mt-1">Calculadora pública de Laboral Suite.</p>
             </Link>
@@ -187,7 +204,11 @@ export default function RomanusHome() {
           Con Causa prepara un taller gratuito sobre finiquito, liquidación y qué revisar antes de
           firmar documentos al terminar una relación de trabajo.
         </p>
-        <Link to="/con-causa" className="text-sm text-primary underline mt-4 inline-block">
+        <Link
+          to="/con-causa"
+          onClick={() => trackCtaClick('Ver detalles del taller', '/con-causa', 'home_workshop')}
+          className="text-sm text-primary underline mt-4 inline-block"
+        >
           Ver detalles del taller
         </Link>
       </section>

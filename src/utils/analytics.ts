@@ -36,3 +36,50 @@ export function trackEvent(eventName: string, params: Record<string, unknown> = 
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
   window.gtag('event', eventName, params)
 }
+
+function currentPath(): string {
+  if (typeof window === 'undefined') return ''
+  return window.location.pathname + window.location.search
+}
+
+/**
+ * Eventos públicos mínimos para medir intención real sin enviar datos
+ * personales ni información jurídica sensible a Google Analytics.
+ */
+export function trackCtaClick(label: string, destination: string, location = currentPath()): void {
+  trackEvent('romanus_cta_click', {
+    cta_label: label,
+    cta_destination: destination,
+    cta_location: location,
+  })
+}
+
+export function trackWhatsAppIntent(source: string, mode: 'direct' | 'consent_required'): void {
+  trackEvent('romanus_whatsapp_intent', {
+    source,
+    mode,
+    page_path: currentPath(),
+  })
+}
+
+export function trackConCausaStep(step: string): void {
+  trackEvent('romanus_con_causa_step', {
+    step,
+    page_path: currentPath(),
+  })
+}
+
+export function trackToolOpen(toolId: string, toolName: string, source = currentPath()): void {
+  trackEvent('romanus_tool_open', {
+    tool_id: toolId,
+    tool_name: toolName,
+    source,
+  })
+}
+
+export function trackCalculatorCompleted(calculator: string): void {
+  trackEvent('romanus_calculator_completed', {
+    calculator,
+    page_path: currentPath(),
+  })
+}

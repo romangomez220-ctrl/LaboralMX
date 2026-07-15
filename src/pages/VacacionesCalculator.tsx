@@ -6,6 +6,7 @@ import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularVacacionesEstimadas } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
+import { trackCalculatorCompleted } from '../utils/analytics'
 import type { ResultadoVacacionesEstimadas, TipoCapturaSalarial, VacacionesFormData } from '../types/labor'
 
 // Salario y días disfrutados se capturan como texto; se convierten a
@@ -62,6 +63,7 @@ export default function VacacionesCalculator() {
       diasDisfrutados: aNumero(form.diasDisfrutados),
     }
     setResultado(calcularVacacionesEstimadas(datosParaCalcular))
+    trackCalculatorCompleted('vacaciones')
   }
 
   return (

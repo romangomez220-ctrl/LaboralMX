@@ -26,7 +26,13 @@
       // se registran manualmente en cada cambio de ruta (ver
       // src/components/AnalyticsTracker.tsx), para que también se cuenten
       // las navegaciones internas de React Router, no solo la carga inicial.
-      gtag('config', 'G-0XMBSS23D7', { send_page_view: false });
+      // Agregar ?analytics_debug=1 a cualquier ruta habilita DebugView de
+      // GA4 de forma explícita, sin marcar como debug las visitas normales.
+      const analyticsDebug = new URLSearchParams(window.location.search).get('analytics_debug') === '1';
+      gtag('config', 'G-0XMBSS23D7', {
+        send_page_view: false,
+        debug_mode: analyticsDebug,
+      });
     </script>
   </head>
   <body>

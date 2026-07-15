@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { WHATSAPP_LINK } from '../config/contacto'
+import { trackWhatsAppIntent } from '../utils/analytics'
 import WhatsAppIcon from './WhatsAppIcon'
 import WhatsAppConsentModal from './WhatsAppConsentModal'
 
@@ -41,7 +42,14 @@ export default function ContactWhatsAppButton({
   if (requireConsent) {
     return (
       <>
-        <button type="button" onClick={() => setModalAbierto(true)} className={clases}>
+        <button
+          type="button"
+          onClick={() => {
+            trackWhatsAppIntent(label, 'consent_required')
+            setModalAbierto(true)
+          }}
+          className={clases}
+        >
           <WhatsAppIcon className="w-5 h-5" />
           {label}
         </button>
@@ -51,7 +59,13 @@ export default function ContactWhatsAppButton({
   }
 
   return (
-    <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className={clases}>
+    <a
+      href={WHATSAPP_LINK}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={clases}
+      onClick={() => trackWhatsAppIntent(label, 'direct')}
+    >
       <WhatsAppIcon className="w-5 h-5" />
       {label}
     </a>

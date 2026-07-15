@@ -8,6 +8,7 @@ import {
   obtenerHerramientaVistaPorClave,
   type HerramientaVista,
 } from '../repositories/toolsView'
+import { trackToolOpen } from '../utils/analytics'
 
 const COMPONENTES_PUBLICOS: Record<string, ComponentType<{ publicMode?: boolean }>> = {
   'terminos-procesales': TerminosProcesalesPage,
@@ -33,6 +34,12 @@ export default function HerramientaPublicaPage() {
       })
       .finally(() => setCargando(false))
   }, [clave])
+
+  useEffect(() => {
+    if (herramienta && esHerramientaVisiblePublicamente(herramienta)) {
+      trackToolOpen(herramienta.id, herramienta.nombreVisible, 'direct_public_route')
+    }
+  }, [herramienta])
 
   if (cargando) return <p className="text-sm text-stone">Cargando herramienta…</p>
   if (error) {

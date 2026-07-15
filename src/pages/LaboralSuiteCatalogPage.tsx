@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { trackCtaClick } from '../utils/analytics'
 
 const HERRAMIENTAS = [
   {
@@ -75,6 +76,7 @@ export default function LaboralSuiteCatalogPage() {
           <Link
             key={h.nombre}
             to={h.to}
+            onClick={() => trackCtaClick(h.nombre, h.to, 'laboral_suite_catalog')}
             className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold hover:shadow-sm transition"
           >
             <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">

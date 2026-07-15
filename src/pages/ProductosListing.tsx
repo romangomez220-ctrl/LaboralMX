@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ContactWhatsAppButton from '../components/ContactWhatsAppButton'
+import { trackCtaClick } from '../utils/analytics'
 
 const PROXIMAMENTE = [
   {
@@ -51,12 +52,14 @@ export default function ProductosListing() {
         <div className="flex flex-wrap gap-3">
           <Link
             to="/laboral-suite"
+            onClick={() => trackCtaClick('Usar Laboral Suite', '/laboral-suite', 'products_listing')}
             className="inline-block rounded-lg bg-primary text-white px-5 py-2.5 font-semibold hover:bg-primary-light transition"
           >
             Usar Laboral Suite
           </Link>
           <Link
             to="/herramientas"
+            onClick={() => trackCtaClick('Explorar biblioteca pública', '/herramientas', 'products_listing')}
             className="inline-block rounded-lg border border-primary text-primary px-5 py-2.5 font-semibold hover:bg-primary hover:text-white transition"
           >
             Explorar biblioteca pública

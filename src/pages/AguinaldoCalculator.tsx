@@ -6,6 +6,7 @@ import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import { calcularAguinaldoEstimado } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
+import { trackCalculatorCompleted } from '../utils/analytics'
 import type { AguinaldoFormData, ResultadoAguinaldoEstimado, TipoCapturaSalarial } from '../types/labor'
 
 // Salario se captura como texto (no number); se convierte a number solo
@@ -55,6 +56,7 @@ export default function AguinaldoCalculator() {
       tipoSalario: form.tipoSalario,
     }
     setResultado(calcularAguinaldoEstimado(datosParaCalcular))
+    trackCalculatorCompleted('aguinaldo')
   }
 
   return (

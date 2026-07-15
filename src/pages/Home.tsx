@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Disclaimer from '../components/Disclaimer'
+import { trackCtaClick } from '../utils/analytics'
 
 export default function Home() {
   return (
@@ -12,12 +13,14 @@ export default function Home() {
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             to="/productos/laboralmx/finiquito"
+            onClick={() => trackCtaClick('Calcular finiquito', '/productos/laboralmx/finiquito', 'laboral_home_hero')}
             className="rounded-lg bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-light transition"
           >
             Calcular finiquito
           </Link>
           <Link
             to="/productos/laboralmx/liquidacion"
+            onClick={() => trackCtaClick('Calcular liquidación', '/productos/laboralmx/liquidacion', 'laboral_home_hero')}
             className="rounded-lg border-2 border-primary text-primary px-6 py-3 font-semibold hover:bg-primary hover:text-white transition"
           >
             Calcular liquidación
@@ -48,6 +51,7 @@ export default function Home() {
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           <Link
             to="/productos/laboralmx/aguinaldo"
+            onClick={() => trackCtaClick('Aguinaldo', '/productos/laboralmx/aguinaldo', 'laboral_home_more_tools')}
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Aguinaldo</p>
@@ -55,6 +59,7 @@ export default function Home() {
           </Link>
           <Link
             to="/productos/laboralmx/vacaciones"
+            onClick={() => trackCtaClick('Vacaciones y prima vacacional', '/productos/laboralmx/vacaciones', 'laboral_home_more_tools')}
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Vacaciones y prima vacacional</p>
@@ -62,6 +67,7 @@ export default function Home() {
           </Link>
           <Link
             to="/productos/laboralmx/sdi"
+            onClick={() => trackCtaClick('Salario Diario Integrado', '/productos/laboralmx/sdi', 'laboral_home_more_tools')}
             className="rounded-lg border border-gray-200 bg-white p-4 hover:border-primary transition block"
           >
             <p className="font-semibold text-primary mb-1">Salario Diario Integrado</p>

@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent, type MouseEvent } from 'react'
 import { WHATSAPP_NUMBER_LINK } from '../config/contacto'
+import { trackConCausaStep } from '../utils/analytics'
 import InputField from './InputField'
 import SelectField from './SelectField'
 
@@ -67,6 +68,7 @@ export default function WhatsAppConsentModal({ abierto, onCerrar }: WhatsAppCons
   if (!abierto) return null
 
   function reiniciarYCerrar() {
+    trackConCausaStep('modal_closed')
     setPaso('consentimiento')
     setAceptaConsentimiento(false)
     setNombre('')
@@ -80,13 +82,16 @@ export default function WhatsAppConsentModal({ abierto, onCerrar }: WhatsAppCons
 
   function avanzarAFormulario() {
     if (!aceptaConsentimiento) return
+    trackConCausaStep('consent_accepted')
     setPaso('formulario')
   }
 
   function manejarEnvioFormulario(ev: FormEvent) {
     ev.preventDefault()
     if (!aceptaFormulario) return
-    setPaso(URGENCIAS_BLOQUEANTES.has(urgencia) ? 'bloqueo' : 'resumen')
+    const bloqueado = URGENCIAS_BLOQUEANTES.has(urgencia)
+    trackConCausaStep(bloqueado ? 'triage_blocked' : 'triage_submitted')
+    setPaso(bloqueado ? 'bloqueo' : 'resumen')
   }
 
   function continuarAWhatsApp() {
@@ -111,6 +116,7 @@ export default function WhatsAppConsentModal({ abierto, onCerrar }: WhatsAppCons
     ].join('\n')
 
     const url = `${WHATSAPP_NUMBER_LINK}?text=${encodeURIComponent(mensaje)}`
+    trackConCausaStep('whatsapp_continued')
     window.open(url, '_blank', 'noopener,noreferrer')
     reiniciarYCerrar()
   }

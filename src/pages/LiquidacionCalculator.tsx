@@ -7,6 +7,7 @@ import Disclaimer from '../components/Disclaimer'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
+import { trackCalculatorCompleted } from '../utils/analytics'
 import type {
   LiquidacionFormData,
   TipoCapturaSalarial,
@@ -135,6 +136,7 @@ export default function LiquidacionCalculator() {
     }
 
     const resultado = calcularLiquidacion(datosParaCalcular)
+    trackCalculatorCompleted('liquidacion')
 
     const datosCapturados = [
       { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },

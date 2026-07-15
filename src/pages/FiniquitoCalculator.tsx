@@ -7,6 +7,7 @@ import Disclaimer from '../components/Disclaimer'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
+import { trackCalculatorCompleted } from '../utils/analytics'
 import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
@@ -104,6 +105,7 @@ export default function FiniquitoCalculator() {
     }
 
     const resultado = calcularFiniquito(datosParaCalcular)
+    trackCalculatorCompleted('finiquito')
 
     const datosCapturados = [
       { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
