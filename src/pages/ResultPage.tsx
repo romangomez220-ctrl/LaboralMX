@@ -7,6 +7,7 @@ import ExplicacionCalculo from '../components/ExplicacionCalculo'
 import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
 import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
+import { trackResultAction } from '../utils/analytics'
 import type { ResultadoCalculo } from '../types/labor'
 
 export default function ResultPage() {
@@ -55,6 +56,7 @@ export default function ResultPage() {
     lineas.push('Estimación informativa, no asesoría legal.')
 
     navigator.clipboard.writeText(lineas.join('\n')).then(() => {
+      trackResultAction(resultado.tipo, 'copy')
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
     })
@@ -160,6 +162,7 @@ export default function ResultPage() {
             try {
               setErrorPDF(false)
               generarPDF(resultado, datosCapturados)
+              trackResultAction(resultado.tipo, 'download_pdf')
             } catch (error) {
               registrarError(error as Error, 'pdfGenerator')
               setErrorPDF(true)
@@ -170,20 +173,21 @@ export default function ResultPage() {
           Descargar PDF
         </button>
         <button
-          onClick={() =>
+          onClick={() => {
+            trackResultAction(resultado.tipo, 'new_calculation')
             navigate(
               resultado.tipo === 'finiquito'
                 ? '/productos/laboralmx/finiquito'
                 : '/productos/laboralmx/liquidacion',
             )
-          }
+          }}
           className="rounded-lg bg-primary text-white px-5 py-2 font-semibold hover:bg-primary-light transition"
         >
           Nuevo cálculo
         </button>
       </div>
 
-      <RevisionProfesionalBlock />
+      <RevisionProfesionalBlock calculator={resultado.tipo} />
     </div>
   )
 }

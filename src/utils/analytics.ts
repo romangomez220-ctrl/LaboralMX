@@ -83,3 +83,14 @@ export function trackCalculatorCompleted(calculator: string): void {
     page_path: currentPath(),
   })
 }
+
+export function trackResultAction(
+  calculator: 'finiquito' | 'liquidacion',
+  action: 'copy' | 'download_pdf' | 'new_calculation' | 'view_methodology' | 'view_legal_notice',
+): void {
+  trackEvent('romanus_result_action', {
+    calculator,
+    action,
+    page_path: currentPath(),
+  })
+}

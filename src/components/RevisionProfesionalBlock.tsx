@@ -1,28 +1,40 @@
-export default function RevisionProfesionalBlock() {
+import { Link } from 'react-router-dom'
+import { trackResultAction } from '../utils/analytics'
+import type { TipoCalculo } from '../types/labor'
+
+interface RevisionProfesionalBlockProps {
+  calculator?: TipoCalculo
+}
+
+export default function RevisionProfesionalBlock({ calculator }: RevisionProfesionalBlockProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-5">
-      <h3 className="font-semibold text-primary text-lg mb-2">
-        ¿Tu resultado no coincide con la propuesta de tu empresa?
+    <div className="rounded-lg border border-gold/60 bg-white p-5">
+      <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
+        Siguiente paso
+      </p>
+      <h3 className="font-semibold text-primary text-lg mb-3">
+        Usa esta estimación para hacer una revisión ordenada
       </h3>
-      <p className="text-sm text-gray-600 mb-2">
-        Esta herramienta proporciona una estimación basada en la información capturada. Las
-        circunstancias particulares de cada relación laboral pueden modificar el resultado final.
-      </p>
-      <p className="text-sm text-gray-600 mb-4">
-        Si consideras que tu caso requiere una revisión más detallada, próximamente podrás
-        solicitar orientación profesional a través de ROMANUS.
-      </p>
-      <div className="flex items-center gap-3 flex-wrap">
-        <button
-          type="button"
-          disabled
-          className="rounded-lg border-2 border-primary text-primary px-5 py-2.5 font-semibold cursor-not-allowed opacity-90"
+      <ol className="grid sm:grid-cols-3 gap-3 text-sm text-gray-600 mb-5">
+        <li className="rounded-lg bg-ivory p-3"><strong className="text-primary">1.</strong> Guarda el PDF con el desglose.</li>
+        <li className="rounded-lg bg-ivory p-3"><strong className="text-primary">2.</strong> Compáralo con recibos, fechas y la propuesta recibida.</li>
+        <li className="rounded-lg bg-ivory p-3"><strong className="text-primary">3.</strong> Revisa diferencias con una persona profesional antes de decidir.</li>
+      </ol>
+      <div className="flex gap-3 flex-wrap">
+        <Link
+          to="/productos/laboralmx/como-se-calcula"
+          onClick={() => calculator && trackResultAction(calculator, 'view_methodology')}
+          className="rounded-lg bg-primary text-white px-5 py-2.5 font-semibold hover:bg-primary-light transition"
         >
-          Solicitar revisión profesional
-        </button>
-        <span className="text-xs font-semibold text-gold-dark uppercase tracking-widest border border-gold rounded-full px-3 py-1">
-          Próximamente
-        </span>
+          Entender cómo se calcula
+        </Link>
+        <Link
+          to="/productos/laboralmx/aviso-legal"
+          onClick={() => calculator && trackResultAction(calculator, 'view_legal_notice')}
+          className="rounded-lg border-2 border-primary text-primary px-5 py-2.5 font-semibold hover:bg-primary hover:text-white transition"
+        >
+          Revisar alcance legal
+        </Link>
       </div>
     </div>
   )
