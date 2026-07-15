@@ -59,6 +59,7 @@ import About from './pages/About'
 import SDICalculator from './pages/SDICalculator'
 import AguinaldoCalculator from './pages/AguinaldoCalculator'
 import VacacionesCalculator from './pages/VacacionesCalculator'
+import CalculatorCampaignLanding from './pages/CalculatorCampaignLanding'
 
 export default function App() {
   return (
@@ -91,6 +92,25 @@ export default function App() {
         <Route path="/herramientas" element={<HerramientasPublicasPage />} />
         <Route path="/herramientas/:clave" element={<HerramientaPublicaPage />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
+
+        {/* Landings de adquisición: rutas cortas y enfocadas que reutilizan
+            las calculadoras existentes sin duplicar lógica de negocio. */}
+        <Route
+          path="/calcular-finiquito"
+          element={
+            <ErrorBoundary moduleName="campaign-finiquito">
+              <CalculatorCampaignLanding calculator="finiquito" />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="/calcular-liquidacion"
+          element={
+            <ErrorBoundary moduleName="campaign-liquidacion">
+              <CalculatorCampaignLanding calculator="liquidacion" />
+            </ErrorBoundary>
+          }
+        />
 
         {/* INICIATIVAS */}
         <Route path="/con-causa" element={<ConCausaPage />} />
