@@ -110,6 +110,17 @@ export function trackResultViewed(calculator: 'finiquito' | 'liquidacion'): void
   })
 }
 
+export function trackResultFeedback(
+  calculator: 'finiquito' | 'liquidacion',
+  rating: 'helpful' | 'partial' | 'unclear' | 'possible_error',
+): void {
+  trackEvent('romanus_result_feedback', {
+    calculator,
+    rating,
+    page_path: currentPath(),
+  })
+}
+
 export function trackResultAction(
   calculator: 'finiquito' | 'liquidacion',
   action: 'copy' | 'share' | 'download_pdf' | 'new_calculation' | 'view_methodology' | 'view_legal_notice' | 'report_problem',

@@ -5,6 +5,7 @@ import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import ExplicacionCalculo from '../components/ExplicacionCalculo'
 import ResultConfidenceStamp from '../components/ResultConfidenceStamp'
+import ResultFeedback from '../components/ResultFeedback'
 import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
 import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
@@ -264,6 +265,8 @@ export default function ResultPage() {
       </div>
 
       <RevisionProfesionalBlock calculator={resultado.tipo} />
+
+      <ResultFeedback calculator={resultado.tipo} />
 
       <aside className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600">
         <p className="font-semibold text-primary">¿Detectaste un dato extraño o un problema técnico?</p>

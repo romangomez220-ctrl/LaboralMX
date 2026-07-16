@@ -5,11 +5,13 @@ import SelectField from '../components/SelectField'
 import SalarioCapturaField from '../components/SalarioCapturaField'
 import Disclaimer from '../components/Disclaimer'
 import CalculatorTrustPanel from '../components/CalculatorTrustPanel'
+import DraftRecoveryNotice from '../components/DraftRecoveryNotice'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted, trackCalculatorStarted, trackCalculatorValidationError } from '../utils/analytics'
 import { obtenerFechaHoyInput } from '../utils/dateUtils'
+import { borrarBorrador, cargarBorrador, guardarBorrador } from '../utils/calculatorDraft'
 import type {
   LiquidacionFormData,
   TipoCapturaSalarial,
@@ -45,6 +47,8 @@ const ESTADO_INICIAL: LiquidacionFormState = {
   incluir20Dias: false,
   zonaSalarioMinimo: 'general',
 }
+
+const CLAVE_BORRADOR = 'romanus_liquidacion_draft_v1'
 
 const SI_NO = [
   { value: 'si', label: 'Sí' },
@@ -83,7 +87,9 @@ interface LiquidacionCalculatorProps {
 }
 
 export default function LiquidacionCalculator({ headingLevel = 'h1' }: LiquidacionCalculatorProps) {
-  const [form, setForm] = useState<LiquidacionFormState>(ESTADO_INICIAL)
+  const [borradorInicial] = useState(() => cargarBorrador(CLAVE_BORRADOR, ESTADO_INICIAL))
+  const [form, setForm] = useState<LiquidacionFormState>(borradorInicial.value)
+  const [borradorRecuperado, setBorradorRecuperado] = useState(borradorInicial.recovered)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const navigate = useNavigate()
   const fechaHoy = obtenerFechaHoyInput()
@@ -100,7 +106,12 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
     campo: K,
     valor: LiquidacionFormState[K],
   ) {
-    setForm((prev) => ({ ...prev, [campo]: valor }))
+    setForm((prev) => {
+      const siguiente = { ...prev, [campo]: valor }
+      guardarBorrador(CLAVE_BORRADOR, siguiente)
+      return siguiente
+    })
+    setBorradorRecuperado(false)
     setErrores((prev) => {
       if (!prev[campo]) return prev
       const siguientes = { ...prev }
@@ -164,6 +175,7 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
     }
 
     const resultado = calcularLiquidacion(datosParaCalcular)
+    borrarBorrador(CLAVE_BORRADOR)
     trackCalculatorCompleted('liquidacion')
 
     const datosCapturados = [
@@ -195,6 +207,16 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
       <FiniquitoVsLiquidacion />
 
       <CalculatorTrustPanel compact />
+
+      <DraftRecoveryNotice
+        recovered={borradorRecuperado}
+        onClear={() => {
+          borrarBorrador(CLAVE_BORRADOR)
+          setForm(ESTADO_INICIAL)
+          setErrores({})
+          setBorradorRecuperado(false)
+        }}
+      />
 
       {Object.keys(errores).length > 0 && (
         <div role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">

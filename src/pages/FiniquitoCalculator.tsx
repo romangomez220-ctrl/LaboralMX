@@ -5,11 +5,13 @@ import SelectField from '../components/SelectField'
 import SalarioCapturaField from '../components/SalarioCapturaField'
 import Disclaimer from '../components/Disclaimer'
 import CalculatorTrustPanel from '../components/CalculatorTrustPanel'
+import DraftRecoveryNotice from '../components/DraftRecoveryNotice'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularFiniquito } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted, trackCalculatorStarted, trackCalculatorValidationError } from '../utils/analytics'
 import { obtenerFechaHoyInput } from '../utils/dateUtils'
+import { borrarBorrador, cargarBorrador, guardarBorrador } from '../utils/calculatorDraft'
 import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
@@ -41,6 +43,8 @@ const ESTADO_INICIAL: FiniquitoFormState = {
   zonaSalarioMinimo: 'general',
 }
 
+const CLAVE_BORRADOR = 'romanus_finiquito_draft_v1'
+
 const SI_NO = [
   { value: 'si', label: 'Sí' },
   { value: 'no', label: 'No' },
@@ -56,7 +60,9 @@ interface FiniquitoCalculatorProps {
 }
 
 export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCalculatorProps) {
-  const [form, setForm] = useState<FiniquitoFormState>(ESTADO_INICIAL)
+  const [borradorInicial] = useState(() => cargarBorrador(CLAVE_BORRADOR, ESTADO_INICIAL))
+  const [form, setForm] = useState<FiniquitoFormState>(borradorInicial.value)
+  const [borradorRecuperado, setBorradorRecuperado] = useState(borradorInicial.recovered)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const navigate = useNavigate()
   const fechaHoy = obtenerFechaHoyInput()
@@ -70,7 +76,12 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
   }
 
   function actualizar<K extends keyof FiniquitoFormState>(campo: K, valor: FiniquitoFormState[K]) {
-    setForm((prev) => ({ ...prev, [campo]: valor }))
+    setForm((prev) => {
+      const siguiente = { ...prev, [campo]: valor }
+      guardarBorrador(CLAVE_BORRADOR, siguiente)
+      return siguiente
+    })
+    setBorradorRecuperado(false)
     setErrores((prev) => {
       if (!prev[campo]) return prev
       const siguientes = { ...prev }
@@ -133,6 +144,7 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
     }
 
     const resultado = calcularFiniquito(datosParaCalcular)
+    borrarBorrador(CLAVE_BORRADOR)
     trackCalculatorCompleted('finiquito')
 
     const datosCapturados = [
@@ -162,6 +174,16 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
       <FiniquitoVsLiquidacion />
 
       <CalculatorTrustPanel compact />
+
+      <DraftRecoveryNotice
+        recovered={borradorRecuperado}
+        onClear={() => {
+          borrarBorrador(CLAVE_BORRADOR)
+          setForm(ESTADO_INICIAL)
+          setErrores({})
+          setBorradorRecuperado(false)
+        }}
+      />
 
       {Object.keys(errores).length > 0 && (
         <div role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
