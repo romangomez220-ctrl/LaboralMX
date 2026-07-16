@@ -6,7 +6,7 @@ export type TipoSalidaLiquidacion =
   | 'renuncia'
   | 'mutuo_acuerdo'
   | 'fallecimiento'
-  | 'incapacidad'
+  | 'incapacidad_no_profesional'
 
 /**
  * Zona geográfica para efectos del salario mínimo vigente (relevante para
@@ -40,6 +40,8 @@ export interface LiquidacionFormData {
   fechaSalida: string
   salarioBase: number
   tipoSalario: TipoCapturaSalarial
+  /** SDI para indemnizaciones (Arts. 84 y 89 LFT). */
+  salarioDiarioIntegrado?: number
   diasPendientes: number
   vacacionesDisfrutadas: number
   tipoSalida: TipoSalidaLiquidacion
@@ -60,6 +62,7 @@ export interface ResultadoCalculo {
   salarioBase: number
   tipoSalario: TipoCapturaSalarial
   salarioDiario: number
+  salarioDiarioIntegrado?: number
   antiguedadAnios: number
   antiguedadTexto: string
   conceptos: ConceptoResultado[]

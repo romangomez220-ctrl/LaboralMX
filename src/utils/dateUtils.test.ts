@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcularAntiguedad, diasTrabajadosAnioCalendario, diffInDays, formatAntiguedad, parseDate } from './dateUtils'
+import { calcularAntiguedad, diasDelAnioCalendario, diasTrabajadosAnioCalendario, diffInDays, formatAntiguedad, parseDate } from './dateUtils'
 
 describe('fechas laborales en UTC', () => {
   it('cuenta correctamente el día bisiesto', () => {
@@ -19,5 +19,11 @@ describe('fechas laborales en UTC', () => {
 
   it('devuelve antigüedad cero cuando la salida no es posterior', () => {
     expect(calcularAntiguedad(parseDate('2026-01-01'), parseDate('2026-01-01')).totalDias).toBe(0)
+  })
+
+  it('reconoce años calendario y periodos laborales bisiestos', () => {
+    expect(diasDelAnioCalendario(2024)).toBe(366)
+    expect(diasDelAnioCalendario(2026)).toBe(365)
+    expect(calcularAntiguedad(parseDate('2023-07-01'), parseDate('2024-01-01')).diasPeriodoLaboralEnCurso).toBe(366)
   })
 })

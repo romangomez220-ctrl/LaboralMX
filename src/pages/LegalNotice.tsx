@@ -17,11 +17,19 @@ export default function LegalNotice() {
         <ul className="list-disc pl-5 space-y-1">
           <li>Condiciones particulares de tu contrato individual o colectivo de trabajo.</li>
           <li>Prestaciones superiores a las mínimas de ley.</li>
-          <li>Salario integrado (comisiones, bonos, prestaciones en especie, etc.).</li>
+          <li>
+            Comisiones, bonos, prestaciones en especie u otros componentes del salario integrado
+            cuando el usuario no capture su salario integrado real.
+          </li>
           <li>Convenios sindicales o disposiciones internas de la empresa.</li>
           <li>Criterios de tribunales laborales o resoluciones judiciales sobre tu caso particular.</li>
           <li>Salarios caídos, horas extra, PTU u otras prestaciones no incluidas en esta versión.</li>
         </ul>
+        <p>
+          Metodología revisada con la Ley Federal del Trabajo vigente, última reforma publicada en
+          el Diario Oficial de la Federación el 14 de mayo de 2026. Los salarios mínimos utilizados
+          corresponden a los vigentes desde el 1 de enero de 2026.
+        </p>
         <p>
           El resultado mostrado no constituye una asesoría legal ni un dictamen vinculante. Antes
           de tomar decisiones legales, financieras o laborales, te recomendamos consultar con un

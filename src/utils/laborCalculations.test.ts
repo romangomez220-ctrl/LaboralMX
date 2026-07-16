@@ -88,12 +88,27 @@ describe('finiquito', () => {
     expect(concepto(resultado, 'Vacaciones proporcionales')?.monto).toBe(0)
     expect(concepto(resultado, 'Prima vacacional (25%)')?.monto).toBe(0)
   })
+
+  it('reconoce las vacaciones devengadas al llegar al aniversario laboral', () => {
+    const resultado = calcularFiniquito({ ...finiquitoBase, incluirPrimaAntiguedad: false })
+    expect(concepto(resultado, 'Vacaciones proporcionales')?.monto).toBe(6000)
+    expect(concepto(resultado, 'Prima vacacional (25%)')?.monto).toBe(1500)
+  })
 })
 
 describe('liquidación', () => {
-  it('incluye 90 días en despido injustificado', () => {
+  it('calcula los 90 días con una integración mínima cuando no se captura SDI', () => {
     const resultado = calcularLiquidacion(liquidacionBase)
-    expect(concepto(resultado, 'Indemnización constitucional (3 meses / 90 días)')?.monto).toBe(45000)
+    expect(resultado.salarioDiarioIntegrado).toBe(525.34)
+    expect(concepto(resultado, 'Indemnización constitucional (3 meses / 90 días)')?.monto).toBe(47280.6)
+    expect(resultado.notas.join(' ')).toContain('prestaciones mínimas')
+  })
+
+  it('respeta el SDI capturado para indemnizaciones y 20 días', () => {
+    const resultado = calcularLiquidacion({ ...liquidacionBase, salarioDiarioIntegrado: 600, incluir20Dias: true })
+    expect(concepto(resultado, 'Indemnización constitucional (3 meses / 90 días)')?.monto).toBe(54000)
+    expect(resultado.veinteDiasInformativo?.monto).toBe(12000)
+    expect(resultado.notas.join(' ')).not.toContain('prestaciones mínimas')
   })
 
   it('no incluye indemnización constitucional en despido justificado', () => {
@@ -110,9 +125,21 @@ describe('liquidación', () => {
 
   it('mantiene los 20 días por año fuera del total principal', () => {
     const resultado = calcularLiquidacion({ ...liquidacionBase, incluir20Dias: true })
-    expect(resultado.veinteDiasInformativo?.monto).toBe(10000)
+    expect(resultado.veinteDiasInformativo?.monto).toBe(10506.8)
     expect(resultado.totalConEscenarioInformativo).toBe(
       resultado.totalEstimado + (resultado.veinteDiasInformativo?.monto ?? 0),
     )
+  })
+
+  it('incluye un mes y prima de antigüedad en incapacidad no profesional', () => {
+    const resultado = calcularLiquidacion({ ...liquidacionBase, tipoSalida: 'incapacidad_no_profesional', incluirPrimaAntiguedad: false })
+    expect(concepto(resultado, 'Indemnización por incapacidad no profesional (1 mes)')?.monto).toBe(15000)
+    expect(concepto(resultado, 'Prima de antigüedad')).toBeDefined()
+    expect(resultado.notas.join(' ')).toContain('riesgo de trabajo')
+  })
+
+  it('usa 366 días para el aguinaldo proporcional de un año bisiesto', () => {
+    const resultado = calcularLiquidacion({ ...liquidacionBase, fechaIngreso: '2024-01-01', fechaSalida: '2024-12-31', tipoSalida: 'renuncia' })
+    expect(concepto(resultado, 'Aguinaldo proporcional')?.monto).toBe(7500)
   })
 })

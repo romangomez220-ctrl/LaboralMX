@@ -22,6 +22,7 @@ export interface AntiguedadInfo {
   diasAnioLaboralEnCurso: number
   antiguedadDecimal: number
   totalDias: number
+  diasPeriodoLaboralEnCurso: number
 }
 
 /**
@@ -37,7 +38,7 @@ export interface AntiguedadInfo {
  */
 export function calcularAntiguedad(ingreso: Date, salida: Date): AntiguedadInfo {
   if (salida.getTime() <= ingreso.getTime()) {
-    return { aniosCompletos: 0, diasAnioLaboralEnCurso: 0, antiguedadDecimal: 0, totalDias: 0 }
+    return { aniosCompletos: 0, diasAnioLaboralEnCurso: 0, antiguedadDecimal: 0, totalDias: 0, diasPeriodoLaboralEnCurso: 365 }
   }
 
   let aniosCompletos = salida.getUTCFullYear() - ingreso.getUTCFullYear()
@@ -50,7 +51,9 @@ export function calcularAntiguedad(ingreso: Date, salida: Date): AntiguedadInfo 
   if (aniosCompletos < 0) aniosCompletos = 0
 
   const ultimoAniversario = addYears(ingreso, aniosCompletos)
+  const siguienteAniversario = addYears(ingreso, aniosCompletos + 1)
   const diasAnioLaboralEnCurso = Math.max(0, diffInDays(ultimoAniversario, salida))
+  const diasPeriodoLaboralEnCurso = diffInDays(ultimoAniversario, siguienteAniversario)
   const totalDias = Math.max(0, diffInDays(ingreso, salida))
 
   // antiguedadDecimal se deriva de los MISMOS componentes que ya usa el
@@ -58,9 +61,13 @@ export function calcularAntiguedad(ingreso: Date, salida: Date): AntiguedadInfo 
   // cálculo paralelo sobre totalDias/365.25. Esto evita que la antigüedad
   // mostrada al usuario difiera de la que se usa internamente para prima
   // de antigüedad, 20 días por año, etc.
-  const antiguedadDecimal = aniosCompletos + diasAnioLaboralEnCurso / 365
+  const antiguedadDecimal = aniosCompletos + diasAnioLaboralEnCurso / diasPeriodoLaboralEnCurso
 
-  return { aniosCompletos, diasAnioLaboralEnCurso, antiguedadDecimal, totalDias }
+  return { aniosCompletos, diasAnioLaboralEnCurso, antiguedadDecimal, totalDias, diasPeriodoLaboralEnCurso }
+}
+
+export function diasDelAnioCalendario(anio: number): number {
+  return diffInDays(new Date(Date.UTC(anio, 0, 1)), new Date(Date.UTC(anio + 1, 0, 1)))
 }
 
 /**

@@ -49,6 +49,9 @@ export default function ResultPage() {
       `Laboral Suite — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
       `Salario capturado: ${formatCurrency(resultado.salarioBase)} (${resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
       `Salario diario usado: ${formatCurrency(resultado.salarioDiario)}`,
+      ...(resultado.salarioDiarioIntegrado
+        ? [`Salario diario integrado para indemnizaciones: ${formatCurrency(resultado.salarioDiarioIntegrado)}`]
+        : []),
       `Antigüedad: ${resultado.antiguedadTexto}`,
       ...resultado.conceptos.map((c) => `${c.etiqueta}: ${formatCurrency(c.monto)}`),
       `Total estimado: ${formatCurrency(resultado.totalEstimado)}`,
@@ -140,6 +143,12 @@ export default function ResultPage() {
         <p>
           <span className="font-semibold">Antigüedad:</span> {resultado.antiguedadTexto}
         </p>
+        {resultado.salarioDiarioIntegrado && (
+          <p>
+            <span className="font-semibold">Salario integrado para indemnizaciones:</span>{' '}
+            {formatCurrency(resultado.salarioDiarioIntegrado)}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">

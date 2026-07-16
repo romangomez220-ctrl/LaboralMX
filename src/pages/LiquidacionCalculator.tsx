@@ -27,6 +27,7 @@ interface LiquidacionFormState {
   fechaSalida: string
   tipoSalario: TipoCapturaSalarial
   salarioBase: string
+  salarioDiarioIntegrado: string
   diasPendientes: string
   vacacionesDisfrutadas: string
   tipoSalida: TipoSalidaLiquidacion
@@ -40,6 +41,7 @@ const ESTADO_INICIAL: LiquidacionFormState = {
   fechaSalida: '',
   tipoSalario: 'diario',
   salarioBase: '',
+  salarioDiarioIntegrado: '',
   diasPendientes: '',
   vacacionesDisfrutadas: '',
   tipoSalida: 'despido_injustificado',
@@ -48,7 +50,7 @@ const ESTADO_INICIAL: LiquidacionFormState = {
   zonaSalarioMinimo: 'general',
 }
 
-const CLAVE_BORRADOR = 'romanus_liquidacion_draft_v1'
+const CLAVE_BORRADOR = 'romanus_liquidacion_draft_v2'
 
 const SI_NO = [
   { value: 'si', label: 'Sí' },
@@ -70,7 +72,7 @@ const TIPOS_SALIDA: { value: TipoSalidaLiquidacion; label: string }[] = [
   { value: 'renuncia', label: 'Renuncia' },
   { value: 'mutuo_acuerdo', label: 'Mutuo acuerdo' },
   { value: 'fallecimiento', label: 'Fallecimiento del trabajador' },
-  { value: 'incapacidad', label: 'Incapacidad' },
+  { value: 'incapacidad_no_profesional', label: 'Incapacidad no profesional (Art. 54)' },
 ]
 
 const TIPOS_SALIDA_LABEL: Record<string, string> = {
@@ -79,7 +81,7 @@ const TIPOS_SALIDA_LABEL: Record<string, string> = {
   renuncia: 'Renuncia',
   mutuo_acuerdo: 'Mutuo acuerdo',
   fallecimiento: 'Fallecimiento del trabajador',
-  incapacidad: 'Incapacidad',
+  incapacidad_no_profesional: 'Incapacidad no profesional (Art. 54)',
 }
 
 interface LiquidacionCalculatorProps {
@@ -144,6 +146,16 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
     } else if (aNumero(form.salarioBase) <= 0) {
       e.salarioBase = 'El salario debe ser mayor a 0.'
     }
+    if (form.salarioDiarioIntegrado.trim() !== '' && aNumero(form.salarioDiarioIntegrado) <= 0) {
+      e.salarioDiarioIntegrado = 'El salario diario integrado debe ser mayor a 0.'
+    } else if (
+      form.salarioDiarioIntegrado.trim() !== '' &&
+      form.salarioBase.trim() !== '' &&
+      aNumero(form.salarioDiarioIntegrado) <
+        (form.tipoSalario === 'diario' ? aNumero(form.salarioBase) : aNumero(form.salarioBase) / 30)
+    ) {
+      e.salarioDiarioIntegrado = 'El salario integrado no puede ser menor al salario diario ordinario.'
+    }
 
     if (form.diasPendientes.trim() !== '' && aNumero(form.diasPendientes) < 0) {
       e.diasPendientes = 'Los días pendientes no pueden ser negativos.'
@@ -166,6 +178,7 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
       fechaSalida: form.fechaSalida,
       salarioBase: aNumero(form.salarioBase),
       tipoSalario: form.tipoSalario,
+      salarioDiarioIntegrado: form.salarioDiarioIntegrado.trim() === '' ? undefined : aNumero(form.salarioDiarioIntegrado),
       diasPendientes: aNumero(form.diasPendientes),
       vacacionesDisfrutadas: aNumero(form.vacacionesDisfrutadas),
       tipoSalida: form.tipoSalida,
@@ -186,7 +199,8 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
         valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
       },
       { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
-      { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
+      { etiqueta: 'Salario diario integrado', valor: form.salarioDiarioIntegrado || 'Estimado con prestaciones mínimas de ley' },
+      { etiqueta: 'Vacaciones ya disfrutadas o pagadas', valor: form.vacacionesDisfrutadas || '0' },
       { etiqueta: 'Tipo de salida', valor: TIPOS_SALIDA_LABEL[form.tipoSalida] ?? form.tipoSalida },
     ]
 
@@ -253,6 +267,16 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
           error={errores.salarioBase}
         />
         <InputField
+          label="Salario diario integrado (opcional)"
+          name="salarioDiarioIntegrado"
+          type="number"
+          placeholder="Ej. 525.50"
+          value={form.salarioDiarioIntegrado}
+          onChange={(v) => actualizar('salarioDiarioIntegrado', v)}
+          error={errores.salarioDiarioIntegrado}
+          helpText="Aparece en tu recibo o contrato. Si lo dejas vacío, estimamos el mínimo legal con aguinaldo y prima vacacional; bonos y otras prestaciones no podrán incluirse."
+        />
+        <InputField
           label="Días trabajados pendientes de pago"
           name="diasPendientes"
           type="number"
@@ -262,14 +286,14 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
           error={errores.diasPendientes}
         />
         <InputField
-          label="Vacaciones disfrutadas del periodo en curso"
+          label="Vacaciones ya disfrutadas o pagadas"
           name="vacacionesDisfrutadas"
           type="number"
           placeholder="0"
           value={form.vacacionesDisfrutadas}
           onChange={(v) => actualizar('vacacionesDisfrutadas', v)}
           error={errores.vacacionesDisfrutadas}
-          helpText="Captura solo los días correspondientes al periodo iniciado en tu último aniversario laboral."
+          helpText="Indica los días del último derecho anual y del periodo en curso que ya te otorgaron o pagaron. No incluyas periodos anteriores aún adeudados."
         />
         <SelectField
           label="Tipo de salida"
@@ -290,7 +314,8 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
           value={form.incluirPrimaAntiguedad ? 'si' : 'no'}
           options={SI_NO}
           onChange={(v) => actualizar('incluirPrimaAntiguedad', v === 'si')}
-          helpText="En mutuo acuerdo e incapacidad, el monto se mostrará por separado del total, como referencia informativa."
+          disabled={form.tipoSalida === 'incapacidad_no_profesional'}
+          helpText="En incapacidad no profesional se incluye conforme al Art. 54; en mutuo acuerdo se muestra por separado para revisión."
         />
         <SelectField
           label="Zona del salario mínimo"

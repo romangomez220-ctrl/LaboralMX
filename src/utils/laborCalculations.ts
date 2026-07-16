@@ -15,6 +15,7 @@ import type {
 import {
   calcularAntiguedad,
   diasTrabajadosAnioCalendario,
+  diasDelAnioCalendario,
   formatAntiguedad,
   obtenerFechaHoyUTC,
   parseDate,
@@ -75,7 +76,7 @@ interface ResultadoPrimaAntiguedad {
  *
  * - "fallecimiento": el Art. 162 LFT la incluye expresamente, sin mínimo
  *   de años, igual que en un despido — es un caso cierto.
- * - "mutuo_acuerdo" e "incapacidad": el tratamiento puede variar según
+ * - "mutuo_acuerdo" e "incapacidad_no_profesional": el tratamiento puede variar según
  *   las circunstancias documentadas del caso (p. ej. el tipo exacto de
  *   incapacidad, o si el mutuo acuerdo se trata como una renuncia
  *   encubierta). No son casos ciertos como despido o fallecimiento, así
@@ -92,7 +93,7 @@ type CasoPrimaAntiguedad =
   | 'despido_justificado'
   | 'fallecimiento'
   | 'mutuo_acuerdo'
-  | 'incapacidad'
+  | 'incapacidad_no_profesional'
   | 'otro'
 
 type ResultadoEvaluacionPrimaAntiguedad = 'incluir' | 'informativo' | 'excluir'
@@ -116,6 +117,9 @@ const NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO =
 
 const NOTA_PRIMA_ANTIGUEDAD_FALLECIMIENTO =
   'Se incluye la prima de antigüedad: el Art. 162 LFT la reconoce expresamente en caso de fallecimiento del trabajador, sin exigir un mínimo de años de antigüedad.'
+
+const NOTA_PRIMA_ANTIGUEDAD_INCAPACIDAD_NO_PROFESIONAL =
+  'Se incluyen 12 días por cada año de servicios conforme al Art. 54 LFT para el supuesto específico de incapacidad no profesional.'
 
 const NOTA_PRIMA_ANTIGUEDAD_INFORMATIVA =
   'La prima de antigüedad puede depender del motivo de terminación y de la antigüedad. Este cálculo es orientativo y debe revisarse según el caso concreto.'
@@ -145,8 +149,9 @@ function evaluarPrimaAntiguedad(caso: CasoPrimaAntiguedad): EvaluacionPrimaAntig
       return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_DESPIDO_JUSTIFICADO }
     case 'fallecimiento':
       return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_FALLECIMIENTO }
+    case 'incapacidad_no_profesional':
+      return { resultado: 'incluir', nota: NOTA_PRIMA_ANTIGUEDAD_INCAPACIDAD_NO_PROFESIONAL }
     case 'mutuo_acuerdo':
-    case 'incapacidad':
     case 'otro':
       return { resultado: 'informativo', nota: NOTA_PRIMA_ANTIGUEDAD_INFORMATIVA }
   }
@@ -179,6 +184,8 @@ interface ConceptosBase {
   vacacionesPendientesDinero: number
   primaVacacional: number
   salariosPendientes: number
+  aniosCompletos: number
+  diasPeriodoLaboralEnCurso: number
 }
 
 function calcularConceptosBase(
@@ -193,23 +200,28 @@ function calcularConceptosBase(
 
   const antiguedad = calcularAntiguedad(ingreso, salida)
   const diasTrabajadosAnioActual = diasTrabajadosAnioCalendario(ingreso, salida)
+  const diasAnioCalendario = diasDelAnioCalendario(salida.getUTCFullYear())
 
   const aguinaldoProporcional = round2(
-    (salarioDiario * DIAS_AGUINALDO * diasTrabajadosAnioActual) / 365,
+    (salarioDiario * DIAS_AGUINALDO * diasTrabajadosAnioActual) / diasAnioCalendario,
   )
   const salariosPendientes = round2(salarioDiario * diasPendientes)
 
   const anioVacacionalEnCurso = antiguedad.aniosCompletos + 1
   const diasVacacionesCorrespondientes = diasVacacionesPorAnio(anioVacacionalEnCurso)
-  const diasAnioLaboral = Math.min(antiguedad.diasAnioLaboralEnCurso, 365)
-
-  const vacacionesProporcionalesDinero = round2(
-    (salarioDiario * diasVacacionesCorrespondientes * diasAnioLaboral) / 365,
+  const diasAnioLaboral = Math.min(antiguedad.diasAnioLaboralEnCurso, antiguedad.diasPeriodoLaboralEnCurso)
+  const diasVacacionesDevengadasUltimoAnio = antiguedad.aniosCompletos > 0
+    ? diasVacacionesPorAnio(antiguedad.aniosCompletos)
+    : 0
+  const diasVacacionesProporcionales =
+    (diasVacacionesCorrespondientes * diasAnioLaboral) / antiguedad.diasPeriodoLaboralEnCurso
+  const vacacionesGeneradasDinero = round2(
+    salarioDiario * (diasVacacionesDevengadasUltimoAnio + diasVacacionesProporcionales),
   )
   const valorVacacionesDisfrutadas = round2(vacacionesDisfrutadas * salarioDiario)
   const vacacionesPendientesDinero = Math.max(
     0,
-    round2(vacacionesProporcionalesDinero - valorVacacionesDisfrutadas),
+    round2(vacacionesGeneradasDinero - valorVacacionesDisfrutadas),
   )
   const primaVacacional = round2(vacacionesPendientesDinero * PORCENTAJE_PRIMA_VACACIONAL)
 
@@ -222,6 +234,8 @@ function calcularConceptosBase(
     vacacionesPendientesDinero,
     primaVacacional,
     salariosPendientes,
+    aniosCompletos: antiguedad.aniosCompletos,
+    diasPeriodoLaboralEnCurso: antiguedad.diasPeriodoLaboralEnCurso,
   }
 }
 
@@ -244,13 +258,13 @@ export function calcularFiniquito(data: FiniquitoFormData): ResultadoCalculo {
     {
       etiqueta: 'Aguinaldo proporcional',
       monto: base.aguinaldoProporcional,
-      formula: '15 días × salario diario × (días trabajados del año ÷ 365)',
+      formula: '15 días × salario diario × (días trabajados ÷ días reales del año)',
     },
     {
       etiqueta: 'Vacaciones proporcionales',
       monto: base.vacacionesPendientesDinero,
-      detalle: `${base.diasVacacionesCorrespondientes} días correspondientes al año en curso`,
-      formula: 'Días de vacaciones correspondientes × salario diario × (días del año laboral ÷ 365), menos vacaciones disfrutadas',
+      detalle: `Incluye el derecho devengado del último año completo y la proporción del periodo en curso`,
+      formula: '(Vacaciones devengadas + proporcionales) × salario diario, menos vacaciones disfrutadas',
     },
     {
       etiqueta: 'Prima vacacional (25%)',
@@ -331,13 +345,13 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     {
       etiqueta: 'Aguinaldo proporcional',
       monto: base.aguinaldoProporcional,
-      formula: '15 días × salario diario × (días trabajados del año ÷ 365)',
+      formula: '15 días × salario diario × (días trabajados ÷ días reales del año)',
     },
     {
       etiqueta: 'Vacaciones proporcionales',
       monto: base.vacacionesPendientesDinero,
-      detalle: `${base.diasVacacionesCorrespondientes} días correspondientes al año en curso`,
-      formula: 'Días de vacaciones correspondientes × salario diario × (días del año laboral ÷ 365), menos vacaciones disfrutadas',
+      detalle: `Incluye el derecho devengado del último año completo y la proporción del periodo en curso`,
+      formula: '(Vacaciones devengadas + proporcionales) × salario diario, menos vacaciones disfrutadas',
     },
     {
       etiqueta: 'Prima vacacional (25%)',
@@ -348,18 +362,37 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
 
   const notas: string[] = []
 
+  const diasVacacionesIntegracion = diasVacacionesPorAnio(Math.max(1, base.aniosCompletos + 1))
+  const factorIntegracionMinimo = 1 + DIAS_AGUINALDO / 365 + (diasVacacionesIntegracion * PORCENTAJE_PRIMA_VACACIONAL) / 365
+  const salarioDiarioIntegradoEstimado = round2(base.salarioDiario * factorIntegracionMinimo)
+  const salarioDiarioIntegrado = data.salarioDiarioIntegrado && data.salarioDiarioIntegrado > 0
+    ? round2(data.salarioDiarioIntegrado)
+    : salarioDiarioIntegradoEstimado
+
   if (data.tipoSalida === 'despido_injustificado') {
-    const indemnizacion = round2(base.salarioDiario * DIAS_INDEMNIZACION_CONSTITUCIONAL)
+    const indemnizacion = round2(salarioDiarioIntegrado * DIAS_INDEMNIZACION_CONSTITUCIONAL)
     conceptos.push({
       etiqueta: 'Indemnización constitucional (3 meses / 90 días)',
       monto: indemnizacion,
-      formula: 'Salario diario × 90 días (3 meses de salario, Art. 48 LFT)',
+      formula: 'Salario diario integrado × 90 días (Arts. 48, 84 y 89 LFT)',
     })
+    if (!data.salarioDiarioIntegrado) {
+      notas.push('El salario diario integrado se estimó con prestaciones mínimas de ley. Si recibías comisiones, bonos, vales u otras prestaciones habituales, captura tu SDI real para evitar una subestimación.')
+    }
+  }
+
+  if (data.tipoSalida === 'incapacidad_no_profesional') {
+    conceptos.push({
+      etiqueta: 'Indemnización por incapacidad no profesional (1 mes)',
+      monto: round2(base.salarioDiario * 30),
+      formula: 'Salario diario × 30 días (Art. 54 LFT)',
+    })
+    notas.push('Este supuesto solo corresponde a incapacidad física o mental no derivada de un riesgo de trabajo que haga imposible prestar el servicio. Los riesgos de trabajo siguen reglas distintas.')
   }
 
   let primaAntiguedadInformativa: ConceptoResultado | undefined
 
-  if (data.incluirPrimaAntiguedad) {
+  if (data.incluirPrimaAntiguedad || data.tipoSalida === 'incapacidad_no_profesional') {
     const casoPrimaAntiguedad: CasoPrimaAntiguedad =
       data.tipoSalida === 'renuncia'
         ? base.antiguedadDecimal >= 15
@@ -371,8 +404,8 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
             ? 'despido_justificado'
             : data.tipoSalida === 'fallecimiento'
               ? 'fallecimiento'
-              : data.tipoSalida === 'incapacidad'
-                ? 'incapacidad'
+              : data.tipoSalida === 'incapacidad_no_profesional'
+                ? 'incapacidad_no_profesional'
                 : 'mutuo_acuerdo'
 
     const { resultado, nota } = evaluarPrimaAntiguedad(casoPrimaAntiguedad)
@@ -411,16 +444,16 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
 
   if (data.incluir20Dias) {
     if (data.tipoSalida === 'despido_injustificado') {
-      const monto20 = round2(base.salarioDiario * DIAS_VEINTE_POR_ANIO * base.antiguedadDecimal)
+      const monto20 = round2(salarioDiarioIntegrado * DIAS_VEINTE_POR_ANIO * base.antiguedadDecimal)
       veinteDiasInformativo = {
         etiqueta: '20 días por año de servicio (escenario informativo)',
         monto: monto20,
-        formula: 'Salario diario × 20 días × años de antigüedad',
+        formula: 'Salario diario integrado × 20 días × años de antigüedad',
       }
       totalConEscenarioInformativo = round2(totalEstimado + monto20)
     } else {
       notas.push(
-        'El escenario de 20 días por año normalmente solo se utiliza como referencia de negociación en despidos injustificados, por lo que no se incluyó en este cálculo.',
+        'Los 20 días por año solo proceden en supuestos específicos de los Arts. 49 y 50 LFT; no son una prestación automática de toda terminación.',
       )
     }
   }
@@ -430,6 +463,7 @@ export function calcularLiquidacion(data: LiquidacionFormData): ResultadoCalculo
     salarioBase: data.salarioBase,
     tipoSalario: data.tipoSalario,
     salarioDiario: base.salarioDiario,
+    salarioDiarioIntegrado,
     antiguedadAnios: round2(base.antiguedadDecimal),
     antiguedadTexto: base.antiguedadTexto,
     conceptos,
@@ -487,7 +521,10 @@ export function calcularAguinaldoEstimado(data: AguinaldoFormData): ResultadoAgu
   const finDeAnio = new Date(Date.UTC(hoy.getUTCFullYear(), 11, 31))
   const diasComputados = diasTrabajadosAnioCalendario(ingreso, finDeAnio)
   const salarioDiario = obtenerSalarioDiario(data.salarioBase, data.tipoSalario)
-  const aguinaldoEstimado = round2((salarioDiario * DIAS_AGUINALDO * diasComputados) / 365)
+  const aguinaldoEstimado = round2(
+    (salarioDiario * DIAS_AGUINALDO * diasComputados) /
+      diasDelAnioCalendario(finDeAnio.getUTCFullYear()),
+  )
 
   return {
     salarioBase: data.salarioBase,

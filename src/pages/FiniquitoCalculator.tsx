@@ -155,7 +155,7 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
         valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
       },
       { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
-      { etiqueta: 'Vacaciones disfrutadas', valor: form.vacacionesDisfrutadas || '0' },
+      { etiqueta: 'Vacaciones ya disfrutadas o pagadas', valor: form.vacacionesDisfrutadas || '0' },
       { etiqueta: '¿Renuncia voluntaria?', valor: form.renunciaVoluntaria ? 'Sí' : 'No' },
     ]
 
@@ -229,14 +229,14 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
           error={errores.diasPendientes}
         />
         <InputField
-          label="Vacaciones disfrutadas del periodo en curso"
+          label="Vacaciones ya disfrutadas o pagadas"
           name="vacacionesDisfrutadas"
           type="number"
           placeholder="0"
           value={form.vacacionesDisfrutadas}
           onChange={(v) => actualizar('vacacionesDisfrutadas', v)}
           error={errores.vacacionesDisfrutadas}
-          helpText="Captura solo los días correspondientes al periodo iniciado en tu último aniversario laboral."
+          helpText="Indica los días del último derecho anual y del periodo en curso que ya te otorgaron o pagaron. No incluyas periodos anteriores aún adeudados."
         />
         <SelectField
           label="¿Renuncia voluntaria?"

@@ -40,7 +40,7 @@ export default function HowItWorks() {
       </Bloque>
 
       <Bloque titulo="Aguinaldo proporcional">
-        <p>Aguinaldo = salario diario × 15 × (días trabajados del año calendario ÷ 365)</p>
+        <p>Aguinaldo = salario diario × 15 × (días trabajados ÷ días reales del año: 365 o 366)</p>
         <p>Se calcula sobre los días trabajados dentro del año calendario en que ocurre la salida.</p>
       </Bloque>
 
@@ -68,8 +68,8 @@ export default function HowItWorks() {
           </table>
         </div>
         <p className="mt-2">
-          Vacaciones proporcionales = salario diario × días correspondientes × (días del año
-          laboral en curso ÷ 365), menos el valor de los días ya disfrutados.
+          Vacaciones pendientes = salario diario × (días devengados del último año completo +
+          parte proporcional del periodo en curso − días ya disfrutados o pagados).
         </p>
         <p>Prima vacacional = vacaciones pendientes en dinero × 25%</p>
       </Bloque>
@@ -92,17 +92,30 @@ export default function HowItWorks() {
       </Bloque>
 
       <Bloque titulo="Indemnización constitucional (solo liquidación)">
-        <p>Indemnización = salario diario × 90 días</p>
+        <p>Indemnización = salario diario integrado × 90 días</p>
+        <p>
+          Conforme a los Arts. 84 y 89 LFT, la base integra la cuota diaria y prestaciones
+          habituales. Puedes capturarla; si no la conoces, se estima con aguinaldo y prima
+          vacacional mínimos y el resultado lo advierte expresamente.
+        </p>
         <p>Aplica únicamente en casos de despido injustificado.</p>
       </Bloque>
 
       <Bloque titulo="20 días por año (escenario informativo)">
-        <p>20 días por año = salario diario × 20 × años de antigüedad (proporcional)</p>
+        <p>20 días por año = salario diario integrado × 20 × años de antigüedad (proporcional)</p>
         <p>
-          Este concepto no es una prestación obligatoria de la LFT; se muestra por separado como
-          una referencia que en la práctica suele usarse como punto de negociación en despidos
-          injustificados.
+          No procede automáticamente en todo despido injustificado. Se muestra separado porque su
+          aplicación depende de los supuestos específicos de los Arts. 49 y 50 LFT.
         </p>
+      </Bloque>
+
+      <Bloque titulo="Incapacidad no profesional">
+        <p>
+          Cuando una incapacidad física o mental no derivada de riesgo de trabajo hace imposible
+          prestar el servicio, se calcula un mes de salario más la prima de antigüedad de 12 días
+          por año, conforme al Art. 54 LFT.
+        </p>
+        <p>Los riesgos de trabajo no se calculan en este módulo porque siguen reglas distintas.</p>
       </Bloque>
 
       <Disclaimer />
