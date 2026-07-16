@@ -1,13 +1,14 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import InputField from '../components/InputField'
 import SelectField from '../components/SelectField'
 import SalarioCapturaField from '../components/SalarioCapturaField'
 import Disclaimer from '../components/Disclaimer'
+import CalculatorTrustPanel from '../components/CalculatorTrustPanel'
 import FiniquitoVsLiquidacion from '../components/FiniquitoVsLiquidacion'
 import { calcularLiquidacion } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
-import { trackCalculatorCompleted } from '../utils/analytics'
+import { trackCalculatorCompleted, trackCalculatorStarted, trackCalculatorValidationError } from '../utils/analytics'
 import { obtenerFechaHoyInput } from '../utils/dateUtils'
 import type {
   LiquidacionFormData,
@@ -87,12 +88,25 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
   const navigate = useNavigate()
   const fechaHoy = obtenerFechaHoyInput()
   const Heading = headingLevel
+  const inicioMedido = useRef(false)
+
+  function medirInicio() {
+    if (inicioMedido.current) return
+    inicioMedido.current = true
+    trackCalculatorStarted('liquidacion')
+  }
 
   function actualizar<K extends keyof LiquidacionFormState>(
     campo: K,
     valor: LiquidacionFormState[K],
   ) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
+    setErrores((prev) => {
+      if (!prev[campo]) return prev
+      const siguientes = { ...prev }
+      delete siguientes[campo]
+      return siguientes
+    })
   }
 
   function validar(): boolean {
@@ -128,6 +142,7 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
     }
 
     setErrores(e)
+    if (Object.keys(e).length > 0) trackCalculatorValidationError('liquidacion', Object.keys(e))
     return Object.keys(e).length === 0
   }
 
@@ -169,7 +184,7 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
   const veinteDiasDisponible = form.tipoSalida === 'despido_injustificado'
 
   return (
-    <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
+    <form onSubmit={manejarEnvio} onFocusCapture={medirInicio} className="flex flex-col gap-5">
       <div>
         <Heading className="text-2xl font-bold text-primary">Calculadora de Liquidación</Heading>
         <p className="text-sm text-gray-500 mt-1">
@@ -178,6 +193,15 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
       </div>
 
       <FiniquitoVsLiquidacion />
+
+      <CalculatorTrustPanel compact />
+
+      {Object.keys(errores).length > 0 && (
+        <div role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <p className="font-semibold">Revisa {Object.keys(errores).length === 1 ? 'el campo marcado' : 'los campos marcados'}.</p>
+          <p className="mt-0.5">No se realizó ningún cálculo con datos incompletos.</p>
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-4">
         <InputField

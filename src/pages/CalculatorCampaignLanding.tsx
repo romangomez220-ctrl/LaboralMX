@@ -13,20 +13,24 @@ const CONTENT = {
     title: 'Calcula tu finiquito en línea, sin registro',
     description:
       'Obtén una estimación informativa de salarios pendientes, aguinaldo proporcional, vacaciones y prima vacacional con un desglose claro.',
+    time: 'Aproximadamente 2 minutos',
     cta: 'Calcular mi finiquito',
     location: 'campaign_landing_finiquito',
     documentTitle: 'Calculadora de finiquito gratis en México | ROMANUS',
     canonicalPath: '/calcular-finiquito',
+    imagePath: '/romanus-finiquito-social.jpg',
   },
   liquidacion: {
     eyebrow: 'Calculadora laboral gratuita para México',
     title: 'Estima tu liquidación laboral en minutos',
     description:
       'Revisa un escenario informativo de finiquito e indemnización por terminación laboral, con conceptos separados y supuestos visibles.',
+    time: 'Aproximadamente 3 minutos',
     cta: 'Calcular mi liquidación',
     location: 'campaign_landing_liquidacion',
     documentTitle: 'Calculadora de liquidación laboral en México | ROMANUS',
     canonicalPath: '/calcular-liquidacion',
+    imagePath: '/romanus-liquidacion-social.jpg',
   },
 } as const
 
@@ -39,6 +43,7 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
         title={content.documentTitle}
         description={content.description}
         canonicalPath={content.canonicalPath}
+        imagePath={content.imagePath}
       />
       <section className="rounded-xl border border-gold/50 bg-white p-6 sm:p-8 shadow-sm">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
@@ -50,6 +55,7 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
         <p className="font-serif text-lg text-stone mt-4 max-w-2xl leading-relaxed">
           {content.description}
         </p>
+        <p className="mt-3 text-sm font-semibold text-primary">{content.time} · No necesitas crear una cuenta</p>
         <a
           href="#calculadora"
           onClick={() => trackCtaClick(content.cta, '#calculadora', content.location)}
@@ -58,7 +64,7 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
           {content.cta}
         </a>
         <div className="grid sm:grid-cols-3 gap-3 mt-7 text-sm">
-          <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Sin crear una cuenta</p>
+          <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Tus datos permanecen en tu dispositivo</p>
           <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Resultado inmediato</p>
           <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Metodología visible</p>
         </div>

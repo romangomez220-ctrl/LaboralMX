@@ -84,9 +84,35 @@ export function trackCalculatorCompleted(calculator: string): void {
   })
 }
 
+export function trackCalculatorStarted(calculator: 'finiquito' | 'liquidacion'): void {
+  trackEvent('romanus_calculator_started', {
+    calculator,
+    page_path: currentPath(),
+  })
+}
+
+export function trackCalculatorValidationError(
+  calculator: 'finiquito' | 'liquidacion',
+  fields: string[],
+): void {
+  trackEvent('romanus_calculator_validation_error', {
+    calculator,
+    error_count: fields.length,
+    error_fields: fields.join(','),
+    page_path: currentPath(),
+  })
+}
+
+export function trackResultViewed(calculator: 'finiquito' | 'liquidacion'): void {
+  trackEvent('romanus_result_viewed', {
+    calculator,
+    page_path: currentPath(),
+  })
+}
+
 export function trackResultAction(
   calculator: 'finiquito' | 'liquidacion',
-  action: 'copy' | 'download_pdf' | 'new_calculation' | 'view_methodology' | 'view_legal_notice',
+  action: 'copy' | 'share' | 'download_pdf' | 'new_calculation' | 'view_methodology' | 'view_legal_notice' | 'report_problem',
 ): void {
   trackEvent('romanus_result_action', {
     calculator,

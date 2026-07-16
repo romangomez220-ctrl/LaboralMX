@@ -4,6 +4,7 @@ interface PageMetadataProps {
   title: string
   description: string
   canonicalPath: string
+  imagePath?: string
 }
 
 function upsertMeta(attribute: 'name' | 'property', key: string, content: string) {
@@ -16,9 +17,10 @@ function upsertMeta(attribute: 'name' | 'property', key: string, content: string
   element.content = content
 }
 
-export default function PageMetadata({ title, description, canonicalPath }: PageMetadataProps) {
+export default function PageMetadata({ title, description, canonicalPath, imagePath = '/romanus-social.jpg' }: PageMetadataProps) {
   useLayoutEffect(() => {
     const canonicalUrl = new URL(canonicalPath, window.location.origin).toString()
+    const imageUrl = new URL(imagePath, window.location.origin).toString()
     document.title = title
     upsertMeta('name', 'description', description)
     upsertMeta('property', 'og:type', 'website')
@@ -26,7 +28,12 @@ export default function PageMetadata({ title, description, canonicalPath }: Page
     upsertMeta('property', 'og:title', title)
     upsertMeta('property', 'og:description', description)
     upsertMeta('property', 'og:url', canonicalUrl)
-    upsertMeta('name', 'twitter:card', 'summary')
+    upsertMeta('property', 'og:image', imageUrl)
+    upsertMeta('property', 'og:image:width', '1200')
+    upsertMeta('property', 'og:image:height', '630')
+    upsertMeta('property', 'og:image:alt', 'ROMANUS — herramientas jurídicas claras para México')
+    upsertMeta('name', 'twitter:card', 'summary_large_image')
+    upsertMeta('name', 'twitter:image', imageUrl)
     upsertMeta('name', 'twitter:title', title)
     upsertMeta('name', 'twitter:description', description)
 
@@ -52,7 +59,7 @@ export default function PageMetadata({ title, description, canonicalPath }: Page
       upsertMeta('name', 'twitter:description', defaultDescription)
       canonical.href = defaultUrl
     }
-  }, [title, description, canonicalPath])
+  }, [title, description, canonicalPath, imagePath])
 
   return null
 }

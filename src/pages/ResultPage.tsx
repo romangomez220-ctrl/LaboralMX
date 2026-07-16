@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import ResultCard from '../components/ResultCard'
 import Disclaimer from '../components/Disclaimer'
 import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import ExplicacionCalculo from '../components/ExplicacionCalculo'
+import ResultConfidenceStamp from '../components/ResultConfidenceStamp'
 import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
 import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
-import { trackResultAction } from '../utils/analytics'
+import { trackResultAction, trackResultViewed } from '../utils/analytics'
+import { WHATSAPP_BUSINESS_LINK } from '../config/contacto'
 import type { ResultadoCalculo } from '../types/labor'
 
 export default function ResultPage() {
@@ -19,6 +21,12 @@ export default function ResultPage() {
   const [copiado, setCopiado] = useState(false)
   const [errorCopiar, setErrorCopiar] = useState(false)
   const [errorPDF, setErrorPDF] = useState(false)
+  const [errorCompartir, setErrorCompartir] = useState(false)
+  const [fechaGeneracion] = useState(() => new Date())
+
+  useEffect(() => {
+    if (resultado) trackResultViewed(resultado.tipo)
+  }, [resultado])
 
   if (!resultado) {
     return (
@@ -63,16 +71,60 @@ export default function ResultPage() {
       trackResultAction(resultado.tipo, 'copy')
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
-    } catch {
+    } catch (error) {
+      registrarError(error as Error, 'copiarResultado')
       setErrorCopiar(true)
+    }
+  }
+
+  async function compartirResultado() {
+    if (!resultado) return
+    const texto = `Mi ${resultado.tipo} estimado en ROMANUS es ${formatCurrency(resultado.totalEstimado)}. Estimación informativa con metodología visible.`
+    try {
+      setErrorCompartir(false)
+      if (navigator.share) {
+        await navigator.share({
+          title: `Resultado de ${resultado.tipo} — ROMANUS`,
+          text: texto,
+          url: resultado.tipo === 'finiquito'
+            ? `${window.location.origin}/calcular-finiquito`
+            : `${window.location.origin}/calcular-liquidacion`,
+        })
+      } else {
+        if (!navigator.clipboard) throw new Error('Share and clipboard APIs unavailable')
+        await navigator.clipboard.writeText(texto)
+        setCopiado(true)
+        setTimeout(() => setCopiado(false), 2000)
+      }
+      trackResultAction(resultado.tipo, 'share')
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        registrarError(error as Error, 'compartirResultado')
+        setErrorCompartir(true)
+      }
     }
   }
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold text-primary">
-        Resultado {resultado.tipo === 'finiquito' ? 'de Finiquito' : 'de Liquidación'}
-      </h1>
+      <section className="overflow-hidden rounded-2xl border border-gold/60 bg-gradient-to-br from-white via-ivory to-success-light p-5 shadow-sm sm:p-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Tu resultado</p>
+            <h1 className="mt-1 text-2xl font-bold text-primary sm:text-3xl">
+              {resultado.tipo === 'finiquito' ? 'Finiquito estimado' : 'Liquidación estimada'}
+            </h1>
+            <p className="mt-4 text-4xl font-bold tracking-tight text-success sm:text-5xl" aria-label={`Total estimado ${formatCurrency(resultado.totalEstimado)}`}>
+              {formatCurrency(resultado.totalEstimado)}
+            </p>
+            <p className="mt-2 max-w-xl text-sm text-gray-600">
+              Esta cantidad se calculó con los datos que capturaste. Revisa el desglose y los supuestos antes de tomar una decisión.
+            </p>
+          </div>
+          <ResultConfidenceStamp generatedAt={fechaGeneracion} />
+        </div>
+        <div className="romanus-result-rule mt-5" aria-hidden="true" />
+      </section>
 
       <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg p-4">
         <p>
@@ -93,7 +145,6 @@ export default function ResultPage() {
         {resultado.conceptos.map((c, i) => (
           <ResultCard key={i} etiqueta={c.etiqueta} monto={c.monto} detalle={c.detalle} formula={c.formula} />
         ))}
-        <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
       </div>
 
       {resultado.primaAntiguedadInformativa && (
@@ -159,10 +210,22 @@ export default function ResultPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      {errorCompartir && (
+        <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light p-3 text-sm text-warning">
+          Tu navegador no permitió compartir. Puedes usar “Copiar resultado” o descargar el PDF.
+        </div>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <button
+          onClick={compartirResultado}
+          className="min-h-12 rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
+        >
+          Compartir resultado
+        </button>
         <button
           onClick={copiarResultado}
-          className="rounded-lg border-2 border-primary text-primary px-5 py-2 font-semibold hover:bg-primary hover:text-white transition"
+          className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
         >
           {copiado ? 'Copiado ✓' : 'Copiar resultado'}
         </button>
@@ -181,7 +244,7 @@ export default function ResultPage() {
               setErrorPDF(true)
             }
           }}
-          className="rounded-lg border-2 border-primary text-primary px-5 py-2 font-semibold hover:bg-primary hover:text-white transition"
+          className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
         >
           Descargar PDF
         </button>
@@ -194,13 +257,27 @@ export default function ResultPage() {
                 : '/productos/laboralmx/liquidacion',
             )
           }}
-          className="rounded-lg bg-primary text-white px-5 py-2 font-semibold hover:bg-primary-light transition"
+          className="min-h-12 rounded-lg border border-gray-300 bg-white px-5 py-2 font-semibold text-primary transition hover:border-primary"
         >
           Nuevo cálculo
         </button>
       </div>
 
       <RevisionProfesionalBlock calculator={resultado.tipo} />
+
+      <aside className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600">
+        <p className="font-semibold text-primary">¿Detectaste un dato extraño o un problema técnico?</p>
+        <p className="mt-1">Repórtalo sin compartir información sensible. Tu comentario nos ayuda a mejorar ROMANUS.</p>
+        <a
+          href={WHATSAPP_BUSINESS_LINK}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => trackResultAction(resultado.tipo, 'report_problem')}
+          className="mt-3 inline-block font-semibold text-primary underline decoration-gold underline-offset-4"
+        >
+          Reportar un problema
+        </a>
+      </aside>
     </div>
   )
 }

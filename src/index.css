@@ -30,6 +30,27 @@ body {
   min-width: 320px;
 }
 
+.romanus-result-rule {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #9b382f 0 7%,
+    transparent 7% 9%,
+    #9b382f 9% 18%,
+    transparent 18% 20%,
+    #9b382f 20% 100%
+  );
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 .brand-intro {
   position: fixed;
   inset: 0;
