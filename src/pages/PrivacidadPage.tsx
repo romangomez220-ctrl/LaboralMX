@@ -62,6 +62,21 @@ export default function PrivacidadPage() {
         </p>
       </section>
 
+      <section className="rounded-lg border-2 border-gold/60 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Solicitudes de revisión y canalización profesional</h2>
+        <div className="flex flex-col gap-2 text-sm text-gray-700">
+          <p>
+            Cuando una persona solicita revisar si su situación puede canalizarse con un abogado participante, ROMANUS puede tratar los datos que ella decida enviar por WhatsApp: nombre, ubicación, tipo y fecha de terminación laboral, cantidad ofrecida, existencia de documentos, resultado estimado y demás información incluida voluntariamente en la conversación.
+          </p>
+          <p>
+            La finalidad es ordenar la solicitud, confirmar su alcance, verificar disponibilidad y, únicamente después de confirmarlo con la persona, comunicar la información necesaria a un abogado participante. La recepción de datos no crea una relación abogado-cliente, no garantiza atención y no autoriza a compartirlos indiscriminadamente.
+          </p>
+          <p>
+            ROMANUS no envía el contenido de la solicitud ni datos identificables a Google Analytics. Los eventos de uso registran únicamente la etapa general del recorrido y la herramienta utilizada.
+          </p>
+        </div>
+      </section>
+
       <section className="rounded-lg border-2 border-primary bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">
           Ejercicio de derechos ARCO y contacto de privacidad

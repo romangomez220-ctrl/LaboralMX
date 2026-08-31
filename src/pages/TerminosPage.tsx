@@ -52,6 +52,18 @@ export default function TerminosPage() {
         </p>
       </section>
 
+      <section className="rounded-lg border-2 border-gold/60 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Canalización con abogados participantes</h2>
+        <div className="flex flex-col gap-2 text-sm text-gray-700">
+          <p>
+            ROMANUS puede ayudar a ordenar una solicitud y consultar la disponibilidad de abogados independientes participantes. Cada abogado decide por cuenta propia si puede atender el asunto y es responsable de informar directamente su alcance, honorarios y condiciones profesionales.
+          </p>
+          <p>
+            Enviar una solicitud no garantiza que exista un profesional disponible, no constituye representación legal y no crea por sí mismo una relación abogado-cliente con ROMANUS ni con el abogado consultado.
+          </p>
+        </div>
+      </section>
+
       <section className="rounded-lg border-2 border-primary bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Limitación de responsabilidad</h2>
         <p className="text-sm text-gray-700 mb-2">

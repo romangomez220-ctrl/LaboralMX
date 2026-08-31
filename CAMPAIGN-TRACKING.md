@@ -1,10 +1,29 @@
 # Convención de campañas de ROMANUS
 
-## Objetivo inicial
+## Objetivo del piloto de canalización laboral
 
-La primera campaña de búsqueda debe optimizarse al evento clave de GA4
-`romanus_calculator_completed`. Los clics, vistas de página y contactos por WhatsApp
-son señales de diagnóstico, no la conversión principal del experimento.
+La campaña de búsqueda debe medir el recorrido completo. Durante los primeros días,
+la conversión principal será `romanus_review_whatsapp_continued`, que confirma que la
+persona terminó el triage y decidió enviar su solicitud por WhatsApp. Cuando exista
+volumen operativo suficiente, la optimización deberá migrar a un evento offline de
+solicitud calificada o consulta realizada.
+
+`romanus_calculator_completed` se conserva como microconversión de diagnóstico: permite
+saber si la landing y la calculadora funcionan, pero no demuestra que exista una
+oportunidad profesional.
+
+### Eventos del embudo
+
+| Evento | Uso |
+| --- | --- |
+| `romanus_calculator_completed` | Microconversión: cálculo terminado |
+| `romanus_review_started` | La persona abrió el triage laboral |
+| `romanus_review_submitted` | Terminó el formulario y consentimiento |
+| `romanus_review_blocked_urgent` | Fue derivada por urgencia o plazo próximo |
+| `romanus_review_whatsapp_continued` | Conversión web principal del piloto |
+
+Ningún evento envía nombre, teléfono, cantidades, descripción del asunto ni respuestas
+del formulario a Analytics.
 
 ## Parámetros UTM
 
@@ -32,4 +51,6 @@ son señales de diagnóstico, no la conversión principal del experimento.
 - No incluir nombres, correos, teléfonos ni información del asunto jurídico en UTMs.
 - No cambiar `utm_campaign` durante el experimento de 14 días.
 - Crear variaciones nuevas con `utm_content`, no sobrescribiendo campañas anteriores.
-- Comparar costo por `romanus_calculator_completed`, no solo costo por clic.
+- Comparar costo por `romanus_review_whatsapp_continued` y, de forma manual, costo por
+  solicitud confirmada y consulta realizada. No evaluar la campaña solo por clics o
+  cálculos terminados.

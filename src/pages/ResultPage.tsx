@@ -6,7 +6,7 @@ import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
 import ExplicacionCalculo from '../components/ExplicacionCalculo'
 import ResultConfidenceStamp from '../components/ResultConfidenceStamp'
 import ResultFeedback from '../components/ResultFeedback'
-import { generarPDF, type DatoCapturado } from '../utils/pdfGenerator'
+import type { DatoCapturado } from '../utils/pdfGenerator'
 import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
 import { trackResultAction, trackResultViewed } from '../utils/analytics'
@@ -247,8 +247,13 @@ export default function ResultPage() {
             // try/catch para no dejar un error sin registrar ni mostrar.
             try {
               setErrorPDF(false)
-              generarPDF(resultado, datosCapturados)
-              trackResultAction(resultado.tipo, 'download_pdf')
+              void import('../utils/pdfGenerator').then(({ generarPDF }) => {
+                generarPDF(resultado, datosCapturados)
+                trackResultAction(resultado.tipo, 'download_pdf')
+              }).catch((error) => {
+                registrarError(error as Error, 'pdfGenerator')
+                setErrorPDF(true)
+              })
             } catch (error) {
               registrarError(error as Error, 'pdfGenerator')
               setErrorPDF(true)
@@ -273,7 +278,7 @@ export default function ResultPage() {
         </button>
       </div>
 
-      <RevisionProfesionalBlock calculator={resultado.tipo} />
+      <RevisionProfesionalBlock calculator={resultado.tipo} totalEstimado={resultado.totalEstimado} />
 
       <ResultFeedback calculator={resultado.tipo} />
 

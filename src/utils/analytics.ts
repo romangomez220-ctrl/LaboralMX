@@ -131,3 +131,20 @@ export function trackResultAction(
     page_path: currentPath(),
   })
 }
+
+export function trackProfessionalReview(
+  calculator: 'finiquito' | 'liquidacion',
+  step: 'started' | 'submitted' | 'blocked_urgent' | 'whatsapp_continued',
+): void {
+  const eventName = {
+    started: 'romanus_review_started',
+    submitted: 'romanus_review_submitted',
+    blocked_urgent: 'romanus_review_blocked_urgent',
+    whatsapp_continued: 'romanus_review_whatsapp_continued',
+  }[step]
+
+  trackEvent(eventName, {
+    calculator,
+    page_path: currentPath(),
+  })
+}

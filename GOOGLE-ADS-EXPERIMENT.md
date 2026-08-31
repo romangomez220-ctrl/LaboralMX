@@ -8,8 +8,10 @@
 - Duración inicial: 14 días.
 - Presupuesto de aprendizaje: MXN $200–$400 diarios.
 - Puja inicial: maximizar clics con límite de CPC mientras se reúne volumen.
-- Conversión principal: `romanus_calculator_completed`.
-- No optimizar inicialmente a vistas, clics ni intención de WhatsApp.
+- Conversión principal del piloto: `romanus_review_whatsapp_continued`.
+- Microconversión diagnóstica: `romanus_calculator_completed`.
+- No usar remarketing, Customer Match, audiencias personalizadas ni datos del asunto
+  jurídico. La primera campaña será únicamente de búsqueda por intención explícita.
 
 ## Grupo 1: Finiquito
 
@@ -100,8 +102,13 @@ la intención sea claramente ajena al cálculo laboral; no bloquear búsquedas �
 
 ## Criterios de decisión
 
-- No escalar antes de reunir al menos 100 visitas calificadas por landing.
-- Evaluar tasa de cálculo completado y costo por cálculo, no CTR aislado.
+- No escalar antes de comprobar manualmente que el recorrido solicitud → confirmación →
+  abogado funciona y que existen al menos dos abogados disponibles.
+- Evaluar tasa de cálculo completado, tasa de solicitud y costo por solicitud enviada;
+  no usar el CTR aislado como criterio de éxito.
 - Pausar palabras que consuman presupuesto sin cálculos completados después de volumen suficiente.
 - Si hay clics pero pocos cálculos, revisar mensaje, velocidad y fricción del formulario.
-- Si hay cálculos pero ninguna acción posterior, mejorar el resultado antes de subir presupuesto.
+- Si hay cálculos pero ninguna solicitud, revisar el bloque de revisión profesional antes
+  de subir presupuesto.
+- Si hay solicitudes pero los abogados no responden con rapidez, pausar la campaña hasta
+  recuperar capacidad operativa.
