@@ -45,10 +45,14 @@ export function registrarError(
     // No crítico: el registro ya está en consola.
   }
 
+  // A GA4 se envía solo el TIPO de error (p. ej. "TypeError"), nunca el
+  // mensaje crudo: en casos borde un error.message puede arrastrar fragmentos
+  // de datos capturados por el usuario. El detalle completo queda en consola y
+  // en sessionStorage (ambos locales al dispositivo), suficiente para depurar.
   trackEvent('app_error', {
     componente,
     ruta: registro.ruta,
-    mensaje: registro.mensaje,
+    tipo_error: error.name,
   })
 
   return registro

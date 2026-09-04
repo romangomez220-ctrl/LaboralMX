@@ -7,7 +7,13 @@ import { useNoIndex } from '../../labs/useNoIndex'
 export default function ValidadorLoginPage() {
   useNoIndex()
   useEffect(() => {
-    inicializarDatosDePrueba()
+    // La siembra demo (con credenciales de prueba) solo debe existir en
+    // desarrollo. import.meta.env.DEV es `false` en el build de producción,
+    // por lo que esta rama —y con ella el módulo seedData y sus credenciales—
+    // se eliminan del bundle público por dead-code elimination / tree-shaking.
+    if (import.meta.env.DEV) {
+      inicializarDatosDePrueba()
+    }
   }, [])
 
   const { iniciarSesion, estaAutenticado } = useValidatorSession()
