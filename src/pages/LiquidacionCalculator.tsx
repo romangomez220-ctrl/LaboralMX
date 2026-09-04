@@ -204,7 +204,14 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
       { etiqueta: 'Tipo de salida', valor: TIPOS_SALIDA_LABEL[form.tipoSalida] ?? form.tipoSalida },
     ]
 
-    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados } })
+    const reportSnapshot = {
+      calculatorType: 'liquidacion' as const,
+      ...datosParaCalcular,
+      salarioDiarioIntegradoCapturado: datosParaCalcular.salarioDiarioIntegrado,
+      resultado,
+    }
+
+    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados, reportSnapshot } })
   }
 
   const veinteDiasDisponible = form.tipoSalida === 'despido_injustificado'

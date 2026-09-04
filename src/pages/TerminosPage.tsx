@@ -53,6 +53,15 @@ export default function TerminosPage() {
       </section>
 
       <section className="rounded-lg border-2 border-gold/60 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Compra y entrega de reportes digitales</h2>
+        <div className="flex flex-col gap-2 text-sm text-gray-700">
+          <p>El cálculo, resultado y desglose permanecen disponibles gratuitamente. Cuando la función esté habilitada, el pago único corresponde exclusivamente a la generación y entrega de un Reporte ROMANUS descargable.</p>
+          <p>El pago se procesa mediante Stripe. ROMANUS habilita el reporte únicamente después de recibir confirmación técnica del pago. Si existe un cobro duplicado, un pago confirmado sin entrega, un archivo defectuoso o un error técnico atribuible a ROMANUS, la incidencia será revisada y se procurará primero la entrega o corrección; cualquier reembolso aplicable se determinará según el caso y la normativa correspondiente.</p>
+          <p>La disponibilidad de un reporte no transforma la estimación en asesoría individualizada ni acredita revisión personal por un abogado.</p>
+        </div>
+      </section>
+
+      <section className="rounded-lg border-2 border-gold/60 bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Canalización con abogados participantes</h2>
         <div className="flex flex-col gap-2 text-sm text-gray-700">
           <p>

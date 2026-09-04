@@ -14,9 +14,9 @@
  * romper ningún uso existente que ya lo importaba.
  */
 export const WHATSAPP_BUSINESS_LINK = 'https://wa.me/message/BYKKTJWFITQ5P1'
-export const WHATSAPP_NUMBER_LINK = 'https://wa.me/525539257479'
+export const WHATSAPP_NUMBER_LINK = 'https://wa.me/525639257479'
 export const WHATSAPP_LINK = WHATSAPP_BUSINESS_LINK
-export const WHATSAPP_NUMERO_VISIBLE = '+52 55 3925 7479'
+export const WHATSAPP_NUMERO_VISIBLE = '+52 56 3925 7479'
 
 /**
  * Correos de privacidad/contacto — v4.6: por instrucción explícita, NO

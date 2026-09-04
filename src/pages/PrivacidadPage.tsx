@@ -31,6 +31,15 @@ export default function PrivacidadPage() {
         </p>
       </section>
 
+      <section className="rounded-lg border-2 border-gold/60 bg-white p-5">
+        <h2 className="font-semibold text-primary mb-2">Reportes digitales comprados</h2>
+        <div className="flex flex-col gap-2 text-sm text-gray-700">
+          <p>Cuando una persona decide comprar un Reporte ROMANUS, se conserva el mínimo necesario para confirmar el pago, reconstruir el reporte, entregarlo y permitir su recuperación: identificadores técnicos de compra, estado del pago, folio, versiones y una copia protegida de los datos y resultados utilizados.</p>
+          <p>No se almacenan números de tarjeta en ROMANUS. El cobro se procesa en Stripe y queda sujeto también a sus políticas. Los reportes se almacenan de forma privada y se entregan mediante enlaces temporales.</p>
+          <p>La información se conservará durante el tiempo necesario para entregar y recuperar el reporte, atender incidencias y cumplir obligaciones aplicables; después deberá eliminarse o anonimizarse. Esta conservación aplica únicamente a reportes comprados y no cambia el funcionamiento local de los cálculos gratuitos que no inician una compra.</p>
+        </div>
+      </section>
+
       <section className="rounded-lg border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-primary mb-2">Información que captura cada herramienta</h2>
         <p className="text-sm text-gray-700">

@@ -1,6 +1,7 @@
+import { LABOR_DISCLAIMER } from '../reports/legalContent'
+
 const AVISOS = {
-  laboral:
-    'Importante: Los resultados mostrados son estimaciones informativas calculadas con base en los datos proporcionados por el usuario y la legislación laboral vigente aplicable. Los importes pueden variar dependiendo de impuestos, retenciones, cuotas de seguridad social, prestaciones contractuales, convenios, políticas internas de la empresa u otras circunstancias particulares del caso concreto. Esta herramienta no sustituye asesoría jurídica profesional.',
+  laboral: LABOR_DISCLAIMER,
   juridico:
     'Importante: Los resultados mostrados son orientativos y dependen de los datos proporcionados por el usuario, la autoridad competente, la legislación aplicable, criterios judiciales vigentes y circunstancias particulares del caso concreto. Esta herramienta no sustituye la revisión profesional de un abogado ni la consulta directa de expedientes, acuerdos, notificaciones o calendarios oficiales.',
 }

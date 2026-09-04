@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin" />
+    <script>
+      // El token opaco de recuperación llega desde Stripe una sola vez. Se
+      // conserva en la pestaña y se retira de la barra antes de cargar GA4 o React.
+      try {
+        const returnUrl = new URL(window.location.href);
+        const purchaseId = returnUrl.searchParams.get('report_purchase');
+        const recoveryToken = returnUrl.searchParams.get('report_token');
+        if (purchaseId && recoveryToken) {
+          sessionStorage.setItem(`romanus_report_recovery_${purchaseId}`, recoveryToken);
+          returnUrl.searchParams.delete('report_token');
+          history.replaceState(history.state, '', returnUrl.pathname + returnUrl.search + returnUrl.hash);
+        }
+      } catch (_) {
+        // La recuperación seguirá mostrando un error seguro si el navegador
+        // bloquea sessionStorage; nunca se envía el token a terceros.
+      }
+    </script>
     <title>ROMANUS — Soluciones integrales para el ámbito jurídico, empresarial y personal</title>
     <meta
       name="description"

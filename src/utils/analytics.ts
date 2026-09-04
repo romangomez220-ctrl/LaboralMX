@@ -4,7 +4,22 @@ declare global {
   }
 }
 
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+
 export const GA_MEASUREMENT_ID = 'G-0XMBSS23D7'
+
+const SENSITIVE_REPORT_PARAMS = ['report_token', 'report_purchase']
+
+export function sanitizeAnalyticsPath(path: string): string {
+  try {
+    const url = new URL(path, 'https://analytics.invalid')
+    SENSITIVE_REPORT_PARAMS.forEach((parameter) => url.searchParams.delete(parameter))
+    const query = url.searchParams.toString()
+    return `${url.pathname}${query ? `?${query}` : ''}`
+  } catch {
+    return path.split('?')[0]
+  }
+}
 
 /**
  * Registra un page view en GA4 para la ruta indicada. Se usa en cada
@@ -19,9 +34,11 @@ export const GA_MEASUREMENT_ID = 'G-0XMBSS23D7'
 export function trackPageView(path: string): void {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
 
+  const safePath = sanitizeAnalyticsPath(path)
+
   window.gtag('event', 'page_view', {
-    page_path: path,
-    page_location: window.location.href,
+    page_path: safePath,
+    page_location: `${window.location.origin}${safePath}`,
     page_title: document.title,
   })
 }
@@ -39,7 +56,7 @@ export function trackEvent(eventName: string, params: Record<string, unknown> = 
 
 function currentPath(): string {
   if (typeof window === 'undefined') return ''
-  return window.location.pathname + window.location.search
+  return sanitizeAnalyticsPath(window.location.pathname + window.location.search)
 }
 
 /**
@@ -146,5 +163,23 @@ export function trackProfessionalReview(
   trackEvent(eventName, {
     calculator,
     page_path: currentPath(),
+  })
+}
+
+type PaidReportStep =
+  | 'offer_viewed'
+  | 'checkout_started'
+  | 'payment_succeeded'
+  | 'payment_failed'
+  | 'generated'
+  | 'downloaded'
+
+export function trackPaidReport(step: PaidReportStep, calculator: 'liquidacion'): void {
+  trackEvent(`romanus_pdf_${step}`, {
+    calculator_type: calculator,
+    report_price: PAID_REPORTS_CONFIG.priceMinor / 100,
+    currency: PAID_REPORTS_CONFIG.currency,
+    report_version: PAID_REPORTS_CONFIG.reportVersion,
+    payment_provider: PAID_REPORTS_CONFIG.paymentProvider,
   })
 }

@@ -12,13 +12,23 @@ import { formatCurrency } from '../utils/formatCurrency'
 import { trackResultAction, trackResultViewed } from '../utils/analytics'
 import { WHATSAPP_BUSINESS_LINK } from '../config/contacto'
 import type { ResultadoCalculo } from '../types/labor'
+import type { LiquidacionSnapshot } from '../reports/types'
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import PremiumReportOffer from '../components/PremiumReportOffer'
+import PaidReportRecovery from '../components/PaidReportRecovery'
+import { resolveReportRecoveryToken } from '../reports/recovery'
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[] } | null
+  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[]; reportSnapshot?: LiquidacionSnapshot } | null
   const resultado = estadoNavegacion?.resultado
   const datosCapturados = estadoNavegacion?.datosCapturados ?? []
+  const reportSnapshot = estadoNavegacion?.reportSnapshot
+  const query = new URLSearchParams(location.search)
+  const reportPurchaseId = query.get('report_purchase')
+  const reportToken = resolveReportRecoveryToken(reportPurchaseId, query.get('report_token'))
+  const checkoutState = query.get('checkout')
   const [copiado, setCopiado] = useState(false)
   const [errorCopiar, setErrorCopiar] = useState(false)
   const [errorPDF, setErrorPDF] = useState(false)
@@ -28,6 +38,10 @@ export default function ResultPage() {
   useEffect(() => {
     if (resultado) trackResultViewed(resultado.tipo)
   }, [resultado])
+
+  if (!resultado && reportPurchaseId && reportToken) {
+    return <PaidReportRecovery purchaseId={reportPurchaseId} recoveryToken={reportToken} checkoutState={checkoutState} />
+  }
 
   if (!resultado) {
     return (
@@ -206,6 +220,10 @@ export default function ResultPage() {
 
       <Disclaimer />
 
+      {PAID_REPORTS_CONFIG.enabled && resultado.tipo === 'liquidacion' && reportSnapshot && (
+        <PremiumReportOffer snapshot={reportSnapshot} />
+      )}
+
       {errorPDF && (
         <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
           No se pudo generar el PDF en este momento. Puedes usar "Copiar resultado" mientras
@@ -227,12 +245,12 @@ export default function ResultPage() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <button
+        {!PAID_REPORTS_CONFIG.enabled && <button
           onClick={compartirResultado}
           className="min-h-12 rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
         >
           Compartir resultado
-        </button>
+        </button>}
         <button
           onClick={copiarResultado}
           className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"

@@ -1,0 +1,11 @@
+[functions.stripe-report-webhook]
+verify_jwt = false
+
+[functions.create-report-checkout]
+verify_jwt = true
+
+[functions.report-access]
+verify_jwt = true
+
+[functions.finalize-report]
+verify_jwt = true
