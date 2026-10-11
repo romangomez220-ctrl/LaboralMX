@@ -57,6 +57,8 @@ export default function ResultPage() {
     )
   }
 
+  const requiereReportePagado = PAID_REPORTS_CONFIG.enabled && resultado.tipo === 'liquidacion'
+
   async function copiarResultado() {
     if (!resultado) return
     const lineas = [
@@ -220,7 +222,7 @@ export default function ResultPage() {
 
       <Disclaimer />
 
-      {PAID_REPORTS_CONFIG.enabled && resultado.tipo === 'liquidacion' && reportSnapshot && (
+      {requiereReportePagado && reportSnapshot && (
         <PremiumReportOffer snapshot={reportSnapshot} />
       )}
 
@@ -245,42 +247,44 @@ export default function ResultPage() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {!PAID_REPORTS_CONFIG.enabled && <button
+        <button
           onClick={compartirResultado}
           className="min-h-12 rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
         >
           Compartir resultado
-        </button>}
+        </button>
         <button
           onClick={copiarResultado}
           className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
         >
           {copiado ? 'Copiado ✓' : 'Copiar resultado'}
         </button>
-        <button
-          onClick={() => {
-            // generarPDF() es una llamada imperativa desde un event handler:
-            // un Error Boundary NO puede capturar errores aquí (solo
-            // captura errores de render), así que necesita su propio
-            // try/catch para no dejar un error sin registrar ni mostrar.
-            try {
-              setErrorPDF(false)
-              void import('../utils/pdfGenerator').then(({ generarPDF }) => {
-                generarPDF(resultado, datosCapturados)
-                trackResultAction(resultado.tipo, 'download_pdf')
-              }).catch((error) => {
+        {!requiereReportePagado && (
+          <button
+            onClick={() => {
+              // generarPDF() es una llamada imperativa desde un event handler:
+              // un Error Boundary NO puede capturar errores aquí (solo
+              // captura errores de render), así que necesita su propio
+              // try/catch para no dejar un error sin registrar ni mostrar.
+              try {
+                setErrorPDF(false)
+                void import('../utils/pdfGenerator').then(({ generarPDF }) => {
+                  generarPDF(resultado, datosCapturados)
+                  trackResultAction(resultado.tipo, 'download_pdf')
+                }).catch((error) => {
+                  registrarError(error as Error, 'pdfGenerator')
+                  setErrorPDF(true)
+                })
+              } catch (error) {
                 registrarError(error as Error, 'pdfGenerator')
                 setErrorPDF(true)
-              })
-            } catch (error) {
-              registrarError(error as Error, 'pdfGenerator')
-              setErrorPDF(true)
-            }
-          }}
-          className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
-        >
-          Descargar PDF
-        </button>
+              }
+            }}
+            className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
+          >
+            Descargar PDF
+          </button>
+        )}
         <button
           onClick={() => {
             trackResultAction(resultado.tipo, 'new_calculation')
