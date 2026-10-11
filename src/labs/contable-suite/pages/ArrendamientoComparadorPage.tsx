@@ -15,9 +15,11 @@ interface FormState {
   predialPagado: string
   predial: string
   mantenimiento: string
-  segurosYComisiones: string
+  primasSeguros: string
   interesesRealesHipotecarios: string
-  depreciacionConstruccion: string
+  salariosComisionesHonorarios: string
+  contribucionesSobreSalarios: string
+  deduccionInversionesConstruccion: string
 }
 
 const ESTADO_INICIAL: FormState = {
@@ -27,9 +29,11 @@ const ESTADO_INICIAL: FormState = {
   predialPagado: '',
   predial: '',
   mantenimiento: '',
-  segurosYComisiones: '',
+  primasSeguros: '',
   interesesRealesHipotecarios: '',
-  depreciacionConstruccion: '',
+  salariosComisionesHonorarios: '',
+  contribucionesSobreSalarios: '',
+  deduccionInversionesConstruccion: '',
 }
 
 function aNumero(v: string): number {
@@ -38,8 +42,8 @@ function aNumero(v: string): number {
 }
 
 const RECOMENDACION_TEXTO: Record<string, string> = {
-  ciega: 'Te conviene la deducción ciega (35% + predial)',
-  real: 'Te conviene deducir tus gastos reales',
+  ciega: 'La deducción ciega produce la menor base gravable estimada',
+  real: 'Los gastos reales producen la menor base gravable estimada',
   equivalente: 'Ambas opciones son prácticamente equivalentes',
 }
 
@@ -62,9 +66,11 @@ export default function ArrendamientoComparadorPage() {
       gastosReales: {
         predial: aNumero(form.predial),
         mantenimiento: aNumero(form.mantenimiento),
-        segurosYComisiones: aNumero(form.segurosYComisiones),
+        primasSeguros: aNumero(form.primasSeguros),
         interesesRealesHipotecarios: aNumero(form.interesesRealesHipotecarios),
-        depreciacionConstruccion: aNumero(form.depreciacionConstruccion),
+        salariosComisionesHonorarios: aNumero(form.salariosComisionesHonorarios),
+        contribucionesSobreSalarios: aNumero(form.contribucionesSobreSalarios),
+        deduccionInversionesConstruccion: aNumero(form.deduccionInversionesConstruccion),
       },
     }
     setResultado(compararArrendamiento(datos))
@@ -123,6 +129,9 @@ export default function ArrendamientoComparadorPage() {
 
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <p className="text-sm font-semibold text-gray-700 mb-3">Gastos reales (con CFDI)</p>
+          <p className="mb-3 text-xs text-stone">
+            Captura importes efectivamente pagados y, si existe copropiedad, únicamente la parte que te corresponde.
+          </p>
           <div className="grid sm:grid-cols-2 gap-4">
             <InputField
               label="Predial (de nuevo, para esta opción)"
@@ -133,7 +142,7 @@ export default function ArrendamientoComparadorPage() {
               onChange={(v) => actualizar('predial', v)}
             />
             <InputField
-              label="Mantenimiento y reparaciones"
+              label="Mantenimiento, reparaciones y agua"
               name="mantenimiento"
               type="number"
               placeholder="0.00"
@@ -141,12 +150,12 @@ export default function ArrendamientoComparadorPage() {
               onChange={(v) => actualizar('mantenimiento', v)}
             />
             <InputField
-              label="Seguros y comisiones de intermediarios"
-              name="segurosYComisiones"
+              label="Primas de seguros del inmueble"
+              name="primasSeguros"
               type="number"
               placeholder="0.00"
-              value={form.segurosYComisiones}
-              onChange={(v) => actualizar('segurosYComisiones', v)}
+              value={form.primasSeguros}
+              onChange={(v) => actualizar('primasSeguros', v)}
             />
             <InputField
               label="Intereses reales de crédito hipotecario"
@@ -157,12 +166,28 @@ export default function ArrendamientoComparadorPage() {
               onChange={(v) => actualizar('interesesRealesHipotecarios', v)}
             />
             <InputField
-              label="Depreciación (5% anual sobre construcción)"
-              name="depreciacionConstruccion"
+              label="Salarios, comisiones y honorarios pagados"
+              name="salariosComisionesHonorarios"
               type="number"
               placeholder="0.00"
-              value={form.depreciacionConstruccion}
-              onChange={(v) => actualizar('depreciacionConstruccion', v)}
+              value={form.salariosComisionesHonorarios}
+              onChange={(v) => actualizar('salariosComisionesHonorarios', v)}
+            />
+            <InputField
+              label="Impuestos, cuotas y contribuciones sobre salarios"
+              name="contribucionesSobreSalarios"
+              type="number"
+              placeholder="0.00"
+              value={form.contribucionesSobreSalarios}
+              onChange={(v) => actualizar('contribucionesSobreSalarios', v)}
+            />
+            <InputField
+              label="Deducción de inversiones en construcción"
+              name="deduccionInversionesConstruccion"
+              type="number"
+              placeholder="0.00"
+              value={form.deduccionInversionesConstruccion}
+              onChange={(v) => actualizar('deduccionInversionesConstruccion', v)}
             />
           </div>
         </div>

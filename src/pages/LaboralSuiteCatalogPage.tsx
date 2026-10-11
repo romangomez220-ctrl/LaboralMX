@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PAID_REPORTS_CONFIG, formatReportPrice } from '../config/paidReports'
 import { trackCtaClick } from '../utils/analytics'
 
 const HERRAMIENTAS = [
@@ -88,6 +89,31 @@ export default function LaboralSuiteCatalogPage() {
           </Link>
         ))}
       </div>
+
+      {PAID_REPORTS_CONFIG.enabled && (
+        <section className="rounded-2xl border-2 border-gold bg-gradient-to-br from-white to-ivory p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Producto digital</p>
+          <div className="mt-2 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <h2 className="font-serif text-2xl font-semibold text-primary">Reporte ROMANUS de liquidación</h2>
+              <p className="mt-2 max-w-2xl text-sm text-gray-600">
+                Haz primero tu cálculo gratuito y, si el resultado te sirve, conviértelo en un PDF profesional con
+                desglose, metodología, puntos de revisión y folio ROMANUS.
+              </p>
+              <p className="mt-3 text-sm font-semibold text-primary">
+                Pago único de {formatReportPrice()} · El cálculo gratuito permanece disponible.
+              </p>
+            </div>
+            <Link
+              to="/calcular-liquidacion?utm_source=romanus&utm_medium=internal&utm_campaign=reporte_premium&utm_content=laboral_suite"
+              onClick={() => trackCtaClick('Crear reporte de liquidación', '/calcular-liquidacion', 'laboral_suite_report_offer')}
+              className="rounded-lg bg-primary px-6 py-3 text-center font-semibold text-white transition hover:bg-primary-light"
+            >
+              Calcular y crear reporte
+            </Link>
+          </div>
+        </section>
+      )}
 
       <div className="flex flex-wrap justify-center gap-4 text-sm text-stone border-t border-gray-200 pt-5">
         {ENLACES_UTILES.map((l) => (

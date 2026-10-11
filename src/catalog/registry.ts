@@ -186,7 +186,7 @@ export const TOOLS: ToolManifest[] = [
     requiereValidador: true,
     nivelMinimoAccesoDefault: 'validador_beta',
     perfilRecomendado: 'Contador, fiscalista',
-    versionSoftware: '5.0',
+    versionSoftware: '5.1',
   },
   {
     id: 'tool_plataformas_digitales',

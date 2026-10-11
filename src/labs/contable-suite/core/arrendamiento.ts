@@ -7,8 +7,8 @@
  *     provisional del año, aplica a TODOS los inmuebles incluyendo los de
  *     copropiedad, y no puede variarse en los pagos provisionales del año —
  *     pero SÍ puede cambiarse al presentar la declaración anual.
- *   - Reglamento LISR Art. 197: depreciación de inversiones al 5% anual
- *     sobre el valor de construcción (no aplica a terreno).
+ *   - LISR Arts. 31 y 149: deducción anual de inversiones; 5% para
+ *     construcciones (no aplica al valor del terreno).
  *
  * NO CUBIERTO EN ESTA VERSIÓN (documentado explícitamente, no simulado):
  *   - Comparación contra RESICO como tercera opción (el arrendador puede
@@ -16,11 +16,9 @@
  *     deducción ciega NI gastos reales — es un régimen distinto, no una
  *     deducción). Esta herramienta solo compara ciega vs. real DENTRO del
  *     régimen de arrendamiento tradicional.
- *   - El umbral exacto para pagos provisionales trimestrales (en vez de
- *     mensuales) está fijado en la ley en "salarios mínimos", no en UMA —
- *     una particularidad real del Art. 116 LISR que no se actualizó en la
- *     desindexación de 2016. No se fija aquí un monto exacto sin verificar
- *     el salario mínimo vigente del ejercicio.
+ *   - El Art. 116 conserva una referencia nominal a salarios mínimos para
+ *     pagos trimestrales. El Decreto de desindexación de 2016 ordena entender
+ *     en UMA las referencias usadas como unidad de cuenta ajena al salario.
  * -----------------------------------------------------------------------------
  */
 
@@ -30,9 +28,19 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
 
+function montoNoNegativo(n: number): number {
+  return Number.isFinite(n) ? Math.max(0, n) : 0
+}
+
 function sumarGastosReales(g: GastosRealesArrendamiento): number {
   return round2(
-    g.predial + g.mantenimiento + g.segurosYComisiones + g.interesesRealesHipotecarios + g.depreciacionConstruccion,
+    montoNoNegativo(g.predial) +
+      montoNoNegativo(g.mantenimiento) +
+      montoNoNegativo(g.primasSeguros) +
+      montoNoNegativo(g.interesesRealesHipotecarios) +
+      montoNoNegativo(g.salariosComisionesHonorarios) +
+      montoNoNegativo(g.contribucionesSobreSalarios) +
+      montoNoNegativo(g.deduccionInversionesConstruccion),
   )
 }
 
@@ -40,40 +48,43 @@ export function compararArrendamiento(data: ArrendamientoFormData): Arrendamient
   const notas: string[] = []
   const conceptos: ConceptoConFundamento[] = []
 
-  const deduccionCiega = round2(data.ingresoAnual * 0.35)
-  const baseGravableCiega = round2(data.ingresoAnual - deduccionCiega - data.predialPagado)
+  const ingresoAnual = montoNoNegativo(data.ingresoAnual)
+  const predialPagado = montoNoNegativo(data.predialPagado)
+  const deduccionCiega = round2(ingresoAnual * 0.35)
+  const baseGravableCiega = round2(ingresoAnual - deduccionCiega - predialPagado)
 
   conceptos.push({
     etiqueta: 'Opción A — Deducción ciega (35% + predial)',
-    monto: round2(deduccionCiega + data.predialPagado),
+    monto: round2(deduccionCiega + predialPagado),
     formula: '35% del ingreso anual + predial efectivamente pagado',
     fundamento: 'Art. 115, segundo párrafo, LISR.',
   })
 
   const totalGastosReales = sumarGastosReales(data.gastosReales)
-  const baseGravableReal = round2(data.ingresoAnual - totalGastosReales)
+  const baseGravableReal = round2(ingresoAnual - totalGastosReales)
 
   conceptos.push({
     etiqueta: 'Opción B — Gastos reales',
     monto: totalGastosReales,
-    formula: 'Predial + mantenimiento + seguros/comisiones + intereses reales hipotecarios + depreciación (5% anual sobre construcción)',
-    fundamento: 'Art. 115, primer párrafo, LISR, y Arts. 196-197 del Reglamento de la LISR.',
+    formula: 'Predial + mantenimiento/agua + intereses reales + salarios/comisiones/honorarios + contribuciones sobre salarios + primas de seguros + deducción de inversiones en construcción',
+    fundamento: 'Art. 115, fracciones I a VI, LISR; Arts. 31 y 149 LISR para la deducción de inversiones; y Arts. 196-197 del Reglamento de la LISR.',
   })
 
   if (data.esCopropiedad) {
     notas.push(
-      `Indicaste copropiedad (tu parte: ${data.porcentajeCopropiedad}%). La elección entre deducción ciega y ` +
+      `Indicaste copropiedad (tu parte: ${Math.min(100, Math.max(0, data.porcentajeCopropiedad))}%). El comparador ` +
+        'supone que capturaste únicamente los ingresos y gastos que corresponden a tu proporción. La elección entre deducción ciega y ' +
         'gastos reales debe aplicarse de forma consistente a TODOS los inmuebles que arriendas, incluso los de ' +
         'copropiedad (Art. 196 del Reglamento de la LISR) — no puedes elegir ciega para un inmueble y real para ' +
         'otro en el mismo ejercicio. Cada copropietario declara su proporción correspondiente.',
     )
   }
 
-  if (data.gastosReales.depreciacionConstruccion === 0) {
+  if (data.gastosReales.deduccionInversionesConstruccion === 0) {
     notas.push(
-      'No capturaste depreciación. Si elegiste o estás considerando gastos reales, la depreciación del 5% anual ' +
-        'sobre el valor de construcción (Art. 197 del Reglamento de la LISR) suele ser la deducción más grande y ' +
-        'no requiere desembolso — muchos arrendadores la omiten por desconocimiento.',
+      'No capturaste deducción de inversiones en construcción. La LISR permite una deducción anual de hasta 5% ' +
+        'sobre el monto fiscal de la construcción, sin incluir el terreno (Arts. 31 y 149 LISR). Confirma el monto ' +
+        'original de la inversión y su actualización antes de utilizar esta deducción.',
     )
   }
 
@@ -97,13 +108,18 @@ export function compararArrendamiento(data: ArrendamientoFormData): Arrendamient
     'Esta comparación es solo entre deducción ciega y gastos reales, dentro del régimen de arrendamiento ' +
       'tradicional. No incluye RESICO como tercera opción: en RESICO el arrendador paga una tasa fija de 1% a ' +
       '2.5% sobre el ingreso bruto, pero pierde tanto la deducción ciega como los gastos reales (incluida la ' +
-      'depreciación e intereses hipotecarios) — es una comparación distinta que esta herramienta no resuelve.',
+      'deducción de inversiones e intereses hipotecarios) — es una comparación distinta que esta herramienta no resuelve.',
   )
   notas.push(
-    'El umbral para decidir entre pagos provisionales mensuales o trimestrales (Art. 116 LISR) sigue fijado por ' +
-      'ley en salarios mínimos, no en UMA — una particularidad que no se actualizó en la reforma de 2016. Esta ' +
-      'herramienta no fija ese umbral en pesos para evitar un error por el valor del salario mínimo vigente; ' +
-      'verifica el salario mínimo general del ejercicio antes de decidir la periodicidad.',
+    'El Art. 116 LISR conserva una referencia nominal a salarios mínimos para la opción de pagos trimestrales. ' +
+      'Por el Decreto de desindexación publicado el 27 de enero de 2016, las referencias usadas como unidad de ' +
+      'cuenta ajena al salario se entienden referidas a UMA. Confirma además los requisitos y facilidades de la ' +
+      'RMF vigente antes de elegir periodicidad.',
+  )
+  notas.push(
+    'Este comparador analiza únicamente la base para ISR. El IVA se determina por separado: el arrendamiento de ' +
+      'casa habitación sin muebles generalmente está exento, mientras que otros usos pueden estar gravados. La ' +
+      'deducción elegida para ISR no sustituye la revisión de requisitos para acreditamiento de IVA.',
   )
 
   return {

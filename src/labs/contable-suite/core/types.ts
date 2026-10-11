@@ -79,9 +79,11 @@ export interface ResicoAnualResultado {
 export interface GastosRealesArrendamiento {
   predial: number
   mantenimiento: number
-  segurosYComisiones: number
+  primasSeguros: number
   interesesRealesHipotecarios: number
-  depreciacionConstruccion: number
+  salariosComisionesHonorarios: number
+  contribucionesSobreSalarios: number
+  deduccionInversionesConstruccion: number
 }
 
 export interface ArrendamientoFormData {
