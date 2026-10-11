@@ -13,6 +13,10 @@ const ESTADOS: { value: EstadoHerramienta; label: string }[] = [
   { value: 'publicada', label: 'Publicada' },
 ]
 
+function tieneVistaPublica(herramienta: HerramientaVista): boolean {
+  return !herramienta.requiereValidador || Boolean(herramienta.rutaPublica)
+}
+
 export default function AdminHerramientasPage() {
   const [herramientas, setHerramientas] = useState<HerramientaVista[]>([])
   const [conteoAsignados, setConteoAsignados] = useState<Record<string, number>>({})
@@ -46,6 +50,10 @@ export default function AdminHerramientasPage() {
   }, [])
 
   async function cambiarEstado(h: HerramientaVista, estado: EstadoHerramienta) {
+    if ((estado === 'lista_para_publico' || estado === 'publicada') && !tieneVistaPublica(h)) {
+      setError(`${h.nombreVisible} no puede publicarse hasta tener una vista pública dedicada en el Registro Central.`)
+      return
+    }
     setError('')
     setGuardandoId(h.id)
     try {
@@ -61,6 +69,10 @@ export default function AdminHerramientasPage() {
 
   async function toggleVisibilidad(h: HerramientaVista, campo: 'visiblePublicamente' | 'disponibleSoloLabs') {
     const siguienteValor = !h.estadoOperativo[campo]
+    if (campo === 'visiblePublicamente' && siguienteValor && !tieneVistaPublica(h)) {
+      setError(`${h.nombreVisible} no puede hacerse visible hasta tener una vista pública dedicada en el Registro Central.`)
+      return
+    }
     const siguiente = { ...h.estadoOperativo, [campo]: siguienteValor }
 
     if (campo === 'visiblePublicamente' && siguienteValor) {
@@ -110,7 +122,9 @@ export default function AdminHerramientasPage() {
       )}
 
       <div className="flex flex-col gap-3">
-        {herramientas.map((h) => (
+        {herramientas.map((h) => {
+          const publicable = tieneVistaPublica(h)
+          return (
           <div key={h.id} className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex items-start justify-between">
               <div>
@@ -147,7 +161,11 @@ export default function AdminHerramientasPage() {
                 className="rounded-md border border-gray-300 px-2 py-1.5 text-xs"
               >
                 {ESTADOS.map((e) => (
-                  <option key={e.value} value={e.value}>
+                  <option
+                    key={e.value}
+                    value={e.value}
+                    disabled={!publicable && (e.value === 'lista_para_publico' || e.value === 'publicada')}
+                  >
                     {e.label}
                   </option>
                 ))}
@@ -157,7 +175,7 @@ export default function AdminHerramientasPage() {
                   type="checkbox"
                   checked={h.estadoOperativo.visiblePublicamente}
                   onChange={() => toggleVisibilidad(h, 'visiblePublicamente')}
-                  disabled={guardandoId === h.id}
+                  disabled={guardandoId === h.id || !publicable}
                 />
                 Visible públicamente
               </label>
@@ -174,9 +192,15 @@ export default function AdminHerramientasPage() {
               <span className="text-xs text-stone">
                 {conteoAsignados[h.id] ?? 0} validador{(conteoAsignados[h.id] ?? 0) === 1 ? '' : 'es'} asignado{(conteoAsignados[h.id] ?? 0) === 1 ? '' : 's'}
               </span>
+              {!publicable && (
+                <span className="text-xs text-amber-700">
+                  Requiere vista pública en código antes de poder liberarse.
+                </span>
+              )}
             </div>
           </div>
-        ))}
+          )
+        })}
         {herramientas.length === 0 && <p className="text-sm text-stone">Sin herramientas registradas todavía.</p>}
       </div>
 

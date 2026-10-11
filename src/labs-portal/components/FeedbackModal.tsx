@@ -27,19 +27,29 @@ export default function FeedbackModal({
   const [calificacion, setCalificacion] = useState(5)
   const [comentario, setComentario] = useState('')
   const [enviado, setEnviado] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState('')
 
   if (!abierto) return null
 
   async function manejarEnvio() {
-    if (comentario.trim() === '') return
-    await feedbackRepository.crear({ herramientaId, validadorId, calificacion, tipo, comentario: comentario.trim() })
-    await activityRepository.registrar({ validadorId, tipo: 'feedback_enviado', herramientaId, duracionAproxSegundos: null })
-    setEnviado(true)
-    setTimeout(() => {
-      setEnviado(false)
-      setComentario('')
-      onCerrar()
-    }, 1200)
+    if (comentario.trim() === '' || enviando) return
+    setEnviando(true)
+    setError('')
+    try {
+      await feedbackRepository.crear({ herramientaId, validadorId, calificacion, tipo, comentario: comentario.trim() })
+      await activityRepository.registrar({ validadorId, tipo: 'feedback_enviado', herramientaId, duracionAproxSegundos: null })
+      setEnviado(true)
+      setTimeout(() => {
+        setEnviado(false)
+        setComentario('')
+        setEnviando(false)
+        onCerrar()
+      }, 1200)
+    } catch {
+      setError('No fue posible enviar el feedback. Inténtalo nuevamente.')
+      setEnviando(false)
+    }
   }
 
   return (
@@ -59,6 +69,7 @@ export default function FeedbackModal({
               <select
                 value={tipo}
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setTipo(e.target.value as TipoFeedback)}
+                disabled={enviando}
                 className="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
               >
                 {TIPOS.map((t) => (
@@ -76,6 +87,7 @@ export default function FeedbackModal({
                 max={5}
                 value={calificacion}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setCalificacion(Number(e.target.value))}
+                disabled={enviando}
                 className="w-full"
               />
               <p className="text-xs text-stone text-center">{calificacion} / 5</p>
@@ -85,15 +97,18 @@ export default function FeedbackModal({
               <textarea
                 value={comentario}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setComentario(e.target.value)}
+                disabled={enviando}
                 rows={4}
                 className="w-full mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
                 placeholder="Describe lo que encontraste..."
               />
             </div>
+            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
             <div className="flex justify-end gap-2 mt-1">
               <button
                 type="button"
                 onClick={onCerrar}
+                disabled={enviando}
                 className="rounded-md px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 transition"
               >
                 Cancelar
@@ -101,9 +116,10 @@ export default function FeedbackModal({
               <button
                 type="button"
                 onClick={manejarEnvio}
+                disabled={enviando || comentario.trim() === ''}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-light transition"
               >
-                Enviar
+                {enviando ? 'Enviando…' : 'Enviar'}
               </button>
             </div>
           </div>
