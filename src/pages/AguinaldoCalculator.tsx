@@ -8,6 +8,10 @@ import { calcularAguinaldoEstimado } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted } from '../utils/analytics'
 import type { AguinaldoFormData, ResultadoAguinaldoEstimado, TipoCapturaSalarial } from '../types/labor'
+import PremiumReportOffer from '../components/PremiumReportOffer'
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import { buildAguinaldoReportSnapshot } from '../reports/standardSnapshots'
+import type { StandardLaborReportSnapshot } from '../reports/types'
 
 // Salario se captura como texto (no number); se convierte a number solo
 // al calcular, para evitar el bug de ceros a la izquierda.
@@ -27,6 +31,7 @@ export default function AguinaldoCalculator() {
   const [form, setForm] = useState<AguinaldoFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoAguinaldoEstimado | null>(null)
+  const [reportSnapshot, setReportSnapshot] = useState<StandardLaborReportSnapshot | null>(null)
 
   function actualizar<K extends keyof AguinaldoFormState>(campo: K, valor: AguinaldoFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -55,7 +60,9 @@ export default function AguinaldoCalculator() {
       salarioBase: aNumero(form.salarioBase),
       tipoSalario: form.tipoSalario,
     }
-    setResultado(calcularAguinaldoEstimado(datosParaCalcular))
+    const nextResult = calcularAguinaldoEstimado(datosParaCalcular)
+    setResultado(nextResult)
+    setReportSnapshot(buildAguinaldoReportSnapshot(datosParaCalcular, nextResult))
     trackCalculatorCompleted('aguinaldo')
   }
 
@@ -129,6 +136,10 @@ export default function AguinaldoCalculator() {
             detalle={`Proyectado al ${resultado.fechaCorte}, si continúas laborando hasta esa fecha`}
             formula="15 días × salario diario × (días computados ÷ 365)"
           />
+
+          {PAID_REPORTS_CONFIG.enabled && reportSnapshot && (
+            <PremiumReportOffer snapshot={reportSnapshot} />
+          )}
 
           <RevisionProfesionalBlock />
 

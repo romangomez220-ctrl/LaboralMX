@@ -8,6 +8,10 @@ import { calcularVacacionesEstimadas } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted } from '../utils/analytics'
 import type { ResultadoVacacionesEstimadas, TipoCapturaSalarial, VacacionesFormData } from '../types/labor'
+import PremiumReportOffer from '../components/PremiumReportOffer'
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import { buildVacacionesReportSnapshot } from '../reports/standardSnapshots'
+import type { StandardLaborReportSnapshot } from '../reports/types'
 
 // Salario y días disfrutados se capturan como texto; se convierten a
 // number solo al calcular, para evitar el bug de ceros a la izquierda y
@@ -30,6 +34,7 @@ export default function VacacionesCalculator() {
   const [form, setForm] = useState<VacacionesFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoVacacionesEstimadas | null>(null)
+  const [reportSnapshot, setReportSnapshot] = useState<StandardLaborReportSnapshot | null>(null)
 
   function actualizar<K extends keyof VacacionesFormState>(campo: K, valor: VacacionesFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -62,7 +67,9 @@ export default function VacacionesCalculator() {
       tipoSalario: form.tipoSalario,
       diasDisfrutados: aNumero(form.diasDisfrutados),
     }
-    setResultado(calcularVacacionesEstimadas(datosParaCalcular))
+    const nextResult = calcularVacacionesEstimadas(datosParaCalcular)
+    setResultado(nextResult)
+    setReportSnapshot(buildVacacionesReportSnapshot(datosParaCalcular, nextResult))
     trackCalculatorCompleted('vacaciones')
   }
 
@@ -157,6 +164,10 @@ export default function VacacionesCalculator() {
             formula="Valor de los días pendientes × 25%"
           />
           <ResultCard etiqueta="Total estimado" monto={resultado.totalEstimado} variant="total" />
+
+          {PAID_REPORTS_CONFIG.enabled && reportSnapshot && (
+            <PremiumReportOffer snapshot={reportSnapshot} />
+          )}
 
           <RevisionProfesionalBlock />
 

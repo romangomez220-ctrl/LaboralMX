@@ -61,6 +61,7 @@ import SDICalculator from './pages/SDICalculator'
 import AguinaldoCalculator from './pages/AguinaldoCalculator'
 import VacacionesCalculator from './pages/VacacionesCalculator'
 import CalculatorCampaignLanding from './pages/CalculatorCampaignLanding'
+import PaidReportPage from './pages/PaidReportPage'
 
 function RouteFallback() {
   return (
@@ -101,6 +102,7 @@ export default function App() {
         <Route path="/herramientas" element={<HerramientasPublicasPage />} />
         <Route path="/herramientas/:clave" element={<HerramientaPublicaPage />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
+        <Route path="/reporte" element={<PaidReportPage />} />
 
         {/* Landings de adquisición: rutas cortas y enfocadas que reutilizan
             las calculadoras existentes sin duplicar lógica de negocio. */}

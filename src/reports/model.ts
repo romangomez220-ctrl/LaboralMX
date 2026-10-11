@@ -1,11 +1,17 @@
 import { buildLiquidacionChecklist, buildLiquidacionInsights } from './insights'
-import type { LiquidacionSnapshot, ReportMetadata, ReportModel } from './types'
+import type {
+  LiquidacionReportModel,
+  LiquidacionSnapshot,
+  PaidReportSnapshot,
+  ReportMetadata,
+  ReportModel,
+} from './types'
 import { buildPracticalGuide } from './practicalGuide'
 
 export function buildLiquidacionReportModel(
   snapshot: LiquidacionSnapshot,
   metadata: ReportMetadata,
-): ReportModel {
+): LiquidacionReportModel {
   if (snapshot.resultado.tipo !== 'liquidacion') {
     throw new Error('El snapshot no contiene un resultado de liquidación.')
   }
@@ -19,4 +25,14 @@ export function buildLiquidacionReportModel(
     checklist: buildLiquidacionChecklist(snapshot),
     practicalGuide: buildPracticalGuide(snapshot.tipoSalida),
   }
+}
+
+export function buildPaidReportModel(
+  snapshot: PaidReportSnapshot,
+  metadata: ReportMetadata,
+): ReportModel {
+  if (snapshot.calculatorType === 'liquidacion') {
+    return buildLiquidacionReportModel(snapshot, metadata)
+  }
+  return { ...snapshot, ...metadata }
 }

@@ -3,8 +3,10 @@ import { calcularLiquidacion } from '../utils/laborCalculations'
 import { PAID_REPORTS_CONFIG } from '../config/paidReports'
 import { buildPremiumReportPdf, formatSnapshotDate } from '../utils/pdfGenerator'
 import { isValidReportFolio } from './folio'
-import { buildLiquidacionReportModel } from './model'
+import { buildPaidReportModel, buildLiquidacionReportModel } from './model'
 import type { LiquidacionSnapshot } from './types'
+import { buildSdiReportSnapshot } from './standardSnapshots'
+import { calcularSDI } from '../utils/laborCalculations'
 import { buildPracticalGuide } from './practicalGuide'
 import type { TipoSalidaLiquidacion } from '../types/labor'
 
@@ -40,6 +42,7 @@ describe('Reporte premium ROMANUS', () => {
 
   it('acepta únicamente el formato de folio publicado', () => {
     expect(isValidReportFolio('RMS-LAB-LIQ-A1B2C3D4')).toBe(true)
+    expect(isValidReportFolio('RMS-LAB-REP-A1B2C3D4')).toBe(true)
     expect(isValidReportFolio('RMS-LAB-LIQ-123')).toBe(false)
   })
 
@@ -74,5 +77,21 @@ describe('Reporte premium ROMANUS', () => {
     const pdf = buildPremiumReportPdf(model)
     expect(pdf.getNumberOfPages()).toBe(5)
     expect(pdf.output('arraybuffer').byteLength).toBeGreaterThan(10_000)
+  })
+
+  it('genera un reporte estándar sin recalcular el resultado de SDI', () => {
+    const input = { fechaIngreso: '2020-01-15', salarioBase: 18000, tipoSalario: 'mensual' as const }
+    const result = calcularSDI(input)
+    const snapshot = buildSdiReportSnapshot(input, result)
+    const model = buildPaidReportModel(snapshot, {
+      folio: 'RMS-LAB-REP-A1B2C3D4', generatedAt: '2026-10-11T12:00:00.000Z',
+      reportVersion: '1.0.0', calculatorVersion: 'laboral-2026.1',
+    })
+    expect(model.calculatorType).toBe('sdi')
+    if (model.calculatorType === 'liquidacion') throw new Error('Se esperaba un reporte estándar de SDI')
+    expect(model.summary.value).toContain(result.sdi.toLocaleString('es-MX', { minimumFractionDigits: 2 }))
+    const pdf = buildPremiumReportPdf(model)
+    expect(pdf.getNumberOfPages()).toBe(4)
+    expect(pdf.output('arraybuffer').byteLength).toBeGreaterThan(8_000)
   })
 })

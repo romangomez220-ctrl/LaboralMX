@@ -72,7 +72,7 @@ export default function LaboralSuiteCatalogPage() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div id="calculadoras" className="grid scroll-mt-24 sm:grid-cols-2 gap-4">
         {HERRAMIENTAS.map((h) => (
           <Link
             key={h.nombre}
@@ -85,6 +85,9 @@ export default function LaboralSuiteCatalogPage() {
             </p>
             <p className="font-serif text-xl font-semibold text-primary mb-1">{h.nombre}</p>
             <p className="text-sm text-gray-600">{h.descripcion}</p>
+            {PAID_REPORTS_CONFIG.enabled && (
+              <p className="mt-3 text-xs font-semibold text-gold-dark">Reporte profesional opcional disponible</p>
+            )}
             <p className="text-sm text-primary underline mt-4">Abrir herramienta</p>
           </Link>
         ))}
@@ -95,22 +98,22 @@ export default function LaboralSuiteCatalogPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Producto digital</p>
           <div className="mt-2 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <h2 className="font-serif text-2xl font-semibold text-primary">Reporte ROMANUS de liquidación</h2>
+              <h2 className="font-serif text-2xl font-semibold text-primary">Un Reporte ROMANUS para cada cálculo</h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600">
-                Haz primero tu cálculo gratuito y, si el resultado te sirve, conviértelo en un PDF profesional con
-                desglose, metodología, puntos de revisión y folio ROMANUS.
+                Usa cualquiera de las calculadoras sin costo y, sólo si necesitas conservar o compartir el resultado,
+                conviértelo en un PDF profesional con datos utilizados, metodología, checklist y folio ROMANUS.
               </p>
               <p className="mt-3 text-sm font-semibold text-primary">
                 Pago único de {formatReportPrice()} · El cálculo gratuito permanece disponible.
               </p>
             </div>
-            <Link
-              to="/calcular-liquidacion?utm_source=romanus&utm_medium=internal&utm_campaign=reporte_premium&utm_content=laboral_suite"
-              onClick={() => trackCtaClick('Crear reporte de liquidación', '/calcular-liquidacion', 'laboral_suite_report_offer')}
+            <a
+              href="#calculadoras"
+              onClick={() => trackCtaClick('Elegir cálculo para reporte', '#calculadoras', 'laboral_suite_report_offer')}
               className="rounded-lg bg-primary px-6 py-3 text-center font-semibold text-white transition hover:bg-primary-light"
             >
-              Calcular y crear reporte
-            </Link>
+              Elegir herramienta
+            </a>
           </div>
         </section>
       )}

@@ -1,6 +1,26 @@
 import type { ResultadoCalculo, TipoCapturaSalarial, TipoSalidaLiquidacion, ZonaSalarioMinimo } from '../types/labor'
 import type { PracticalGuide } from './practicalGuide'
 
+export type PaidReportCalculator = 'liquidacion' | 'finiquito' | 'aguinaldo' | 'vacaciones' | 'sdi'
+
+export interface ReportDisplayRow {
+  label: string
+  value: string
+  detail?: string
+}
+
+export interface StandardLaborReportSnapshot {
+  calculatorType: Exclude<PaidReportCalculator, 'liquidacion'>
+  title: string
+  description: string
+  captured: ReportDisplayRow[]
+  results: ReportDisplayRow[]
+  summary: ReportDisplayRow
+  checklist: string[]
+  methodology: string[]
+  disclaimer: string
+}
+
 export interface LiquidacionSnapshot {
   calculatorType: 'liquidacion'
   fechaIngreso: string
@@ -22,7 +42,7 @@ export interface ReportInsight {
   text: string
 }
 
-export interface ReportModel {
+export interface LiquidacionReportModel {
   calculatorType: 'liquidacion'
   title: string
   folio: string
@@ -35,6 +55,13 @@ export interface ReportModel {
   checklist: string[]
   practicalGuide: PracticalGuide
 }
+
+export interface StandardLaborReportModel extends StandardLaborReportSnapshot, ReportMetadata {
+  calculatorType: StandardLaborReportSnapshot['calculatorType']
+}
+
+export type PaidReportSnapshot = LiquidacionSnapshot | StandardLaborReportSnapshot
+export type ReportModel = LiquidacionReportModel | StandardLaborReportModel
 
 export interface ReportMetadata {
   folio: string

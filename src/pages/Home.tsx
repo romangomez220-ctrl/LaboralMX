@@ -80,7 +80,8 @@ export default function Home() {
         <p>
           Captura tus fechas, tu salario y algunos datos de tu caso. Laboral Suite hace los cálculos
           con base en las prestaciones mínimas de la Ley Federal del Trabajo y te muestra un
-          desglose claro, con la opción de copiarlo o descargarlo en PDF.
+          desglose claro sin costo. Si necesitas conservarlo o compartirlo como archivo, puedes
+          adquirir opcionalmente un Reporte ROMANUS profesional.
         </p>
       </section>
 

@@ -31,6 +31,7 @@ export function buildStripeCheckoutParams(
   purchaseId: string,
   successUrl: string,
   cancelUrl: string,
+  productName = 'Reporte ROMANUS de cálculo laboral',
 ): URLSearchParams {
   return new URLSearchParams({
     mode: 'payment',
@@ -40,7 +41,7 @@ export function buildStripeCheckoutParams(
     'line_items[0][quantity]': '1',
     'line_items[0][price_data][currency]': REPORT_PRODUCT_CONFIG.currency.toLowerCase(),
     'line_items[0][price_data][unit_amount]': String(REPORT_PRODUCT_CONFIG.priceMinor),
-    'line_items[0][price_data][product_data][name]': 'Reporte ROMANUS de cálculo laboral',
+    'line_items[0][price_data][product_data][name]': productName,
     'payment_method_types[0]': 'card',
     'metadata[purchase_id]': purchaseId,
     'payment_intent_data[metadata][purchase_id]': purchaseId,

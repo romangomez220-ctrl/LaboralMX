@@ -5,6 +5,7 @@ declare global {
 }
 
 import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import type { PaidReportCalculator } from '../reports/types'
 
 export const GA_MEASUREMENT_ID = 'G-0XMBSS23D7'
 
@@ -174,7 +175,7 @@ type PaidReportStep =
   | 'generated'
   | 'downloaded'
 
-export function trackPaidReport(step: PaidReportStep, calculator: 'liquidacion'): void {
+export function trackPaidReport(step: PaidReportStep, calculator: PaidReportCalculator): void {
   trackEvent(`romanus_pdf_${step}`, {
     calculator_type: calculator,
     report_price: PAID_REPORTS_CONFIG.priceMinor / 100,

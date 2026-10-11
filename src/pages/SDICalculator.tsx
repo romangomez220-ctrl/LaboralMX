@@ -8,6 +8,10 @@ import { calcularSDI } from '../utils/laborCalculations'
 import { aNumero } from '../utils/numericInput'
 import { trackCalculatorCompleted } from '../utils/analytics'
 import type { ResultadoSDI, SDIFormData, TipoCapturaSalarial } from '../types/labor'
+import PremiumReportOffer from '../components/PremiumReportOffer'
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import { buildSdiReportSnapshot } from '../reports/standardSnapshots'
+import type { StandardLaborReportSnapshot } from '../reports/types'
 
 // Salario se captura como texto (no number) para que el campo pueda
 // quedar vacío mientras el usuario escribe y no muestre ceros a la
@@ -28,6 +32,7 @@ export default function SDICalculator() {
   const [form, setForm] = useState<SDIFormState>(ESTADO_INICIAL)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [resultado, setResultado] = useState<ResultadoSDI | null>(null)
+  const [reportSnapshot, setReportSnapshot] = useState<StandardLaborReportSnapshot | null>(null)
 
   function actualizar<K extends keyof SDIFormState>(campo: K, valor: SDIFormState[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -56,7 +61,9 @@ export default function SDICalculator() {
       salarioBase: aNumero(form.salarioBase),
       tipoSalario: form.tipoSalario,
     }
-    setResultado(calcularSDI(datosParaCalcular))
+    const nextResult = calcularSDI(datosParaCalcular)
+    setResultado(nextResult)
+    setReportSnapshot(buildSdiReportSnapshot(datosParaCalcular, nextResult))
     trackCalculatorCompleted('sdi')
   }
 
@@ -137,6 +144,10 @@ export default function SDICalculator() {
             comisiones u otras percepciones variables, y no aplica el tope de 25 UMA del salario
             base de cotización.
           </div>
+
+          {PAID_REPORTS_CONFIG.enabled && reportSnapshot && (
+            <PremiumReportOffer snapshot={reportSnapshot} />
+          )}
 
           <RevisionProfesionalBlock />
 

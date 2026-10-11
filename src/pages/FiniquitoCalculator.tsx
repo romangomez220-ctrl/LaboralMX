@@ -13,6 +13,7 @@ import { trackCalculatorCompleted, trackCalculatorStarted, trackCalculatorValida
 import { obtenerFechaHoyInput } from '../utils/dateUtils'
 import { borrarBorrador, cargarBorrador, guardarBorrador } from '../utils/calculatorDraft'
 import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
+import { buildFiniquitoReportSnapshot } from '../reports/standardSnapshots'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
 // texto mientras el usuario escribe (nunca como number), para que el
@@ -159,7 +160,8 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
       { etiqueta: '¿Renuncia voluntaria?', valor: form.renunciaVoluntaria ? 'Sí' : 'No' },
     ]
 
-    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados } })
+    const reportSnapshot = buildFiniquitoReportSnapshot(datosParaCalcular, resultado)
+    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados, reportSnapshot } })
   }
 
   return (

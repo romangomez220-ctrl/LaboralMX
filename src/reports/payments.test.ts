@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import migrationSql from '../../supabase/migrations/202609020001_paid_reports.sql?raw'
+import expandedMigrationSql from '../../supabase/migrations/202610110002_expand_paid_reports.sql?raw'
 import accessFunctionSource from '../../supabase/functions/report-access/index.ts?raw'
 import finalizeFunctionSource from '../../supabase/functions/finalize-report/index.ts?raw'
 import webhookFunctionSource from '../../supabase/functions/stripe-report-webhook/index.ts?raw'
@@ -147,6 +148,8 @@ describe('Pagos de reportes ROMANUS', () => {
     expect(migrationSql).toContain('enable row level security')
     expect(migrationSql).toContain('revoke all on public.report_purchases from anon, authenticated')
     expect(migrationSql).not.toMatch(/alter\s+table\s+storage\.objects/i)
+    expect(expandedMigrationSql).toContain("'liquidacion', 'finiquito', 'aguinaldo', 'vacaciones', 'sdi'")
+    expect(expandedMigrationSql).not.toMatch(/storage\.(objects|buckets)/i)
   })
 
   it('usa URLs firmadas cortas, subida única y recuperación de generación fallida', () => {

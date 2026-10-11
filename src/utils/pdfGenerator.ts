@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf'
 import type { ResultadoCalculo } from '../types/labor'
-import type { ReportModel } from '../reports/types'
+import type { LiquidacionReportModel, ReportModel, StandardLaborReportModel } from '../reports/types'
 import { LABOR_REPORT_DISCLAIMER, LABOR_REPORT_METHOD_REFERENCES } from '../reports/legalContent'
 import { formatCurrency } from './formatCurrency'
 
@@ -115,7 +115,7 @@ function footers(doc: jsPDF, folio?: string): void {
   }
 }
 
-function capturedRows(model: ReportModel): Array<[string, string]> {
+function capturedRows(model: LiquidacionReportModel): Array<[string, string]> {
   const s = model.snapshot
   const exitLabels: Record<string, string> = {
     despido_injustificado: 'Despido injustificado', despido_justificado: 'Despido justificado',
@@ -135,7 +135,110 @@ function capturedRows(model: ReportModel): Array<[string, string]> {
   ]
 }
 
+function buildStandardLaborReportPdf(model: StandardLaborReportModel): jsPDF {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: false })
+
+  doc.setFillColor(...NAVY)
+  doc.rect(0, 0, 210, 297, 'F')
+  doc.setDrawColor(...GOLD)
+  doc.setLineWidth(1)
+  doc.line(18, 32, 80, 32)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(28)
+  doc.setTextColor(255, 255, 255)
+  doc.text('ROMANUS', 18, 55)
+  doc.setFontSize(10)
+  doc.setTextColor(...GOLD)
+  doc.text('LABORAL SUITE', 18, 65)
+  doc.setFontSize(23)
+  doc.setTextColor(255, 255, 255)
+  doc.text(doc.splitTextToSize(model.title, 155), 18, 108)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(220, 225, 231)
+  doc.text(doc.splitTextToSize(model.description, 170), 18, 145)
+  doc.setFillColor(255, 255, 255)
+  doc.roundedRect(18, 190, 174, 48, 3, 3, 'F')
+  doc.setFontSize(9)
+  doc.setTextColor(...STONE)
+  doc.text('FOLIO', 25, 203)
+  doc.text('GENERADO', 25, 219)
+  doc.text('VERSIÓN', 110, 219)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(...NAVY)
+  doc.text(model.folio, 25, 211)
+  doc.setFontSize(9)
+  doc.text(new Date(model.generatedAt).toLocaleString('es-MX'), 25, 227)
+  doc.text(model.reportVersion, 110, 227)
+
+  let y = addPage(doc, 'Resumen del cálculo')
+  y = title(doc, 'Resumen ejecutivo', y)
+  doc.setFillColor(236, 253, 245)
+  doc.setDrawColor(...GREEN)
+  doc.roundedRect(LEFT, y, WIDTH, 35, 3, 3, 'FD')
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...STONE)
+  doc.text(model.summary.label.toUpperCase(), LEFT + 7, y + 10)
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...GREEN)
+  doc.text(model.summary.value, LEFT + 7, y + 26)
+  y += 45
+
+  y = sectionTitle(doc, 'Datos utilizados', y)
+  model.captured.forEach((row, index) => {
+    const labelLines = doc.splitTextToSize(row.label, 70)
+    const valueLines = doc.splitTextToSize(row.value, 88)
+    const rowHeight = Math.max(labelLines.length, valueLines.length) * 4 + 5
+    y = ensure(doc, y, rowHeight, 'Datos utilizados')
+    if (index % 2 === 0) { doc.setFillColor(...IVORY); doc.rect(LEFT, y - 4, WIDTH, rowHeight, 'F') }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.3); doc.setTextColor(...NAVY)
+    doc.text(labelLines, LEFT + 3, y)
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...TEXT)
+    doc.text(valueLines, RIGHT - 3, y, { align: 'right' })
+    y += rowHeight
+  })
+
+  y = addPage(doc, 'Resultados documentados')
+  y = title(doc, 'Resultados documentados', y)
+  model.results.forEach((row, index) => {
+    const detail = row.detail ? doc.splitTextToSize(row.detail, WIDTH - 16) : []
+    const rowHeight = 13 + detail.length * 3.5
+    y = ensure(doc, y, rowHeight, 'Resultados documentados')
+    if (index % 2 === 0) { doc.setFillColor(...IVORY); doc.roundedRect(LEFT, y - 5, WIDTH, rowHeight, 1.5, 1.5, 'F') }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8); doc.setTextColor(...TEXT)
+    doc.text(doc.splitTextToSize(row.label, 105), LEFT + 4, y)
+    doc.setTextColor(...NAVY)
+    doc.text(row.value, RIGHT - 4, y, { align: 'right' })
+    if (detail.length > 0) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...STONE)
+      doc.text(detail, LEFT + 4, y + 5)
+    }
+    y += rowHeight
+  })
+  y = ensure(doc, y, 18, 'Resultados documentados')
+  doc.setFillColor(236, 253, 245); doc.roundedRect(LEFT, y, WIDTH, 14, 2, 2, 'F')
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(...GREEN)
+  doc.text(model.summary.label.toUpperCase(), LEFT + 4, y + 9)
+  doc.text(model.summary.value, RIGHT - 4, y + 9, { align: 'right' })
+
+  y = addPage(doc, 'Metodología y próximos pasos')
+  y = title(doc, 'Cómo usar este reporte', y)
+  y = paragraph(doc, 'Utiliza este documento para conservar el escenario calculado, comparar datos con tus documentos y preparar una revisión profesional cuando resulte necesaria.', y)
+  y += 2
+  y = sectionTitle(doc, 'Checklist de verificación', y)
+  y = checkboxList(doc, model.checklist, y)
+  y += 3
+  y = sectionTitle(doc, 'Metodología', y)
+  y = bulletList(doc, model.methodology, y, 7.8)
+  y += 4
+  y = sectionTitle(doc, 'Avisos y limitaciones', y)
+  paragraph(doc, model.disclaimer, y, WIDTH, 7.6)
+
+  footers(doc, model.folio)
+  return doc
+}
+
 export function buildPremiumReportPdf(model: ReportModel): jsPDF {
+  if (model.calculatorType !== 'liquidacion') return buildStandardLaborReportPdf(model)
   // Keep content streams uncompressed: some PDF renderers can otherwise omit
   // isolated text operators on graphics-heavy pages.
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: false })

@@ -12,7 +12,7 @@ import { formatCurrency } from '../utils/formatCurrency'
 import { trackResultAction, trackResultViewed } from '../utils/analytics'
 import { WHATSAPP_BUSINESS_LINK } from '../config/contacto'
 import type { ResultadoCalculo } from '../types/labor'
-import type { LiquidacionSnapshot } from '../reports/types'
+import type { PaidReportSnapshot } from '../reports/types'
 import { PAID_REPORTS_CONFIG } from '../config/paidReports'
 import PremiumReportOffer from '../components/PremiumReportOffer'
 import PaidReportRecovery from '../components/PaidReportRecovery'
@@ -21,7 +21,7 @@ import { resolveReportRecoveryToken } from '../reports/recovery'
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[]; reportSnapshot?: LiquidacionSnapshot } | null
+  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[]; reportSnapshot?: PaidReportSnapshot } | null
   const resultado = estadoNavegacion?.resultado
   const datosCapturados = estadoNavegacion?.datosCapturados ?? []
   const reportSnapshot = estadoNavegacion?.reportSnapshot
@@ -57,7 +57,7 @@ export default function ResultPage() {
     )
   }
 
-  const requiereReportePagado = PAID_REPORTS_CONFIG.enabled && resultado.tipo === 'liquidacion'
+  const requiereReportePagado = PAID_REPORTS_CONFIG.enabled && Boolean(reportSnapshot)
 
   async function copiarResultado() {
     if (!resultado) return

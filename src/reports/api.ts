@@ -1,6 +1,6 @@
 import { supabase } from '../repositories/supabase/client'
-import type { LiquidacionSnapshot } from './types'
-import { buildLiquidacionReportModel } from './model'
+import type { PaidReportSnapshot } from './types'
+import { buildPaidReportModel } from './model'
 
 interface CheckoutResponse {
   purchaseId: string
@@ -31,7 +31,7 @@ export async function recoverPaidReport(
   if (data.status !== 'authorized') return data as ReportAccessResult
 
   try {
-    const model = buildLiquidacionReportModel(data.snapshot as LiquidacionSnapshot, {
+    const model = buildPaidReportModel(data.snapshot as PaidReportSnapshot, {
       folio: data.folio,
       generatedAt: new Date().toISOString(),
       reportVersion: data.reportVersion,
@@ -55,7 +55,7 @@ export async function recoverPaidReport(
   }
 }
 
-export async function createReportCheckout(snapshot: LiquidacionSnapshot): Promise<CheckoutResponse> {
+export async function createReportCheckout(snapshot: PaidReportSnapshot): Promise<CheckoutResponse> {
   const { data, error } = await supabase.functions.invoke('create-report-checkout', {
     body: { snapshot },
   })
