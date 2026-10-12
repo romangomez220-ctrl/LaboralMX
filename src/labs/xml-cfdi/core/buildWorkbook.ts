@@ -1,128 +1,154 @@
 /**
- * core/buildWorkbook.ts
- * -----------------------------------------------------------------------------
- * Arma el libro de Excel en memoria a partir de los resultados ya parseados.
- * No descarga el archivo — solo regresa el Blob. El componente que llama a
- * esta función decide cómo dispararlo (URL.createObjectURL + revoke inmediato).
- *
- * Requiere: `xlsx` instalado como dependencia de npm del proyecto
- *   npm install xlsx
- * No se carga desde CDN — evita exponer metadata de la sesión a un tercero
- * y evita una dependencia de red para una herramienta que debe funcionar
- * 100% local.
- * -----------------------------------------------------------------------------
+ * Genera un libro .xlsx exclusivamente a partir de datos ya normalizados.
+ * Nunca abre ni interpreta libros aportados por el usuario. El paquete de
+ * escritura se carga solo al solicitar la descarga para mantener liviana la
+ * ruta de auditoría y reducir la superficie expuesta a documentos externos.
  */
 
-import * as XLSX from 'xlsx';
-import type { ArchivoConError, CfdiParseado } from './types';
+import type { ArchivoConError, CfdiParseado, IncidenciaCfdi } from './types'
 
-function hojaResumen(resultados: CfdiParseado[]) {
-  const filas = resultados.map((r) => ({
-    Archivo: r.archivo,
-    UUID: r.comprobante.uuid ?? '',
-    Tipo: r.comprobante.tipoDeComprobante,
-    Fecha: r.comprobante.fecha,
-    'RFC Emisor': r.comprobante.emisorRfc,
-    'Nombre Emisor': r.comprobante.emisorNombre ?? '',
-    'RFC Receptor': r.comprobante.receptorRfc,
-    'Nombre Receptor': r.comprobante.receptorNombre ?? '',
-    SubTotal: Number(r.comprobante.subTotal) || 0,
-    Descuento: Number(r.comprobante.descuento) || 0,
-    Total: Number(r.comprobante.total) || 0,
-    Moneda: r.comprobante.moneda,
-    'Forma de Pago': r.comprobante.formaPago ?? '',
-    'Método de Pago': r.comprobante.metodoPago ?? '',
-  }));
-  return XLSX.utils.json_to_sheet(filas);
+type CellValue = string | number
+type TableRow = CellValue[]
+
+const HEADER_STYLE = {
+  fontWeight: 'bold' as const,
+  backgroundColor: '#172B4D',
+  color: '#FFFFFF',
 }
 
-function hojaConceptos(resultados: CfdiParseado[]) {
-  const filas: Record<string, string | number>[] = [];
-  resultados.forEach((r) => {
-    r.comprobante.conceptos.forEach((c) => {
-      filas.push({
-        Archivo: r.archivo,
-        UUID: r.comprobante.uuid ?? '',
-        ClaveProdServ: c.claveProdServ,
-        Descripcion: c.descripcion,
-        Cantidad: Number(c.cantidad) || 0,
-        Unidad: c.unidad ?? '',
-        ValorUnitario: Number(c.valorUnitario) || 0,
-        Importe: Number(c.importe) || 0,
-        Descuento: Number(c.descuento) || 0,
-      });
-    });
-  });
-  return XLSX.utils.json_to_sheet(filas);
+function sheetData(headers: string[], rows: TableRow[]) {
+  return [
+    headers.map((value) => ({ value, ...HEADER_STYLE })),
+    ...(rows.length > 0 ? rows : [headers.map(() => '')]),
+  ]
 }
 
-function hojaNomina(resultados: CfdiParseado[]) {
-  const filas: Record<string, string | number>[] = [];
-  resultados.forEach((r) => {
-    if (!r.nomina) return;
-    const base = {
-      Archivo: r.archivo,
-      UUID: r.comprobante.uuid ?? '',
-      'RFC Trabajador': r.comprobante.receptorRfc,
-      CURP: r.nomina.trabajadorCurp ?? '',
-      NSS: r.nomina.trabajadorNumSeguridadSocial ?? '',
-      'Tipo Nómina': r.nomina.tipoNomina,
-      'Fecha Pago': r.nomina.fechaPago,
-    };
+function resumenRows(resultados: CfdiParseado[]): TableRow[] {
+  return resultados.map((r) => [
+    r.archivo,
+    r.comprobante.uuid ?? '',
+    r.comprobante.tipoDeComprobante,
+    r.comprobante.fecha,
+    r.comprobante.emisorRfc,
+    r.comprobante.emisorNombre ?? '',
+    r.comprobante.receptorRfc,
+    r.comprobante.receptorNombre ?? '',
+    Number(r.comprobante.subTotal) || 0,
+    Number(r.comprobante.descuento) || 0,
+    Number(r.comprobante.total) || 0,
+    r.comprobante.moneda,
+    r.comprobante.formaPago ?? '',
+    r.comprobante.metodoPago ?? '',
+  ])
+}
 
-    r.nomina.percepciones.forEach((p) => {
-      filas.push({
+function conceptosRows(resultados: CfdiParseado[]): TableRow[] {
+  return resultados.flatMap((r) => r.comprobante.conceptos.map((c) => [
+    r.archivo,
+    r.comprobante.uuid ?? '',
+    c.claveProdServ,
+    c.descripcion,
+    Number(c.cantidad) || 0,
+    c.unidad ?? '',
+    Number(c.valorUnitario) || 0,
+    Number(c.importe) || 0,
+    Number(c.descuento) || 0,
+  ]))
+}
+
+function nominaRows(resultados: CfdiParseado[]): TableRow[] {
+  return resultados.flatMap((r) => {
+    if (!r.nomina) return []
+    const base: TableRow = [
+      r.archivo,
+      r.comprobante.uuid ?? '',
+      r.comprobante.receptorRfc,
+      r.nomina.trabajadorCurp ?? '',
+      r.nomina.trabajadorNumSeguridadSocial ?? '',
+      r.nomina.tipoNomina,
+      r.nomina.fechaPago,
+    ]
+    return [
+      ...r.nomina.percepciones.map((p): TableRow => [
         ...base,
-        Concepto: `Percepción: ${p.concepto}`,
-        Clave: p.clave,
-        'Importe Gravado': Number(p.importeGravado) || 0,
-        'Importe Exento': Number(p.importeExento) || 0,
-      });
-    });
-
-    r.nomina.deducciones.forEach((d) => {
-      filas.push({
+        `Percepción: ${p.concepto}`,
+        p.clave,
+        Number(p.importeGravado) || 0,
+        Number(p.importeExento) || 0,
+        0,
+      ]),
+      ...r.nomina.deducciones.map((d): TableRow => [
         ...base,
-        Concepto: `Deducción: ${d.concepto}`,
-        Clave: d.clave,
-        Importe: Number(d.importe) || 0,
-      });
-    });
-  });
-  return XLSX.utils.json_to_sheet(filas);
+        `Deducción: ${d.concepto}`,
+        d.clave,
+        0,
+        0,
+        Number(d.importe) || 0,
+      ]),
+      ...r.nomina.otrosPagos.map((o): TableRow => [
+        ...base,
+        `Otro pago: ${o.concepto}`,
+        o.clave,
+        0,
+        0,
+        Number(o.importe) || 0,
+      ]),
+    ]
+  })
 }
 
-function hojaErrores(errores: ArchivoConError[]) {
-  const filas = errores.map((e) => ({ Archivo: e.archivo, Motivo: e.motivo }));
-  return XLSX.utils.json_to_sheet(filas.length ? filas : [{ Archivo: '', Motivo: '' }]);
-}
-
-/**
- * @param incluirNomina  Debe venir de converterConfig.nominaEnabled, decidido
- *                       por el componente orquestador — esta función no lo
- *                       infiere por sí misma para no duplicar la fuente de verdad.
- */
-export function buildWorkbook(
+export async function buildWorkbook(
   exitosos: CfdiParseado[],
   errores: ArchivoConError[],
-  incluirNomina: boolean
-): Blob {
-  const wb = XLSX.utils.book_new();
+  incidencias: IncidenciaCfdi[],
+  incluirNomina: boolean,
+): Promise<Blob> {
+  const { default: writeXlsxFile } = await import('write-excel-file/browser')
+  const sheets = [
+    {
+      sheet: 'Resumen',
+      data: sheetData(
+        ['Archivo', 'UUID', 'Tipo', 'Fecha', 'RFC Emisor', 'Nombre Emisor', 'RFC Receptor', 'Nombre Receptor', 'SubTotal', 'Descuento', 'Total', 'Moneda', 'Forma de Pago', 'Método de Pago'],
+        resumenRows(exitosos),
+      ),
+      stickyRowsCount: 1,
+    },
+    {
+      sheet: 'Conceptos',
+      data: sheetData(
+        ['Archivo', 'UUID', 'ClaveProdServ', 'Descripción', 'Cantidad', 'Unidad', 'ValorUnitario', 'Importe', 'Descuento'],
+        conceptosRows(exitosos),
+      ),
+      stickyRowsCount: 1,
+    },
+    {
+      sheet: 'Incidencias',
+      data: sheetData(
+        ['Severidad', 'Código', 'Archivo', 'Incidencia', 'Detalle', 'Campo'],
+        incidencias.map((item) => [item.severidad, item.codigo, item.archivo, item.titulo, item.detalle, item.campo ?? '']),
+      ),
+      stickyRowsCount: 1,
+    },
+    {
+      sheet: 'Errores',
+      data: sheetData(
+        ['Archivo', 'Motivo'],
+        errores.map((item) => [item.archivo, item.motivo]),
+      ),
+      stickyRowsCount: 1,
+    },
+  ]
 
-  XLSX.utils.book_append_sheet(wb, hojaResumen(exitosos), 'Resumen');
-  XLSX.utils.book_append_sheet(wb, hojaConceptos(exitosos), 'Conceptos');
-
-  if (incluirNomina) {
-    const conNomina = exitosos.filter((r) => r.nomina);
-    if (conNomina.length > 0) {
-      XLSX.utils.book_append_sheet(wb, hojaNomina(conNomina), 'Nómina');
-    }
+  if (incluirNomina && exitosos.some((item) => item.nomina)) {
+    sheets.splice(2, 0, {
+      sheet: 'Nómina',
+      data: sheetData(
+        ['Archivo', 'UUID', 'RFC Trabajador', 'CURP', 'NSS', 'Tipo Nómina', 'Fecha Pago', 'Concepto', 'Clave', 'Importe Gravado', 'Importe Exento', 'Importe'],
+        nominaRows(exitosos),
+      ),
+      stickyRowsCount: 1,
+    })
   }
 
-  XLSX.utils.book_append_sheet(wb, hojaErrores(errores), 'Errores');
-
-  const arrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  return new Blob([arrayBuffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
+  return writeXlsxFile(sheets, { fontFamily: 'Arial', fontSize: 10 }).toBlob()
 }

@@ -32,7 +32,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-amber-300 bg-warning-light p-4 text-sm text-warning">
         <p className="mb-3">
-          Este conversor procesa los archivos <strong>localmente en tu navegador</strong>. Ningún
+          Este auditor procesa los archivos <strong>localmente en tu navegador</strong>. Ningún
           XML se envía a servidores de ROMANUS, no se almacena, y no se comparte con terceros.
         </p>
         <label className="flex items-start gap-2 cursor-pointer select-none">

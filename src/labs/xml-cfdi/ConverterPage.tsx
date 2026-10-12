@@ -15,12 +15,13 @@
  * -----------------------------------------------------------------------------
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { converterConfig } from './config'
 import { detectTipo, tryParseXml } from './core/detectTipo'
 import { parseCfdi } from './core/parseCfdi'
 import { parseNomina } from './core/parseNomina'
 import { buildWorkbook } from './core/buildWorkbook'
+import { summarizeCfdiAudit, validateCfdiBatch } from './core/validateCfdi'
 import type { ArchivoConError, CfdiParseado } from './core/types'
 import { trackXmlConverterEvent } from './analytics/xmlConverterAnalytics'
 import { ConsentGate } from './components/ConsentGate'
@@ -43,7 +44,16 @@ async function leerArchivo(file: File): Promise<string> {
 async function procesarArchivo(
   file: File,
 ): Promise<{ ok: true; data: CfdiParseado } | { ok: false; error: ArchivoConError }> {
-  const texto = await leerArchivo(file)
+  if (file.size > converterConfig.maxFileBytes) {
+    return { ok: false, error: { archivo: file.name, motivo: 'El archivo supera el límite de 5 MB.' } }
+  }
+
+  let texto: string
+  try {
+    texto = await leerArchivo(file)
+  } catch {
+    return { ok: false, error: { archivo: file.name, motivo: 'No fue posible leer el archivo.' } }
+  }
   const xmlDoc = tryParseXml(texto)
 
   if (!xmlDoc) {
@@ -84,6 +94,9 @@ export default function ConverterPage() {
   const [exitosos, setExitosos] = useState<CfdiParseado[]>([])
   const [errores, setErrores] = useState<ArchivoConError[]>([])
   const [procesando, setProcesando] = useState(false)
+  const [progreso, setProgreso] = useState({ actual: 0, total: 0 })
+  const incidencias = useMemo(() => validateCfdiBatch(exitosos), [exitosos])
+  const resumen = useMemo(() => summarizeCfdiAudit(exitosos, incidencias), [exitosos, incidencias])
 
   useEffect(() => {
     trackXmlConverterEvent('xml_cfdi_page_view')
@@ -91,34 +104,43 @@ export default function ConverterPage() {
 
   async function handleFilesSelected(files: File[]) {
     setProcesando(true)
+    setProgreso({ actual: 0, total: files.length })
     setExitosos([])
     setErrores([])
 
     const nuevosExitosos: CfdiParseado[] = []
     const nuevosErrores: ArchivoConError[] = []
 
-    // Secuencial a propósito en esta fase de Labs. Migrar a Web Worker si el
-    // lote típico supera ~100-150 archivos (el tope actual es 50).
-    for (const file of files) {
+    // Secuencial a propósito para mantener el orden y acotar memoria. Se cede
+    // el hilo cada 20 archivos; antes de aumentar el límite actual se deberá
+    // mover el parseo completo a un Web Worker.
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index]
       const resultado = await procesarArchivo(file)
       if (resultado.ok) {
         nuevosExitosos.push(resultado.data)
       } else {
         nuevosErrores.push(resultado.error)
       }
+      setProgreso({ actual: index + 1, total: files.length })
+      if ((index + 1) % 20 === 0) {
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      }
     }
 
     setExitosos(nuevosExitosos)
     setErrores(nuevosErrores)
     setProcesando(false)
+    if (files.length > 0) trackXmlConverterEvent('xml_cfdi_audit_completed')
   }
 
-  function handleExport() {
-    const blob = buildWorkbook(exitosos, errores, converterConfig.nominaEnabled)
+  async function handleExport() {
+    if (!converterConfig.pilotExportEnabled) return
+    const blob = await buildWorkbook(exitosos, errores, incidencias, converterConfig.nominaEnabled)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `cfdi-conversion-${Date.now()}.xlsx`
+    a.download = `romanus-auditoria-cfdi-${Date.now()}.xlsx`
     a.click()
     URL.revokeObjectURL(url) // se libera de inmediato, no queda referencia viva
     trackXmlConverterEvent('xml_cfdi_export_completed')
@@ -129,16 +151,16 @@ export default function ConverterPage() {
       {/* Identificación conceptual, igual que RESICO: parte de Contable Suite
           dentro de Labs. Solo etiqueta visual, no cambia rutas ni lógica. */}
       <p className="text-xs uppercase tracking-wide text-stone">
-        Contable Suite <span className="mx-1 text-gray-300">›</span> Conversor XML CFDI
+        Contable Suite <span className="mx-1 text-gray-300">›</span> Auditor CFDI
       </p>
 
       <LabsBadge />
 
       <div>
-        <h1 className="text-2xl font-bold text-primary">Conversor de XML CFDI a Excel</h1>
+        <h1 className="text-2xl font-bold text-primary">Auditor de XML CFDI</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Convierte tus archivos XML de CFDI (incluye Nómina) a un libro de Excel, sin salir de tu
-          navegador.
+          Revisa lotes de CFDI, identifica duplicados y diferencias de estructura o importes y
+          concentra los resultados sin sacar tus archivos del navegador.
         </p>
       </div>
 
@@ -148,11 +170,31 @@ export default function ConverterPage() {
         )}
       </ConsentGate>
 
-      {procesando && <p className="text-sm text-stone">Procesando archivos…</p>}
+      {procesando && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4" role="status" aria-live="polite">
+          <div className="flex justify-between text-sm text-stone">
+            <span>Analizando documentos…</span>
+            <span>{progreso.actual} / {progreso.total}</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-200">
+            <div
+              className="h-full rounded-full bg-gold transition-all"
+              style={{ width: `${progreso.total > 0 ? (progreso.actual / progreso.total) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {!procesando && (exitosos.length > 0 || errores.length > 0) && (
         <>
-          <ConversionPreview resultados={exitosos} erroresCount={errores.length} onExport={handleExport} />
+          <ConversionPreview
+            resultados={exitosos}
+            erroresCount={errores.length}
+            incidencias={incidencias}
+            resumen={resumen}
+            onExport={handleExport}
+            pilotExportEnabled={converterConfig.pilotExportEnabled}
+          />
           <NominaToggleGate>
             {exitosos.some((r) => r.nomina) && (
               <p className="text-sm text-stone">

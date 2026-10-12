@@ -23,6 +23,8 @@ import { trackEvent } from '../../../utils/analytics'
 export type AllowedEventName =
   | 'xml_cfdi_page_view'
   | 'xml_cfdi_consent_accepted'
+  | 'xml_cfdi_demo_loaded'
+  | 'xml_cfdi_audit_completed'
   | 'xml_cfdi_export_completed'
 
 export function trackXmlConverterEvent(name: AllowedEventName): void {

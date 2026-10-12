@@ -1,7 +1,7 @@
 /**
  * config.ts
  * -----------------------------------------------------------------------------
- * Configuración central del módulo "Conversor XML CFDI → Excel".
+ * Configuración central del módulo "Auditor CFDI".
  *
  * REGLAS NO NEGOCIABLES DE ESTE MÓDULO (ver ARQUITECTURA-CONVERSOR-XML-CFDI.md):
  *   1. Cero red: ningún archivo de este módulo hace fetch/XHR con contenido del XML.
@@ -17,8 +17,21 @@ export const converterConfig = {
   /** Si Josué no necesita nómina tras la validación, cambiar a false. */
   nominaEnabled: true,
 
-  /** Tope de archivos por lote en fase Labs. Subir solo cuando exista Web Worker. */
-  maxBatchFiles: 50,
+  /** Límite conservador mientras el procesamiento siga en el hilo principal. */
+  maxBatchFiles: 250,
+
+  /** Evita que un solo XML agote la memoria del navegador. */
+  maxFileBytes: 5 * 1024 * 1024,
+
+  /** Límite total por lote para la fase de validación. */
+  maxBatchBytes: 25 * 1024 * 1024,
+
+  /**
+   * La exportación gratuita solo existe dentro de Labs para validar el reporte.
+   * Debe cambiarse a false antes de publicar la herramienta; el producto
+   * público utilizará el checkout y no debe depender de este interruptor.
+   */
+  pilotExportEnabled: true,
 
   /** Ruta de la herramienta — usada también como key de exclusión en analytics. */
   routePath: '/labs/xml-cfdi',

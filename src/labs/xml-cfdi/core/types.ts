@@ -104,6 +104,29 @@ export interface ArchivoConError {
   motivo: string;
 }
 
+export type SeveridadIncidencia = 'critica' | 'alta' | 'media' | 'informativa';
+
+export interface IncidenciaCfdi {
+  id: string;
+  codigo: string;
+  severidad: SeveridadIncidencia;
+  archivo: string;
+  titulo: string;
+  detalle: string;
+  campo?: string;
+}
+
+export interface ResumenAuditoriaCfdi {
+  documentos: number;
+  sinIncidencias: number;
+  conIncidencias: number;
+  criticas: number;
+  altas: number;
+  medias: number;
+  informativas: number;
+  uuidDuplicados: number;
+}
+
 export interface ResultadoBatch {
   exitosos: CfdiParseado[];
   errores: ArchivoConError[];

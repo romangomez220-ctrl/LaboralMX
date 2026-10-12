@@ -8,6 +8,8 @@
 
 import { useCallback, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 import { converterConfig } from '../config'
+import { createDemoCfdiFiles } from '../core/demoFiles'
+import { trackXmlConverterEvent } from '../analytics/xmlConverterAnalytics'
 
 interface XmlUploadZoneProps {
   disabled: boolean
@@ -22,13 +24,37 @@ export function XmlUploadZone({ disabled, onFilesSelected }: XmlUploadZoneProps)
   const handleFiles = useCallback(
     (fileList: FileList | null) => {
       if (!fileList) return
-      const xmlFiles = Array.from(fileList).filter((f) => f.name.toLowerCase().endsWith('.xml'))
+      const candidates = Array.from(fileList).filter((f) => f.name.toLowerCase().endsWith('.xml'))
+      const xmlFiles: File[] = []
+      let totalBytes = 0
+      let oversized = 0
+      let overBatchSize = 0
+
+      for (const file of candidates) {
+        if (file.size > converterConfig.maxFileBytes) {
+          oversized += 1
+          continue
+        }
+        if (totalBytes + file.size > converterConfig.maxBatchBytes) {
+          overBatchSize += 1
+          continue
+        }
+        totalBytes += file.size
+        xmlFiles.push(file)
+      }
 
       if (xmlFiles.length > converterConfig.maxBatchFiles) {
         setLimitWarning(
-          `Esta versión de Labs admite hasta ${converterConfig.maxBatchFiles} archivos por lote. ` +
+          `Esta versión admite hasta ${converterConfig.maxBatchFiles} archivos por lote. ` +
             `Se tomarán los primeros ${converterConfig.maxBatchFiles}.`,
         )
+      } else if (oversized > 0 || overBatchSize > 0) {
+        setLimitWarning(
+          `${oversized + overBatchSize} archivo(s) se omitieron por exceder los límites de seguridad ` +
+            '(5 MB por XML y 25 MB por lote).',
+        )
+      } else if (candidates.length === 0) {
+        setLimitWarning('Selecciona archivos con extensión .xml.')
       } else {
         setLimitWarning(null)
       }
@@ -67,7 +93,7 @@ export function XmlUploadZone({ disabled, onFilesSelected }: XmlUploadZoneProps)
             : 'Arrastra tus archivos XML aquí, o haz clic para seleccionarlos'}
         </p>
         <p className="mt-1 text-sm text-stone">
-          Hasta {converterConfig.maxBatchFiles} archivos por lote (fase de validación)
+          Hasta {converterConfig.maxBatchFiles} XML por lote · 5 MB por archivo · procesamiento local
         </p>
         <input
           ref={inputRef}
@@ -79,6 +105,19 @@ export function XmlUploadZone({ disabled, onFilesSelected }: XmlUploadZoneProps)
           onChange={(e: ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />
       </div>
+      <button
+        type="button"
+        disabled={disabled}
+        className="mt-3 text-sm font-semibold text-primary underline decoration-gold underline-offset-4 disabled:cursor-not-allowed disabled:text-gray-400"
+        onClick={() => {
+          if (disabled) return
+          trackXmlConverterEvent('xml_cfdi_demo_loaded')
+          setLimitWarning(null)
+          onFilesSelected(createDemoCfdiFiles())
+        }}
+      >
+        Probar con 2 CFDI ficticios
+      </button>
       {limitWarning && <p className="mt-2 text-sm text-warning">{limitWarning}</p>}
     </div>
   )

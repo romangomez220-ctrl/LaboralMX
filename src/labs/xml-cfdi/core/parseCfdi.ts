@@ -10,18 +10,30 @@
 
 import type { Concepto, ComprobanteBase, ImpuestoConcepto } from './types';
 
+const NS_CFDI_40 = 'http://www.sat.gob.mx/cfd/4';
+
 const attr = (el: Element | null, name: string): string =>
   el?.getAttribute(name) ?? '';
 
+function descendantsByLocalName(parent: Element | Document, namespace: string, localName: string): Element[] {
+  const namespaced = Array.from(parent.getElementsByTagNameNS(namespace, localName));
+  if (namespaced.length > 0) return namespaced;
+  return Array.from(parent.getElementsByTagName('*')).filter((node) => node.localName === localName);
+}
+
+function firstByLocalName(parent: Element | Document, namespace: string, localName: string): Element | null {
+  return descendantsByLocalName(parent, namespace, localName)[0] ?? null;
+}
+
 function parseConceptos(comprobante: Element): Concepto[] {
   const conceptosNodes = Array.from(
-    comprobante.getElementsByTagName('cfdi:Concepto')
+    descendantsByLocalName(comprobante, NS_CFDI_40, 'Concepto')
   );
 
   return conceptosNodes.map((c) => {
     const impuestos: ImpuestoConcepto[] = [];
 
-    Array.from(c.getElementsByTagName('cfdi:Traslado')).forEach((t) => {
+    descendantsByLocalName(c, NS_CFDI_40, 'Traslado').forEach((t) => {
       impuestos.push({
         tipo: 'traslado',
         impuesto: attr(t, 'Impuesto'),
@@ -30,7 +42,7 @@ function parseConceptos(comprobante: Element): Concepto[] {
       });
     });
 
-    Array.from(c.getElementsByTagName('cfdi:Retencion')).forEach((r) => {
+    descendantsByLocalName(c, NS_CFDI_40, 'Retencion').forEach((r) => {
       impuestos.push({
         tipo: 'retencion',
         impuesto: attr(r, 'Impuesto'),
@@ -63,9 +75,9 @@ function parseUuid(xmlDoc: Document): string | undefined {
 }
 
 export function parseCfdi(xmlDoc: Document, archivo: string): ComprobanteBase & { archivo: string } {
-  const comprobante = xmlDoc.getElementsByTagName('cfdi:Comprobante')[0];
-  const emisor = xmlDoc.getElementsByTagName('cfdi:Emisor')[0] ?? null;
-  const receptor = xmlDoc.getElementsByTagName('cfdi:Receptor')[0] ?? null;
+  const comprobante = firstByLocalName(xmlDoc, NS_CFDI_40, 'Comprobante');
+  const emisor = firstByLocalName(xmlDoc, NS_CFDI_40, 'Emisor');
+  const receptor = firstByLocalName(xmlDoc, NS_CFDI_40, 'Receptor');
 
   if (!comprobante) {
     throw new Error('No se encontró el nodo cfdi:Comprobante.');
