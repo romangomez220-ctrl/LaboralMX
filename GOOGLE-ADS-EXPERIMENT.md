@@ -1,81 +1,67 @@
-# Experimento inicial de Google Ads — ROMANUS
+# Piloto de ventas Google Ads — Reporte ROMANUS de liquidación
 
-## Configuración
+## Objetivo
 
-- Tipo: campaña de búsqueda.
-- Ubicación: México, presencia física en la ubicación objetivo.
+Validar si una persona que llega desde una búsqueda laboral paga MXN $39 por conservar su
+resultado como Reporte ROMANUS. El piloto promociona un solo producto y una sola intención:
+calcular una liquidación laboral.
+
+## Límites del experimento
+
+- Tipo: campaña de búsqueda, sin Display ni socios de búsqueda durante el piloto.
+- Ubicación: México; elegir presencia física en la ubicación objetivo.
 - Idioma: español.
-- Duración inicial: 14 días.
-- Presupuesto de aprendizaje: MXN $200–$400 diarios.
-- Puja inicial: maximizar clics con límite de CPC mientras se reúne volumen.
-- Conversión principal del piloto: `romanus_review_whatsapp_continued`.
-- Microconversión diagnóstica: `romanus_calculator_completed`.
-- No usar remarketing, Customer Match, audiencias personalizadas ni datos del asunto
-  jurídico. La primera campaña será únicamente de búsqueda por intención explícita.
+- Calendario: tres días alternados dentro de una semana.
+- Presupuesto: MXN $150–$200 por día activo; máximo total MXN $600.
+- Puja inicial: maximizar clics mientras no exista volumen suficiente de ventas.
+- No activar la campaña hasta confirmar que la conversión de venta está disponible.
+- No usar remarketing, Customer Match ni audiencias basadas en situaciones jurídicas.
 
-## Grupo 1: Finiquito
+## Medición
 
-### Palabras clave
+- Conversión principal: `romanus_pdf_payment_succeeded`.
+- Conversión secundaria: `romanus_pdf_checkout_started`.
+- Diagnóstico: `romanus_calculator_started`, `romanus_calculator_completed` y
+  `romanus_result_viewed`.
+- Prospecto jurídico separado: `romanus_review_whatsapp_continued`.
 
-- `[calcular finiquito]`
-- `[calculadora de finiquito]`
-- `"calcular mi finiquito"`
-- `"cuánto me toca de finiquito"`
-- `"finiquito por renuncia"`
+Solo la venta debe participar inicialmente en la optimización de la campaña. Checkout y cálculo
+sirven para localizar abandonos, no para presentar el piloto como rentable.
 
-### Titulares
+## Grupo de anuncios: Liquidación
 
-1. Calcula Tu Finiquito Gratis
-2. Calculadora de Finiquito México
-3. Estimación Sin Crear Una Cuenta
-4. Conoce Tu Desglose Laboral
-5. Resultado En Línea En Minutos
-6. Calculadora Laboral ROMANUS
-7. Revisa Aguinaldo Y Vacaciones
-8. Estimación Clara Y Gratuita
-
-### Descripciones
-
-- Estima tu finiquito con fechas y salario. Obtén un desglose informativo sin registro.
-- Revisa salarios pendientes, aguinaldo y vacaciones proporcionales en una sola herramienta.
-- Calculadora gratuita para México con metodología visible y resultado descargable.
-- Obtén una estimación inicial antes de revisar documentos o tomar una decisión laboral.
-
-### URL final
-
-Usar la URL de finiquito definida en `CAMPAIGN-TRACKING.md`.
-
-## Grupo 2: Liquidación
-
-### Palabras clave
+### Palabras clave iniciales
 
 - `[calcular liquidación]`
 - `[calculadora de liquidación]`
 - `"cuánto me toca de liquidación"`
 - `"liquidación por despido"`
 - `"calcular liquidación por despido injustificado"`
+- `"cuánto me toca por despido"`
+
+No comenzar con concordancia amplia. Revisar términos de búsqueda después de cada día activo.
 
 ### Titulares
 
-1. Calcula Tu Liquidación Laboral
-2. Calculadora de Liquidación México
-3. Estimación Gratuita En Minutos
+1. Calcula Tu Liquidación
+2. Liquidación Laboral México
+3. Resultado Gratis En Minutos
 4. Revisa Tu Escenario De Despido
-5. Sin Registro Y Con Desglose
-6. Calculadora Laboral ROMANUS
-7. Conoce Los Conceptos Estimados
-8. Guarda Tu Resultado En PDF
+5. Sin Registro Ni Complicaciones
+6. Reporte Profesional Por $39
+7. Conoce Tu Estimación Laboral
+8. Calculadora Laboral ROMANUS
 
 ### Descripciones
 
-- Estima finiquito e indemnización por terminación laboral con conceptos separados.
-- Captura fechas y salario para obtener un escenario informativo sin crear una cuenta.
-- Calculadora gratuita para México con supuestos visibles y resultado descargable.
-- Revisa una estimación inicial y compárala con documentos y propuestas recibidas.
+- Estima tu liquidación en minutos. Resultado gratuito y reporte profesional por $39.
+- Captura fechas y salario. Revisa finiquito e indemnización con conceptos separados.
+- Calculadora laboral para México, sin registro. Metodología visible y pago seguro.
+- Conserva tu cálculo en un Reporte ROMANUS con folio, metodología y próximos pasos.
 
 ### URL final
 
-Usar la URL de liquidación definida en `CAMPAIGN-TRACKING.md`.
+`https://www.romanus.mx/calcular-liquidacion?utm_source=google&utm_medium=cpc&utm_campaign=mx_liquidacion_reporte_piloto&utm_content=liquidacion_report_search_a&utm_term={keyword}`
 
 ## Palabras negativas iniciales
 
@@ -97,18 +83,18 @@ Usar la URL de liquidación definida en `CAMPAIGN-TRACKING.md`.
 - calculadora física
 - comprar calculadora
 
-Revisar términos reales diariamente durante los primeros cuatro días. Añadir negativas solo cuando
-la intención sea claramente ajena al cálculo laboral; no bloquear búsquedas útiles por anticipado.
+Agregar negativas únicamente cuando el término real sea claramente ajeno al cálculo laboral.
 
-## Criterios de decisión
+## Lectura del resultado
 
-- No escalar antes de comprobar manualmente que el recorrido solicitud → confirmación →
-  abogado funciona y que existen al menos dos abogados disponibles.
-- Evaluar tasa de cálculo completado, tasa de solicitud y costo por solicitud enviada;
-  no usar el CTR aislado como criterio de éxito.
-- Pausar palabras que consuman presupuesto sin cálculos completados después de volumen suficiente.
-- Si hay clics pero pocos cálculos, revisar mensaje, velocidad y fricción del formulario.
-- Si hay cálculos pero ninguna solicitud, revisar el bloque de revisión profesional antes
-  de subir presupuesto.
-- Si hay solicitudes pero los abogados no responden con rapidez, pausar la campaña hasta
-  recuperar capacidad operativa.
+| Señal | Interpretación | Acción siguiente |
+| --- | --- | --- |
+| Hay clics, pero casi ningún cálculo iniciado | Anuncio y landing no mantienen la misma promesa | Ajustar mensaje, no subir presupuesto |
+| Se inician cálculos, pero pocos terminan | Existe fricción en el formulario | Revisar campos y errores frecuentes |
+| Hay resultados, pero no checkout | El reporte no comunica suficiente valor | Mejorar muestra y propuesta del reporte |
+| Hay checkout, pero no pago | Revisar confianza, precio y experiencia de Stripe | Diagnosticar antes de atraer más tráfico |
+| Se confirma al menos una venta fría | Existe disposición inicial a pagar | Repetir prueba sin ampliar aún el alcance |
+| Se repiten entre tres y cinco ventas | Señal comercial más sólida | Aumentar presupuesto gradualmente |
+
+No evaluar el piloto por CTR ni por número de cálculos aislados. La venta confirmada en Stripe y
+Supabase es la fuente de verdad; Analytics sirve para atribución y diagnóstico.

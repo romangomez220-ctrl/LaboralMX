@@ -127,12 +127,13 @@ describe('Pagos de reportes ROMANUS', () => {
   it('emite el embudo premium sin datos laborales ni identificadores', () => {
     const gtag = vi.fn()
     vi.stubGlobal('window', { gtag, location: { pathname: '/resultado', search: '', origin: 'https://romanus.mx' } })
-    trackPaidReport('payment_succeeded', 'liquidacion')
+    trackPaidReport('payment_succeeded', 'liquidacion', purchase.id)
     expect(gtag).toHaveBeenCalledWith('event', 'romanus_pdf_payment_succeeded', expect.objectContaining({
-      calculator_type: 'liquidacion', report_price: 39, currency: 'MXN',
+      calculator_type: 'liquidacion', report_price: 39, value: 39, currency: 'MXN',
+      transaction_id: purchase.id,
     }))
     const serialized = JSON.stringify(gtag.mock.calls)
-    for (const prohibited of ['salario', 'fechaIngreso', 'telefono', 'report_token', 'purchaseId']) {
+    for (const prohibited of ['salario', 'fechaIngreso', 'telefono', 'report_token', 'recoveryToken']) {
       expect(serialized).not.toContain(prohibited)
     }
     vi.unstubAllGlobals()

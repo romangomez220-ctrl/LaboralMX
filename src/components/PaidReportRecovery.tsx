@@ -22,7 +22,7 @@ export default function PaidReportRecovery({ purchaseId, recoveryToken, checkout
     const trackConfirmedPayment = () => {
       const paymentKey = `romanus_pdf_payment_tracked_${purchaseId}`
       if (!localStorage.getItem(paymentKey)) {
-        trackPaidReport('payment_succeeded', calculatorType)
+        trackPaidReport('payment_succeeded', calculatorType, purchaseId)
         localStorage.setItem(paymentKey, '1')
       }
     }

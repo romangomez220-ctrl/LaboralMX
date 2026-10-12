@@ -175,12 +175,26 @@ type PaidReportStep =
   | 'generated'
   | 'downloaded'
 
-export function trackPaidReport(step: PaidReportStep, calculator: PaidReportCalculator): void {
-  trackEvent(`romanus_pdf_${step}`, {
+export function trackPaidReport(
+  step: PaidReportStep,
+  calculator: PaidReportCalculator,
+  transactionId?: string,
+): void {
+  const params: Record<string, unknown> = {
     calculator_type: calculator,
     report_price: PAID_REPORTS_CONFIG.priceMinor / 100,
     currency: PAID_REPORTS_CONFIG.currency,
     report_version: PAID_REPORTS_CONFIG.reportVersion,
     payment_provider: PAID_REPORTS_CONFIG.paymentProvider,
-  })
+  }
+
+  // GA4 y Google Ads reconocen `value`, `currency` y `transaction_id`
+  // como parámetros de monetización. Solo se envían al confirmar el pago:
+  // nunca se expone el token de recuperación ni información laboral.
+  if (step === 'payment_succeeded') {
+    params.value = PAID_REPORTS_CONFIG.priceMinor / 100
+    if (transactionId) params.transaction_id = transactionId
+  }
+
+  trackEvent(`romanus_pdf_${step}`, params)
 }
