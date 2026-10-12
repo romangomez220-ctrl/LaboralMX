@@ -15,6 +15,8 @@ export default function AdminFeedbackPage() {
   const [cargando, setCargando] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos')
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('todos')
+  const [error, setError] = useState('')
+  const [actualizando, setActualizando] = useState<string | null>(null)
 
   async function cargar() {
     const [f, h, v] = await Promise.all([feedbackRepository.listar(), listarHerramientasVista(), validatorsRepository.listar()])
@@ -36,8 +38,16 @@ export default function AdminFeedbackPage() {
   }, [todoElFeedback, filtroEstado, filtroTipo])
 
   async function cambiarEstado(id: string, estado: EstadoFeedback) {
-    await feedbackRepository.actualizarEstado(id, estado)
-    cargar()
+    setActualizando(id)
+    setError('')
+    try {
+      await feedbackRepository.actualizarEstado(id, estado)
+      await cargar()
+    } catch {
+      setError('No fue posible actualizar el feedback. El cambio no se guardó.')
+    } finally {
+      setActualizando(null)
+    }
   }
 
   if (cargando) {
@@ -51,6 +61,7 @@ export default function AdminFeedbackPage() {
   return (
     <AdminLayout>
       <h1 className="text-2xl font-bold text-primary">Feedback</h1>
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="flex gap-3">
         <select
@@ -97,6 +108,7 @@ export default function AdminFeedbackPage() {
                   <button
                     key={e}
                     onClick={() => cambiarEstado(f.id, e)}
+                    disabled={actualizando === f.id}
                     className={`text-xs rounded-md px-2 py-1 border ${
                       f.estado === e ? 'border-primary text-primary font-semibold' : 'border-gray-200 text-gray-500'
                     }`}

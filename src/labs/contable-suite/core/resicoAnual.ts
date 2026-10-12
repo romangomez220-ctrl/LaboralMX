@@ -2,11 +2,8 @@
  * resicoAnual.ts
  * -----------------------------------------------------------------------------
  * FUENTES VERIFICADAS (ver RESUMEN-v5.0.md):
- *   - LISR Art. 113-E (último párrafo): los contribuyentes RESICO PF quedan
- *     relevados de presentar declaración anual. Para el ejercicio 2026, esta
- *     liberación quedó incorporada directamente al texto de la ley (Paquete
- *     Económico 2026), no solo a una regla administrativa.
- *   - RMF 2026, Regla 3.13.7 — condiciones operativas de la liberación.
+ *   - RMF 2026, Regla 3.13.7 — pagos mensuales definitivos y liberación de
+ *     la declaración anual por los ingresos que correspondan a RESICO.
  *   - RMF 2026, Reglas 3.13.20 y 3.13.21 — presentación voluntaria para
  *     aplicar deducciones personales del Art. 151 LISR.
  *
@@ -104,7 +101,7 @@ export function evaluarObligacionResicoAnual(data: ResicoAnualFormData): ResicoA
     )
     return {
       resultado: 'no_obligado',
-      fundamento: 'Art. 113-E, último párrafo, LISR, y Regla 3.13.7 de la RMF 2026.',
+      fundamento: 'Regla 3.13.7 de la RMF 2026; artículos 113-E, 113-F y 113-G, fracción VII, LISR.',
       explicacion:
         'No estás obligado a presentar declaración anual: cumpliste tus pagos mensuales, permaneciste todo el ' +
         'ejercicio en RESICO de forma exclusiva, y no excediste el tope anual de $3,500,000.',

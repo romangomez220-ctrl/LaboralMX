@@ -11,18 +11,9 @@
  *     investigación): retención del 2.5% sin deducción alguna a personas
  *     morales — NUEVO para 2026 —, 20% si no proporcionan RFC.
  *
- * TENSIÓN LEGAL DOCUMENTADA, NO RESUELTA POR ESTA HERRAMIENTA:
- * múltiples fuentes especializadas (posteriores a la entrada en vigor)
- * indican que la tasa para personas físicas en "venta de bienes y
- * prestación de servicios en general" subió de 1% a 2.5% para 2026 — pero
- * ese incremento se instrumentó vía la Ley de Ingresos de la Federación
- * 2026, no mediante una reforma directa al texto del Art. 113-A LISR. Al
- * menos una fuente especializada (IDC) señala esto como una "tensión
- * normativa" por modificar un elemento sustantivo del impuesto a través de
- * una ley de vigencia anual. Esta herramienta usa 2.5% como tasa por
- * defecto para personas físicas en esta categoría (es la cifra que reportan
- * con mayor consistencia las fuentes posteriores a enero de 2026), pero
- * señala esta tensión explícitamente y no la presenta como pacífica.
+ *   - Ley de Ingresos de la Federación 2026, artículo 25, fracción XIV:
+ *     establece 2.5% para personas físicas de la fracción III del artículo
+ *     113-A y para personas morales; 20% si la persona moral no da su RFC.
  *
  * NO CUBIERTO CON CERTEZA (documentado, no resuelto): el umbral y mecánica
  * exactos para que la retención se considere PAGO DEFINITIVO. El texto
@@ -42,18 +33,21 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
 
+function montoSeguro(n: number): number {
+  return Number.isFinite(n) ? Math.max(0, n) : 0
+}
+
 const TASA_ISR_PF: Record<TipoActividadPlataforma, number> = {
   transporte_entrega: 0.021,
   hospedaje: 0.04,
-  venta_servicios_general: 0.025, // Ver tensión legal documentada arriba.
+  venta_servicios_general: 0.025,
 }
 
 const FUNDAMENTO_TASA_PF: Record<TipoActividadPlataforma, string> = {
   transporte_entrega: 'Art. 113-A, fracción I, LISR.',
   hospedaje: 'Art. 113-A, fracción II, LISR.',
   venta_servicios_general:
-    'Art. 113-A, fracción III, LISR (texto vigente: 1%); tasa efectiva 2026 de 2.5% reportada por fuentes ' +
-    'posteriores vía Ley de Ingresos de la Federación 2026 — ver tensión legal documentada en el código y en el resumen de entrega.',
+    'Ley de Ingresos de la Federación 2026, artículo 25, fracción XIV: tasa de 2.5% en sustitución de la prevista en el artículo 113-A, fracción III, LISR.',
 }
 
 const ETIQUETA_ACTIVIDAD: Record<TipoActividadPlataforma, string> = {
@@ -65,6 +59,8 @@ const ETIQUETA_ACTIVIDAD: Record<TipoActividadPlataforma, string> = {
 const UMBRAL_PAGO_DEFINITIVO_REFERENCIA = 300000
 
 export function calcularRetencionPlataformas(data: PlataformasFormData): PlataformasResultado {
+  const ingresosBrutosMes = montoSeguro(data.ingresosBrutosMes)
+  const ingresosAcumuladosAnio = montoSeguro(data.ingresosAcumuladosAnio)
   const notas: string[] = []
   const conceptos: ConceptoConFundamento[] = []
 
@@ -111,20 +107,9 @@ export function calcularRetencionPlataformas(data: PlataformasFormData): Platafo
     }
   }
 
-  if (data.tipoActividad === 'venta_servicios_general' && data.tipoContribuyente === 'persona_fisica') {
-    notas.push(
-      'IMPORTANTE — tensión legal documentada: el texto vigente del Art. 113-A, fracción III, LISR señala una ' +
-        'tasa de 1% para esta categoría. Esta herramienta usa 2.5%, la cifra que reportan de forma consistente las ' +
-        'fuentes especializadas posteriores a enero de 2026, atribuida a la Ley de Ingresos de la Federación 2026. ' +
-        'Al menos una fuente especializada señala esto como jurídicamente cuestionable, por modificar un elemento ' +
-        'sustantivo del impuesto sin reformar directamente la LISR. Verifica el texto exacto de la LIF 2026 (DOF) ' +
-        'antes de tratar esta tasa como definitiva — es el punto de mayor riesgo de toda esta herramienta.',
-    )
-  }
-
-  const montoRetencionIsr = round2(data.ingresosBrutosMes * tasaIsr)
-  const montoRetencionIva = round2(data.ingresosBrutosMes * tasaIva)
-  const netoARecibir = round2(data.ingresosBrutosMes - montoRetencionIsr - montoRetencionIva)
+  const montoRetencionIsr = round2(ingresosBrutosMes * tasaIsr)
+  const montoRetencionIva = round2(ingresosBrutosMes * tasaIva)
+  const netoARecibir = round2(ingresosBrutosMes - montoRetencionIsr - montoRetencionIva)
 
   conceptos.push({
     etiqueta: `Retención de ISR (${ETIQUETA_ACTIVIDAD[data.tipoActividad]})`,
@@ -140,7 +125,7 @@ export function calcularRetencionPlataformas(data: PlataformasFormData): Platafo
   })
 
   const posibleConsiderarPagoDefinitivo =
-    data.tipoContribuyente === 'persona_fisica' && data.ingresosAcumuladosAnio <= UMBRAL_PAGO_DEFINITIVO_REFERENCIA
+    data.tipoContribuyente === 'persona_fisica' && ingresosAcumuladosAnio <= UMBRAL_PAGO_DEFINITIVO_REFERENCIA
 
   notas.push(
     `Umbral de referencia: $${UMBRAL_PAGO_DEFINITIVO_REFERENCIA.toLocaleString('es-MX')} anuales. El texto ` +

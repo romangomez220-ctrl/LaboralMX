@@ -27,32 +27,39 @@ export default function ValidadorPortalPage() {
   const [feedbackPropio, setFeedbackPropio] = useState<FeedbackConHerramienta[]>([])
   const [actividad, setActividad] = useState<RegistroActividad[]>([])
   const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+  const [asignacionActualizando, setAsignacionActualizando] = useState<string | null>(null)
 
   useEffect(() => {
     if (!validador) return
     let activo = true
 
     async function cargar() {
-      const [listaAsignaciones, listaFeedback, listaActividad] = await Promise.all([
-        assignmentsRepository.listarPorValidador(validador!.id),
-        feedbackRepository.listar(),
-        activityRepository.listarPorValidador(validador!.id),
-      ])
+      try {
+        const [listaAsignaciones, listaFeedback, listaActividad] = await Promise.all([
+          assignmentsRepository.listarPorValidador(validador!.id),
+          feedbackRepository.listar(),
+          activityRepository.listarPorValidador(validador!.id),
+        ])
 
-      const feedbackDelValidador = listaFeedback.filter((f) => f.validadorId === validador!.id)
+        const feedbackDelValidador = listaFeedback.filter((f) => f.validadorId === validador!.id)
 
-      const asignacionesConHerramienta = await Promise.all(
-        listaAsignaciones.map(async (a) => ({ asignacion: a, herramienta: await obtenerHerramientaVista(a.herramientaId) })),
-      )
-      const feedbackConHerramienta = await Promise.all(
-        feedbackDelValidador.map(async (f) => ({ feedback: f, herramienta: await obtenerHerramientaVista(f.herramientaId) })),
-      )
+        const asignacionesConHerramienta = await Promise.all(
+          listaAsignaciones.map(async (a) => ({ asignacion: a, herramienta: await obtenerHerramientaVista(a.herramientaId) })),
+        )
+        const feedbackConHerramienta = await Promise.all(
+          feedbackDelValidador.map(async (f) => ({ feedback: f, herramienta: await obtenerHerramientaVista(f.herramientaId) })),
+        )
 
-      if (!activo) return
-      setAsignaciones(asignacionesConHerramienta)
-      setFeedbackPropio(feedbackConHerramienta)
-      setActividad(listaActividad.slice(0, 8))
-      setCargando(false)
+        if (!activo) return
+        setAsignaciones(asignacionesConHerramienta)
+        setFeedbackPropio(feedbackConHerramienta)
+        setActividad(listaActividad.slice(0, 8))
+      } catch {
+        if (activo) setError('No fue posible cargar el portal. Revisa tu conexión e inténtalo de nuevo.')
+      } finally {
+        if (activo) setCargando(false)
+      }
     }
 
     cargar()
@@ -68,14 +75,22 @@ export default function ValidadorPortalPage() {
 
   async function avanzarEstado(asignacionId: string, estadoActual: string) {
     const siguiente = estadoActual === 'pendiente' ? 'en_revision' : estadoActual === 'en_revision' ? 'completada' : 'pendiente'
-    await assignmentsRepository.actualizarEstado(asignacionId, siguiente as 'pendiente' | 'en_revision' | 'completada')
-    setAsignaciones((prev) =>
-      prev.map((item) =>
-        item.asignacion.id === asignacionId
-          ? { ...item, asignacion: { ...item.asignacion, estado: siguiente as 'pendiente' | 'en_revision' | 'completada' } }
-          : item,
-      ),
-    )
+    setAsignacionActualizando(asignacionId)
+    setError('')
+    try {
+      await assignmentsRepository.actualizarEstado(asignacionId, siguiente as 'pendiente' | 'en_revision' | 'completada')
+      setAsignaciones((prev) =>
+        prev.map((item) =>
+          item.asignacion.id === asignacionId
+            ? { ...item, asignacion: { ...item.asignacion, estado: siguiente as 'pendiente' | 'en_revision' | 'completada' } }
+            : item,
+        ),
+      )
+    } catch {
+      setError('No fue posible cambiar el estado. El cambio no se guardó; inténtalo nuevamente.')
+    } finally {
+      setAsignacionActualizando(null)
+    }
   }
 
   return (
@@ -106,6 +121,7 @@ export default function ValidadorPortalPage() {
       </div>
 
       <p className="text-xs text-stone">Último acceso: {formatFecha(validador.ultimoAcceso)}</p>
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {/* Herramientas asignadas */}
       <div>
@@ -127,8 +143,12 @@ export default function ValidadorPortalPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <EstadoBadge estado={a.estado} />
-                    <button onClick={() => avanzarEstado(a.id, a.estado)} className="text-xs text-stone underline hover:text-primary">
-                      Cambiar estado
+                    <button
+                      onClick={() => avanzarEstado(a.id, a.estado)}
+                      disabled={asignacionActualizando === a.id}
+                      className="text-xs text-stone underline hover:text-primary disabled:opacity-50"
+                    >
+                      {asignacionActualizando === a.id ? 'Guardando…' : 'Cambiar estado'}
                     </button>
                   </div>
                 </div>

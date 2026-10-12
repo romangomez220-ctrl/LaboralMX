@@ -20,11 +20,12 @@ export const supabaseActivityRepository: ActivityRepository = {
   },
 
   async registrar(datos) {
-    await supabase.from('activity_logs').insert({
+    const { error } = await supabase.from('activity_logs').insert({
       validador_id: datos.validadorId,
       tipo: datos.tipo,
       herramienta_id: datos.herramientaId,
       duracion_aprox_segundos: datos.duracionAproxSegundos,
     })
+    if (error) throw new Error(`No se pudo registrar la actividad: ${error.message}`)
   },
 }

@@ -102,7 +102,7 @@ export default function ResicoAnualPage() {
           {campoSiNo('¿El SAT te excluyó de RESICO a mitad de año?', 'fueExcluidoAMitadDeAno')}
         </div>
 
-        <Disclaimer compact />
+        <Disclaimer compact variante="fiscal" />
 
         <button
           type="submit"
@@ -134,7 +134,7 @@ export default function ResicoAnualPage() {
             </div>
           )}
 
-          <Disclaimer />
+          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

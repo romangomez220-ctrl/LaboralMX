@@ -78,13 +78,13 @@ export default function RequireValidatorAuth({ children }: { children: ReactNode
 
     obtenerHerramientaVistaPorRuta(location.pathname).then((h) => {
       herramientaIdParaCierre = h?.id ?? null
-      activityRepository.registrar({
+      return activityRepository.registrar({
         validadorId: validador.id,
         tipo: 'herramienta_abierta',
         herramientaId: herramientaIdParaCierre,
         duracionAproxSegundos: null,
       })
-    })
+    }).catch(() => undefined)
 
     return () => {
       const duracion = Math.round((Date.now() - (inicioRef.current ?? Date.now())) / 1000)
@@ -93,7 +93,7 @@ export default function RequireValidatorAuth({ children }: { children: ReactNode
         tipo: 'herramienta_abierta',
         herramientaId: herramientaIdParaCierre,
         duracionAproxSegundos: duracion,
-      })
+      }).catch(() => undefined)
     }
     // Se vuelve a ejecutar cada vez que cambia la ruta dentro de Labs.
     // eslint-disable-next-line react-hooks/exhaustive-deps

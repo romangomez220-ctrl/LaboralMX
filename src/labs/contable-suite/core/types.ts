@@ -27,6 +27,7 @@ export interface ColegiaturaCaptura {
 
 export interface DevolucionFormData {
   ingresoAnual: number
+  ingresoAcumulableEjercicioAnterior: number
   isrRetenido: number
   tuvoMasDeUnPatron: boolean
   gastosMedicos: number
@@ -48,6 +49,9 @@ export interface DevolucionResultado {
   ingresoAnual: number
   baseGravableDespuesDeducciones: number
   isrRetenidoTotal: number
+  isrCausadoEstimado: number
+  saldoEstimado: number
+  tipoSaldo: 'a_favor' | 'a_cargo' | 'cero'
   conceptos: ConceptoConFundamento[]
   notas: string[]
 }

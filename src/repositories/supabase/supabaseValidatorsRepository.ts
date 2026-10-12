@@ -71,13 +71,15 @@ export const supabaseValidatorsRepository: ValidatorsRepository = {
   },
 
   async guardar(validador) {
-    await supabase.from('validators').update(validadorAFilaSupabase(validador)).eq('id', validador.id)
+    const { error } = await supabase.from('validators').update(validadorAFilaSupabase(validador)).eq('id', validador.id)
+    if (error) throw new Error(`No se pudo guardar el validador: ${error.message}`)
   },
 
   async eliminar(id) {
     // Borra el perfil. La cuenta de Auth correspondiente NO se borra desde
     // aquí (requeriría la llave de servicio) — queda como limitación
     // documentada en RESUMEN-v7.0.md.
-    await supabase.from('validators').delete().eq('id', id)
+    const { error } = await supabase.from('validators').delete().eq('id', id)
+    if (error) throw new Error(`No se pudo eliminar el perfil del validador: ${error.message}`)
   },
 }

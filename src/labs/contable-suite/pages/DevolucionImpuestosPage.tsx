@@ -18,6 +18,7 @@ const NIVELES: { value: NivelEducativo; label: string }[] = [
 
 interface FormState {
   ingresoAnual: string
+  ingresoAcumulableEjercicioAnterior: string
   isrRetenido: string
   tuvoMasDeUnPatron: boolean
   gastosMedicos: string
@@ -32,6 +33,7 @@ interface FormState {
 
 const ESTADO_INICIAL: FormState = {
   ingresoAnual: '',
+  ingresoAcumulableEjercicioAnterior: '',
   isrRetenido: '',
   tuvoMasDeUnPatron: false,
   gastosMedicos: '',
@@ -75,6 +77,7 @@ export default function DevolucionImpuestosPage() {
     ev.preventDefault()
     const datos: DevolucionFormData = {
       ingresoAnual: aNumero(form.ingresoAnual),
+      ingresoAcumulableEjercicioAnterior: aNumero(form.ingresoAcumulableEjercicioAnterior),
       isrRetenido: aNumero(form.isrRetenido),
       tuvoMasDeUnPatron: form.tuvoMasDeUnPatron,
       gastosMedicos: aNumero(form.gastosMedicos),
@@ -97,27 +100,33 @@ export default function DevolucionImpuestosPage() {
       <div>
         <h1 className="text-2xl font-bold text-primary">Calculadora de Devolución de Impuestos</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Para trabajadores asalariados. Calcula tus deducciones personales y la base gravable
-          resultante para tu declaración anual.
+          Para trabajadores asalariados. Estima deducciones, ISR anual y posible saldo a favor o a cargo.
         </p>
       </div>
 
       <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
-        Esta herramienta calcula tus deducciones personales con fundamento legal verificado. <strong>No calcula
-        todavía el ISR final ni el saldo a favor</strong> — las fuentes consultadas no coinciden sobre si la tarifa
-        anual (Art. 152 LISR) se actualizó para 2026. Aplica la tarifa vigente sobre la base gravable que te
-        mostramos, o confírmalo con un contador.
+        La estimación usa la tarifa anual 2026 publicada en el Anexo 8 de la RMF. No sustituye la declaración
+        precargada del SAT ni contempla todos los posibles ingresos, estímulos o acreditamientos.
       </div>
 
       <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField
-            label="Ingreso anual (MXN)"
+            label="Ingreso gravable anual según constancias (MXN)"
             name="ingresoAnual"
             type="number"
             placeholder="0.00"
             value={form.ingresoAnual}
             onChange={(v) => actualizar('ingresoAnual', v)}
+          />
+          <InputField
+            label="Ingreso acumulable del ejercicio anterior (para donativos)"
+            name="ingresoAcumulableEjercicioAnterior"
+            type="number"
+            placeholder="0.00"
+            value={form.ingresoAcumulableEjercicioAnterior}
+            onChange={(v) => actualizar('ingresoAcumulableEjercicioAnterior', v)}
+            helpText="El artículo 151 usa este dato para los límites de 7% y 4%."
           />
           <InputField
             label="ISR retenido en el año (de tu constancia)"
@@ -216,7 +225,7 @@ export default function DevolucionImpuestosPage() {
           )}
         </div>
 
-        <Disclaimer compact />
+        <Disclaimer compact variante="fiscal" />
 
         <button
           type="submit"
@@ -251,6 +260,23 @@ export default function DevolucionImpuestosPage() {
               {resultado.totalDeduccionesPersonales.toLocaleString('es-MX')} = Base gravable: $
               {resultado.baseGravableDespuesDeducciones.toLocaleString('es-MX')}
             </p>
+            <div className="mt-4 border-t border-primary/15 pt-3">
+              <div className="flex items-center justify-between gap-4">
+                <p className="font-semibold text-primary">ISR anual estimado</p>
+                <p className="font-bold text-primary">${resultado.isrCausadoEstimado.toLocaleString('es-MX')}</p>
+              </div>
+              <div className="flex items-center justify-between gap-4 mt-1">
+                <p className="font-semibold text-primary">
+                  {resultado.tipoSaldo === 'a_favor' ? 'Posible saldo a favor' : resultado.tipoSaldo === 'a_cargo' ? 'Posible saldo a cargo' : 'Saldo estimado'}
+                </p>
+                <p className="text-xl font-bold text-primary">
+                  ${Math.abs(resultado.saldoEstimado).toLocaleString('es-MX')}
+                </p>
+              </div>
+              <p className="text-xs text-stone mt-1">
+                ISR retenido ${resultado.isrRetenidoTotal.toLocaleString('es-MX')} − ISR anual estimado ${resultado.isrCausadoEstimado.toLocaleString('es-MX')}.
+              </p>
+            </div>
           </div>
 
           {resultado.notas.length > 0 && (
@@ -264,7 +290,7 @@ export default function DevolucionImpuestosPage() {
             </div>
           )}
 
-          <Disclaimer />
+          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

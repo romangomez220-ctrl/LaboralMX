@@ -4,6 +4,8 @@ const AVISOS = {
   laboral: LABOR_DISCLAIMER,
   juridico:
     'Importante: Los resultados mostrados son orientativos y dependen de los datos proporcionados por el usuario, la autoridad competente, la legislación aplicable, criterios judiciales vigentes y circunstancias particulares del caso concreto. Esta herramienta no sustituye la revisión profesional de un abogado ni la consulta directa de expedientes, acuerdos, notificaciones o calendarios oficiales.',
+  fiscal:
+    'Importante: Los resultados son estimaciones informativas basadas en los datos proporcionados y las disposiciones fiscales indicadas en cada herramienta. Pueden variar por CFDI, retenciones, acreditamientos, estímulos, reglas vigentes y circunstancias del contribuyente. Verifica la información precargada por el SAT y consulta a un profesional antes de presentar o corregir una declaración.',
 }
 
 interface DisclaimerProps {

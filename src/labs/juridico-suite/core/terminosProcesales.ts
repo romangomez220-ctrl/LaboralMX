@@ -44,6 +44,7 @@ export interface TerminosProcesalesResultado {
 }
 
 const MS_DIA = 24 * 60 * 60 * 1000
+export const MAX_DIAS_PERSONALIZADOS = 3650
 
 export const REGLAS_TERMINOS: ReglaTermino[] = [
   {
@@ -121,7 +122,15 @@ export function obtenerReglaTermino(id: string): ReglaTermino {
   return REGLAS_TERMINOS.find((regla) => regla.id === id) ?? REGLAS_TERMINOS[0]
 }
 
+export function esFechaISOValida(fecha: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false
+  const [ano, mes, dia] = fecha.split('-').map(Number)
+  const valor = new Date(Date.UTC(ano, mes - 1, dia))
+  return valor.getUTCFullYear() === ano && valor.getUTCMonth() === mes - 1 && valor.getUTCDate() === dia
+}
+
 function parseFecha(fecha: string): Date {
+  if (!esFechaISOValida(fecha)) throw new Error('La fecha debe existir y usar el formato AAAA-MM-DD.')
   const [ano, mes, dia] = fecha.split('-').map(Number)
   return new Date(Date.UTC(ano, mes - 1, dia))
 }
@@ -169,7 +178,7 @@ function avanzarAVencimientoHabil(fecha: Date, tipoDias: TipoDiasTermino, inhabi
 export function calcularTerminoProcesal(datos: TerminosProcesalesFormData): TerminosProcesalesResultado {
   const reglaBase = obtenerReglaTermino(datos.reglaId)
   const dias = reglaBase.id === 'personalizado'
-    ? Math.max(1, Math.floor(datos.diasPersonalizados ?? 1))
+    ? Math.min(MAX_DIAS_PERSONALIZADOS, Math.max(1, Math.floor(datos.diasPersonalizados ?? 1)))
     : reglaBase.dias
   const tipoDias = reglaBase.id === 'personalizado'
     ? datos.tipoDiasPersonalizado ?? reglaBase.tipoDias
@@ -177,7 +186,7 @@ export function calcularTerminoProcesal(datos: TerminosProcesalesFormData): Term
   const regla: ReglaTermino = { ...reglaBase, dias, tipoDias }
   const ajusteInicio = datos.ajusteInicio ?? regla.ajusteInicioDefault
   const prorrogar = datos.prorrogarSiVenceInhabil ?? true
-  const inhabiles = new Set((datos.diasInhabilesAdicionales ?? []).filter(Boolean))
+  const inhabiles = new Set((datos.diasInhabilesAdicionales ?? []).filter(esFechaISOValida))
 
   const fechaBase = parseFecha(datos.fechaBase)
   const fechaInicio = ajusteInicio === 'dia_siguiente' ? sumarDias(fechaBase, 1) : fechaBase

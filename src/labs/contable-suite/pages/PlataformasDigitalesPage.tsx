@@ -84,12 +84,9 @@ export default function PlataformasDigitalesPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm p-3">
-        <strong>Punto de mayor riesgo de esta herramienta:</strong> el texto vigente de la ley señala 1% para
-        "venta de bienes o servicios en general", pero esta calculadora usa 2.5% porque es la cifra que reportan
-        las fuentes posteriores a enero de 2026 (vía Ley de Ingresos de la Federación). Al menos una fuente
-        especializada señala esto como jurídicamente cuestionable. Verifica el texto exacto vigente antes de
-        confiar en esta tasa para una decisión real.
+      <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
+        Las tasas 2026 se estiman con la LISR y la Ley de Ingresos de la Federación 2026. El resultado es una
+        retención estimada; confirma la constancia emitida por cada plataforma antes de declarar.
       </div>
 
       <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
@@ -141,7 +138,7 @@ export default function PlataformasDigitalesPage() {
           />
         </div>
 
-        <Disclaimer compact />
+        <Disclaimer compact variante="fiscal" />
 
         <button
           type="submit"
@@ -179,7 +176,7 @@ export default function PlataformasDigitalesPage() {
             </div>
           )}
 
-          <Disclaimer />
+          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

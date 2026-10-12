@@ -192,7 +192,7 @@ export default function ArrendamientoComparadorPage() {
           </div>
         </div>
 
-        <Disclaimer compact />
+        <Disclaimer compact variante="fiscal" />
 
         <button
           type="submit"
@@ -226,7 +226,7 @@ export default function ArrendamientoComparadorPage() {
             </div>
           )}
 
-          <Disclaimer />
+          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

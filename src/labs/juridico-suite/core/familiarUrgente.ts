@@ -34,6 +34,7 @@ function agregarSi(lista: string[], condicion: boolean, texto: string) {
 }
 
 export function evaluarFamiliarUrgente(datos: FamiliarUrgenteFormData): FamiliarUrgenteResultado {
+  const numeroMenores = Number.isFinite(datos.numeroMenores) ? Math.max(0, Math.floor(datos.numeroMenores)) : 0
   const medidas: string[] = []
   const pruebas: string[] = []
   const omisiones: string[] = []
@@ -66,7 +67,7 @@ export function evaluarFamiliarUrgente(datos: FamiliarUrgenteFormData): Familiar
   agregarSi(pruebas, casoIncluyeViolencia, 'Mensajes, audios, fotografías, certificados médicos, reportes policiales, testigos y antecedentes de violencia.')
   agregarSi(pruebas, datos.existeConvenioOSentencia, 'Convenio, sentencia o expediente previo, incluyendo constancias de incumplimiento.')
 
-  agregarSi(omisiones, datos.hayMenores && datos.numeroMenores <= 0, 'Se indicó que hay menores, pero no se capturó cuántos.')
+  agregarSi(omisiones, datos.hayMenores && numeroMenores <= 0, 'Se indicó que hay menores, pero no se capturó cuántos.')
   agregarSi(omisiones, !datos.tieneDocumentosBasicos, 'Faltan documentos base de identidad, parentesco o representación.')
   agregarSi(omisiones, casoIncluyeAlimentos && !datos.tieneComprobantesGastos, 'Faltan comprobantes de gastos para sostener monto de alimentos provisionales.')
   agregarSi(omisiones, casoIncluyeViolencia && !datos.tienePruebasComunicaciones, 'Faltan evidencias inmediatas de riesgo, amenazas o comunicaciones.')
@@ -93,7 +94,7 @@ export function evaluarFamiliarUrgente(datos: FamiliarUrgenteFormData): Familiar
 
   const resumenCaso = [
     `Tipo de asunto: ${datos.tipoCaso.replace('_', ' ')}.`,
-    datos.hayMenores ? `Involucra ${datos.numeroMenores || 'uno o más'} menor(es).` : 'No se capturaron menores involucrados.',
+    datos.hayMenores ? `Involucra ${numeroMenores || 'uno o más'} menor(es).` : 'No se capturaron menores involucrados.',
     datos.hayRiesgoViolencia ? 'Se reporta riesgo de violencia.' : 'No se reportó riesgo de violencia en la captura.',
     datos.existeConvenioOSentencia ? 'Existe antecedente de convenio, sentencia o expediente.' : 'No se indicó antecedente judicial o convenio previo.',
   ].join(' ')
@@ -108,6 +109,9 @@ export function evaluarFamiliarUrgente(datos: FamiliarUrgenteFormData): Familiar
     siguientesPasos: pasos,
     fundamentos,
     advertencias: [
+      ...(urgencia === 'urgente'
+        ? ['Si existe peligro inmediato, contacta al 911 o a la autoridad local competente; no esperes a completar esta matriz.']
+        : []),
       'Esta matriz no redacta una demanda final; ordena insumos para revisión profesional.',
       'En casos de violencia o riesgo para menores, verifica rutas de protección local y canales urgentes disponibles.',
       'Ajusta medidas y pruebas al código, lineamientos y criterios del órgano que conozca del asunto.',

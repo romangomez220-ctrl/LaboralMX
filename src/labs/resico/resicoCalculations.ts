@@ -8,8 +8,7 @@ import type {
 
 /**
  * Tarifa oficial de ISR para personas físicas en RESICO,
- * conforme al Art. 113-E LISR y al Anexo 8 de la RMF 2026 (DOF, 9 de
- * diciembre de 2025). Las tasas no han cambiado desde el lanzamiento de
+ * conforme al Art. 113-E LISR. Las tasas no han cambiado desde el lanzamiento de
  * RESICO en 2022; se aplican sobre los ingresos efectivamente cobrados
  * en el periodo, SIN deducciones y SIN IVA.
  *
@@ -165,16 +164,13 @@ function generarRecomendaciones(form: ResicoFormData, ingresoAnual: number): str
 }
 
 /**
- * Calcula el diagnóstico completo de RESICO. Simplificación deliberada:
- * usa el ingreso mensual capturado como referencia constante para
- * ubicar el tramo de la tarifa, en vez de simular el ingreso acumulado
- * real mes a mes durante el ejercicio (que es como funciona RESICO en la
- * práctica). Esta simplificación se explica en "Modo contador" y en la
- * leyenda legal, conforme al principio de ser una herramienta
- * conservadora y no inventar precisión que no se tiene.
+ * Calcula el diagnóstico completo de RESICO usando el ingreso mensual
+ * efectivamente cobrado capturado por el usuario. La proyección anual supone
+ * el mismo ingreso durante doce meses y por eso es solo una referencia.
  */
 export function calcularDiagnosticoResico(form: ResicoFormData): ResultadoResico {
-  const ingresoMensual = form.ingresoMensual
+  const ingresoMensual = Number.isFinite(form.ingresoMensual) ? Math.max(0, form.ingresoMensual) : 0
+  const gastosMensuales = Number.isFinite(form.gastosMensuales) ? Math.max(0, form.gastosMensuales) : 0
   const ingresoAnual = round2(ingresoMensual * 12)
   const elegible = ingresoAnual <= LIMITE_ANUAL_RESICO
 
@@ -182,7 +178,7 @@ export function calcularDiagnosticoResico(form: ResicoFormData): ResultadoResico
   const isrMensual = round2(ingresoMensual * tasa)
   const isrAnual = round2(isrMensual * 12)
   const ingresoNetoMensual = round2(ingresoMensual - isrMensual)
-  const remanenteDespuesDeGastos = round2(ingresoNetoMensual - form.gastosMensuales)
+  const remanenteDespuesDeGastos = round2(ingresoNetoMensual - gastosMensuales)
 
   const { nivel, factores } = evaluarConfianza(form, ingresoAnual)
   const diagnostico = generarDiagnostico(ingresoAnual, nivel, tasa)

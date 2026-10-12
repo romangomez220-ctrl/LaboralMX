@@ -38,7 +38,14 @@ export default function FeedbackModal({
     setError('')
     try {
       await feedbackRepository.crear({ herramientaId, validadorId, calificacion, tipo, comentario: comentario.trim() })
-      await activityRepository.registrar({ validadorId, tipo: 'feedback_enviado', herramientaId, duracionAproxSegundos: null })
+      // El feedback ya quedó guardado. La telemetría es auxiliar y no debe
+      // hacer que el usuario lo envíe de nuevo si llegara a fallar.
+      activityRepository.registrar({
+        validadorId,
+        tipo: 'feedback_enviado',
+        herramientaId,
+        duracionAproxSegundos: null,
+      }).catch(() => undefined)
       setEnviado(true)
       setTimeout(() => {
         setEnviado(false)

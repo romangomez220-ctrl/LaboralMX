@@ -87,6 +87,10 @@ export default function AdminValidadoresPage() {
   }, [seleccionado])
 
   async function crear() {
+    if (cooldownActivo) {
+      setErrorCreacion(`Espera ${formatearCooldown(cooldownRestante)} antes de crear otra cuenta.`)
+      return
+    }
     if (!form.usuario.trim() || !form.passwordTemporal.trim() || !form.nombre.trim()) return
     setErrorCreacion('')
     try {
@@ -115,6 +119,7 @@ export default function AdminValidadoresPage() {
   }
 
   async function eliminar(id: string) {
+    if (!window.confirm('¿Eliminar este perfil de validador? La cuenta de acceso puede requerir limpieza separada.')) return
     await validatorsRepository.eliminar(id)
     if (seleccionado === id) setSeleccionado(null)
     cargar()
@@ -185,6 +190,8 @@ export default function AdminValidadoresPage() {
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
           <input
+            type="password"
+            autoComplete="new-password"
             placeholder="Contraseña temporal"
             value={form.passwordTemporal}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, passwordTemporal: e.target.value })}
@@ -222,7 +229,8 @@ export default function AdminValidadoresPage() {
         </div>
         <button
           onClick={crear}
-          className="mt-3 rounded-md bg-primary text-white px-4 py-2 text-sm font-semibold hover:bg-primary-light transition"
+          disabled={cooldownActivo}
+          className="mt-3 rounded-md bg-primary text-white px-4 py-2 text-sm font-semibold hover:bg-primary-light transition disabled:cursor-not-allowed disabled:opacity-50"
         >
           Crear validador
         </button>

@@ -256,7 +256,7 @@ export default function ResicoDiagnosticoPage() {
           />
         </div>
 
-        <Disclaimer compact />
+        <Disclaimer compact variante="fiscal" />
 
         <button
           type="submit"
@@ -506,7 +506,7 @@ export default function ResicoDiagnosticoPage() {
             </button>
           </div>
 
-          <Disclaimer />
+          <Disclaimer variante="fiscal" />
         </div>
       )}
 

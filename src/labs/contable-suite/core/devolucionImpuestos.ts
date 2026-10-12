@@ -10,16 +10,8 @@
  *   - Decreto DOF 26 de diciembre de 2013 (modificado 2017) — estímulo de
  *     colegiaturas, independiente del Art. 151.
  *
- * SIMPLIFICACIÓN DOCUMENTADA (ver notas): el tope de donativos (7%/4%) debería
- * calcularse sobre los ingresos acumulables del EJERCICIO ANTERIOR, no del
- * ejercicio actual. Esta primera versión usa el ingreso del ejercicio actual
- * como aproximación, por no contar todavía con el dato del ejercicio previo
- * en el flujo de captura. Documentado explícitamente como pendiente de ajuste.
- *
- * PUNTO DISPUTADO EN LAS FUENTES (no resuelto unilateralmente, ver notas):
- * si las aportaciones voluntarias de retiro cuentan dentro o fuera del tope
- * global del Art. 151. Esta versión las trata con un límite propio,
- * independiente, pero señala la discrepancia para revisión profesional.
+ *   - Anexo 8 de la RMF 2026: tarifa anual de los artículos 97 y 152 LISR,
+ *     publicada en el DOF el 28 de diciembre de 2025.
  * -----------------------------------------------------------------------------
  */
 
@@ -32,6 +24,27 @@ import type {
 
 export const UMA_DIARIA_2026 = 117.31
 export const UMA_ANUAL_2026 = 42794.64
+
+interface TramoTarifaAnual {
+  limiteInferior: number
+  limiteSuperior: number
+  cuotaFija: number
+  tasa: number
+}
+
+export const TARIFA_ANUAL_ISR_2026: TramoTarifaAnual[] = [
+  { limiteInferior: 0.01, limiteSuperior: 10135.11, cuotaFija: 0, tasa: 0.0192 },
+  { limiteInferior: 10135.12, limiteSuperior: 86022.11, cuotaFija: 194.59, tasa: 0.064 },
+  { limiteInferior: 86022.12, limiteSuperior: 151176.19, cuotaFija: 5051.37, tasa: 0.1088 },
+  { limiteInferior: 151176.2, limiteSuperior: 175735.66, cuotaFija: 12140.13, tasa: 0.16 },
+  { limiteInferior: 175735.67, limiteSuperior: 210403.69, cuotaFija: 16069.64, tasa: 0.1792 },
+  { limiteInferior: 210403.7, limiteSuperior: 424353.97, cuotaFija: 22282.14, tasa: 0.2136 },
+  { limiteInferior: 424353.98, limiteSuperior: 668840.14, cuotaFija: 67981.92, tasa: 0.2352 },
+  { limiteInferior: 668840.15, limiteSuperior: 1276925.98, cuotaFija: 125485.07, tasa: 0.3 },
+  { limiteInferior: 1276925.99, limiteSuperior: 1702567.97, cuotaFija: 307910.81, tasa: 0.32 },
+  { limiteInferior: 1702567.98, limiteSuperior: 5107703.92, cuotaFija: 444116.23, tasa: 0.34 },
+  { limiteInferior: 5107703.93, limiteSuperior: Number.POSITIVE_INFINITY, cuotaFija: 1601862.46, tasa: 0.35 },
+]
 
 const TOPE_COLEGIATURAS: Record<NivelEducativo, number> = {
   preescolar: 14200,
@@ -53,18 +66,38 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
 
+function montoSeguro(n: number): number {
+  return Number.isFinite(n) ? Math.max(0, n) : 0
+}
+
+export function calcularIsrAnual2026(baseGravable: number): number {
+  const base = montoSeguro(baseGravable)
+  if (base === 0) return 0
+  const tramo = TARIFA_ANUAL_ISR_2026.find((fila) => base <= fila.limiteSuperior)
+    ?? TARIFA_ANUAL_ISR_2026[TARIFA_ANUAL_ISR_2026.length - 1]
+  return round2(tramo.cuotaFija + (base - tramo.limiteInferior) * tramo.tasa)
+}
+
 export function calcularDevolucionImpuestos(data: DevolucionFormData): DevolucionResultado {
+  const ingresoAnual = montoSeguro(data.ingresoAnual)
+  const ingresoAnterior = montoSeguro(data.ingresoAcumulableEjercicioAnterior)
+  const isrRetenido = montoSeguro(data.isrRetenido)
+  const gastosMedicos = montoSeguro(data.gastosMedicos)
+  const interesesRealesHipotecarios = montoSeguro(data.interesesRealesHipotecarios)
+  const donativos = montoSeguro(data.donativos)
+  const donativosGobierno = montoSeguro(data.donativosGobierno)
+  const aportacionesRetiroAfore = montoSeguro(data.aportacionesRetiroAfore)
   const conceptos: ConceptoConFundamento[] = []
   const notas: string[] = []
 
   // --- Tope global (Art. 151, último párrafo): aplica a gastos médicos e
   // intereses hipotecarios reales en esta versión. ---
-  const topePor15 = round2(data.ingresoAnual * 0.15)
+  const topePor15 = round2(ingresoAnual * 0.15)
   const topePor5Uma = round2(5 * UMA_ANUAL_2026)
   const topeGlobalAplicable = Math.min(topePor15, topePor5Uma)
   const topeGlobalCriterio: '15%_ingreso' | '5_uma_anual' = topePor15 <= topePor5Uma ? '15%_ingreso' : '5_uma_anual'
 
-  const sujetosATopeGlobal = round2(data.gastosMedicos + data.interesesRealesHipotecarios)
+  const sujetosATopeGlobal = round2(gastosMedicos + interesesRealesHipotecarios)
   const totalDeduccionesDentroDeTope = Math.min(sujetosATopeGlobal, topeGlobalAplicable)
 
   if (sujetosATopeGlobal > topeGlobalAplicable) {
@@ -86,13 +119,14 @@ export function calcularDevolucionImpuestos(data: DevolucionFormData): Devolucio
   let totalColegiaturas = 0
   let totalColegiaturasTopeAplicado = 0
   for (const c of data.colegiaturas) {
-    totalColegiaturas += c.monto
+    const montoColegiatura = montoSeguro(c.monto)
+    totalColegiaturas += montoColegiatura
     const tope = TOPE_COLEGIATURAS[c.nivel]
-    const aplicado = Math.min(c.monto, tope)
+    const aplicado = Math.min(montoColegiatura, tope)
     totalColegiaturasTopeAplicado += aplicado
-    if (c.monto > tope) {
+    if (montoColegiatura > tope) {
       notas.push(
-        `Colegiatura de ${ETIQUETA_NIVEL[c.nivel]}: capturaste ${c.monto.toLocaleString('es-MX')}, ` +
+        `Colegiatura de ${ETIQUETA_NIVEL[c.nivel]}: capturaste ${montoColegiatura.toLocaleString('es-MX')}, ` +
           `pero el tope anual de este nivel es ${tope.toLocaleString('es-MX')}. El excedente no es deducible.`,
       )
     }
@@ -110,44 +144,32 @@ export function calcularDevolucionImpuestos(data: DevolucionFormData): Devolucio
   }
 
   // --- Donativos: tope 7% (4% si es a Federación/entidades/municipios). ---
-  const topeDonativosGeneral = round2(data.ingresoAnual * 0.07)
-  const topeDonativosGobierno = round2(data.ingresoAnual * 0.04)
-  const donativosGobiernoAplicado = Math.min(data.donativosGobierno, topeDonativosGobierno)
+  const topeDonativosGeneral = round2(ingresoAnterior * 0.07)
+  const topeDonativosGobierno = round2(ingresoAnterior * 0.04)
+  const donativosGobiernoAplicado = Math.min(donativosGobierno, topeDonativosGobierno)
   const donativosGeneralAplicado = Math.min(
-    data.donativos,
+    donativos,
     Math.max(0, topeDonativosGeneral - donativosGobiernoAplicado),
   )
   const donativosTopeAplicado = round2(donativosGobiernoAplicado + donativosGeneralAplicado)
-  if (data.donativos + data.donativosGobierno > 0) {
-    notas.push(
-      'El tope de donativos (7%, o 4% adicional para donativos a la Federación/entidades/municipios) debe calcularse ' +
-        'sobre los ingresos acumulables del EJERCICIO ANTERIOR, conforme al Art. 151, fracción III, LISR. Esta ' +
-        'herramienta usa el ingreso del ejercicio actual como aproximación; verifica con el ingreso real del año ' +
-        'anterior antes de presentar tu declaración.',
-    )
+  if (donativos + donativosGobierno > 0) {
     conceptos.push({
-      etiqueta: 'Donativos (con tope 7%/4%, aproximado)',
+      etiqueta: 'Donativos (con tope 7%/4%)',
       monto: donativosTopeAplicado,
       formula: 'Donativos a Federación/entidades/municipios (tope 4%) + otros donativos autorizados (tope 7% conjunto)',
       fundamento: 'Art. 151, fracción III, LISR — independiente del tope global del Art. 151, último párrafo.',
     })
   }
 
-  // --- Aportaciones voluntarias de retiro: límite propio (10% o 5 UMA), criterio disputado. ---
-  if (data.aportacionesRetiroAfore > 0) {
-    const topeAportaciones = Math.min(round2(data.ingresoAnual * 0.1), topePor5Uma)
-    const aportacionesAplicado = Math.min(data.aportacionesRetiroAfore, topeAportaciones)
-    notas.push(
-      'Las fuentes consultadas no son unánimes sobre si las aportaciones voluntarias de retiro cuentan dentro o ' +
-        'fuera del tope global del Art. 151 (distinto del Plan Personal de Retiro del Art. 185, que sí tiene un ' +
-        'límite independiente confirmado). Esta herramienta las trata con límite propio, sin consumir el tope ' +
-        'global — verificar con un fiscalista antes de asumir este tratamiento como definitivo.',
-    )
+  // --- Aportaciones voluntarias de retiro: límite propio (10% o 5 UMA). ---
+  if (aportacionesRetiroAfore > 0) {
+    const topeAportaciones = Math.min(round2(ingresoAnual * 0.1), topePor5Uma)
+    const aportacionesAplicado = Math.min(aportacionesRetiroAfore, topeAportaciones)
     conceptos.push({
-      etiqueta: 'Aportaciones voluntarias de retiro (criterio a confirmar)',
+      etiqueta: 'Aportaciones voluntarias de retiro',
       monto: round2(aportacionesAplicado),
       formula: `Menor entre lo aportado y el 10% del ingreso anual o 5 UMA anuales (${topeAportaciones.toLocaleString('es-MX')})`,
-      fundamento: 'Art. 151, fracción V, LISR — tratamiento de tope exacto disputado entre fuentes consultadas, ver nota.',
+      fundamento: 'Art. 151, fracción V, y último párrafo, LISR — límite propio, fuera del tope global.',
     })
   }
 
@@ -159,35 +181,24 @@ export function calcularDevolucionImpuestos(data: DevolucionFormData): Devolucio
     )
   }
 
-  const aportacionesRetiroAplicado = data.aportacionesRetiroAfore > 0
-    ? Math.min(data.aportacionesRetiroAfore, Math.min(round2(data.ingresoAnual * 0.1), topePor5Uma))
+  const aportacionesRetiroAplicado = aportacionesRetiroAfore > 0
+    ? Math.min(aportacionesRetiroAfore, Math.min(round2(ingresoAnual * 0.1), topePor5Uma))
     : 0
 
   const totalDeduccionesPersonales = round2(
     totalDeduccionesDentroDeTope + totalColegiaturasTopeAplicado + donativosTopeAplicado + aportacionesRetiroAplicado,
   )
 
-  // ISR causado real (tarifa progresiva, Art. 152 LISR): NO se calcula en esta
-  // versión. Las fuentes consultadas no son unánimes sobre si la tarifa anual
-  // 2026 se actualizó por inflación (algunas fuentes citan un factor de
-  // actualización de 1.13213 con una tabla de 11 tramos; al menos una fuente
-  // sostiene que la tarifa sigue igual que 2024 porque la inflación acumulada
-  // no alcanzó el 10% que exige la ley). Ante esta contradicción no resuelta,
-  // esta herramienta deja el cálculo de ISR final fuera de su alcance: calcula
-  // con rigor la base gravable después de deducciones, y deja la aplicación
-  // de la tarifa vigente (Art. 152 LISR, Anexo 8 RMF 2026) para una versión
-  // posterior, una vez confirmada la tabla completa contra el DOF, o para que
-  // el usuario/contador la aplique directamente sobre esta base.
   notas.push(
-    'Esta herramienta calcula tus deducciones personales y tu base gravable después de aplicarlas, con fundamento ' +
-      'verificado. NO calcula todavía el ISR final ni el saldo a favor/a cargo: las fuentes consultadas se ' +
-      'contradicen sobre si la tarifa anual (Art. 152 LISR) se actualizó por inflación para 2026, y no fue posible ' +
-      'confirmar la tabla completa de los 11 tramos contra una fuente primaria en esta ronda. Aplica la tarifa ' +
-      'vigente del Art. 152 LISR (Anexo 8 RMF 2026) sobre la base gravable mostrada abajo para obtener tu ISR ' +
-      'causado real, o confírmalo con un contador.',
+    'El saldo es una estimación informativa con la tarifa anual 2026 del Anexo 8 de la RMF. La declaración del SAT ' +
+      'puede variar por subsidio al empleo, otros ingresos, pérdidas, estímulos, acreditamientos, datos precargados ' +
+      'o deducciones que esta herramienta no captura.',
   )
 
-  const baseGravableDespuesDeducciones = Math.max(0, round2(data.ingresoAnual - totalDeduccionesPersonales))
+  const baseGravableDespuesDeducciones = Math.max(0, round2(ingresoAnual - totalDeduccionesPersonales))
+  const isrCausadoEstimado = calcularIsrAnual2026(baseGravableDespuesDeducciones)
+  const saldoEstimado = round2(isrRetenido - isrCausadoEstimado)
+  const tipoSaldo = saldoEstimado > 0 ? 'a_favor' : saldoEstimado < 0 ? 'a_cargo' : 'cero'
 
   return {
     topeGlobalAplicable,
@@ -197,9 +208,12 @@ export function calcularDevolucionImpuestos(data: DevolucionFormData): Devolucio
     totalColegiaturasTopeAplicado,
     donativosTopeAplicado,
     totalDeduccionesPersonales,
-    ingresoAnual: data.ingresoAnual,
+    ingresoAnual,
     baseGravableDespuesDeducciones,
-    isrRetenidoTotal: data.isrRetenido,
+    isrRetenidoTotal: isrRetenido,
+    isrCausadoEstimado,
+    saldoEstimado,
+    tipoSaldo,
     conceptos,
     notas,
   }

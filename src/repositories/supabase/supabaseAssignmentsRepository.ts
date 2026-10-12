@@ -34,13 +34,15 @@ export const supabaseAssignmentsRepository: AssignmentsRepository = {
   },
 
   async actualizarEstado(id, estado) {
-    await supabase
+    const { error } = await supabase
       .from('validator_tool_assignments')
       .update({ estado, fecha_actualizacion: new Date().toISOString() })
       .eq('id', id)
+    if (error) throw new Error(`No se pudo actualizar la asignación: ${error.message}`)
   },
 
   async eliminar(id) {
-    await supabase.from('validator_tool_assignments').delete().eq('id', id)
+    const { error } = await supabase.from('validator_tool_assignments').delete().eq('id', id)
+    if (error) throw new Error(`No se pudo eliminar la asignación: ${error.message}`)
   },
 }

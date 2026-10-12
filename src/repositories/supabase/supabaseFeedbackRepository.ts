@@ -28,6 +28,7 @@ export const supabaseFeedbackRepository: FeedbackRepository = {
   },
 
   async actualizarEstado(id, estado) {
-    await supabase.from('feedback').update({ estado }).eq('id', id)
+    const { error } = await supabase.from('feedback').update({ estado }).eq('id', id)
+    if (error) throw new Error(`No se pudo actualizar el feedback: ${error.message}`)
   },
 }

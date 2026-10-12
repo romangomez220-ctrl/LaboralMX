@@ -36,8 +36,6 @@ export default function AdminDashboardPage() {
         activityRepository.listar(),
       ])
       const actividadConNombres = act
-        .slice()
-        .reverse()
         .slice(0, 10)
         .map((reg) => ({
           ...reg,

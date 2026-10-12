@@ -24,8 +24,15 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+export const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+// Supabase rechaza valores vacíos al construir el cliente. Estos valores
+// locales permiten importar y probar módulos puros sin credenciales; no
+// conceden acceso a ningún proyecto remoto.
+const SAFE_URL = SUPABASE_URL ?? 'http://127.0.0.1:54321'
+const SAFE_ANON_KEY = SUPABASE_ANON_KEY ?? 'romanus-local-anon-key'
+
+if (!SUPABASE_CONFIGURED && import.meta.env.MODE !== 'test') {
   // eslint-disable-next-line no-console
   console.error(
     'Faltan VITE_SUPABASE_URL y/o VITE_SUPABASE_ANON_KEY. ROMANUS Labs no podrá conectarse a Supabase ' +
@@ -33,10 +40,10 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   )
 }
 
-export const supabase: SupabaseClient = createClient(SUPABASE_URL ?? '', SUPABASE_ANON_KEY ?? '')
+export const supabase: SupabaseClient = createClient(SAFE_URL, SAFE_ANON_KEY)
 
 export function crearClienteDesechable(): SupabaseClient {
-  return createClient(SUPABASE_URL ?? '', SUPABASE_ANON_KEY ?? '', {
+  return createClient(SAFE_URL, SAFE_ANON_KEY, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

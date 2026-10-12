@@ -1,15 +1,14 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 import InputField from '../../../components/InputField'
 import SelectField from '../../../components/SelectField'
 import Disclaimer from '../../../components/Disclaimer'
 import LabsBadge from '../../components/LabsBadge'
-import FeedbackModal from '../../../labs-portal/components/FeedbackModal'
-import { useValidatorSession } from '../../../labs-portal/auth/useValidatorSession'
-import { activityRepository } from '../../../repositories'
 import { useNoIndex } from '../../useNoIndex'
 import {
   REGLAS_TERMINOS,
+  MAX_DIAS_PERSONALIZADOS,
   calcularTerminoProcesal,
+  esFechaISOValida,
   obtenerReglaTermino,
   type AjusteInicioTermino,
   type TerminosProcesalesResultado,
@@ -25,9 +24,6 @@ interface FormState {
   diasInhabilesTexto: string
   prorrogarSiVenceInhabil: boolean
 }
-
-const TOOL_ID = 'tool_terminos_procesales'
-const TOOL_NAME = 'ROMANUS Términos'
 
 const hoy = new Date().toISOString().slice(0, 10)
 
@@ -75,21 +71,9 @@ interface TerminosProcesalesPageProps {
 
 export default function TerminosProcesalesPage({ publicMode = false }: TerminosProcesalesPageProps) {
   useNoIndex(!publicMode)
-  const { validador } = useValidatorSession()
   const [form, setForm] = useState<FormState>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<TerminosProcesalesResultado | null>(null)
   const [error, setError] = useState('')
-  const [feedbackAbierto, setFeedbackAbierto] = useState(false)
-
-  useEffect(() => {
-    if (!validador) return
-    activityRepository.registrar({
-      validadorId: validador.id,
-      tipo: 'herramienta_abierta',
-      herramientaId: TOOL_ID,
-      duracionAproxSegundos: null,
-    })
-  }, [validador])
 
   const reglaSeleccionada = obtenerReglaTermino(form.reglaId)
   const esPersonalizado = reglaSeleccionada.id === 'personalizado'
@@ -110,14 +94,14 @@ export default function TerminosProcesalesPage({ publicMode = false }: TerminosP
     ev.preventDefault()
     setError('')
 
-    if (!form.fechaBase) {
-      setError('Captura la fecha base del cómputo.')
+    if (!esFechaISOValida(form.fechaBase)) {
+      setError('Captura una fecha base válida.')
       return
     }
 
     const diasPersonalizados = Number(form.diasPersonalizados)
-    if (esPersonalizado && (!Number.isFinite(diasPersonalizados) || diasPersonalizados < 1)) {
-      setError('El plazo personalizado debe ser de al menos 1 día.')
+    if (esPersonalizado && (!Number.isFinite(diasPersonalizados) || diasPersonalizados < 1 || diasPersonalizados > MAX_DIAS_PERSONALIZADOS)) {
+      setError(`El plazo personalizado debe estar entre 1 y ${MAX_DIAS_PERSONALIZADOS.toLocaleString('es-MX')} días.`)
       return
     }
 
@@ -237,15 +221,6 @@ export default function TerminosProcesalesPage({ publicMode = false }: TerminosP
           >
             Calcular término
           </button>
-          {validador && (
-            <button
-              type="button"
-              onClick={() => setFeedbackAbierto(true)}
-              className="rounded-lg border border-gold text-gold-dark px-6 py-3 font-semibold hover:bg-warning-light transition"
-            >
-              Enviar feedback
-            </button>
-          )}
         </div>
       </form>
 
@@ -302,15 +277,6 @@ export default function TerminosProcesalesPage({ publicMode = false }: TerminosP
         </div>
       )}
 
-      {validador && (
-        <FeedbackModal
-          abierto={feedbackAbierto}
-          onCerrar={() => setFeedbackAbierto(false)}
-          herramientaId={TOOL_ID}
-          herramientaNombre={TOOL_NAME}
-          validadorId={validador.id}
-        />
-      )}
     </div>
   )
 }

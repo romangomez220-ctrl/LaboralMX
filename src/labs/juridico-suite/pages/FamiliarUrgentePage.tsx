@@ -1,10 +1,7 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 import SelectField from '../../../components/SelectField'
 import LabsBadge from '../../components/LabsBadge'
 import Disclaimer from '../../../components/Disclaimer'
-import FeedbackModal from '../../../labs-portal/components/FeedbackModal'
-import { useValidatorSession } from '../../../labs-portal/auth/useValidatorSession'
-import { activityRepository } from '../../../repositories'
 import { useNoIndex } from '../../useNoIndex'
 import {
   evaluarFamiliarUrgente,
@@ -12,9 +9,6 @@ import {
   type FamiliarUrgenteResultado,
   type TipoCasoFamiliar,
 } from '../core/familiarUrgente'
-
-const TOOL_ID = 'tool_familiar_urgente'
-const TOOL_NAME = 'Asistente Familiar Urgente'
 
 const ESTADO_INICIAL: FamiliarUrgenteFormData = {
   tipoCaso: 'alimentos',
@@ -91,20 +85,8 @@ interface FamiliarUrgentePageProps {
 
 export default function FamiliarUrgentePage({ publicMode = false }: FamiliarUrgentePageProps) {
   useNoIndex(!publicMode)
-  const { validador } = useValidatorSession()
   const [form, setForm] = useState<FamiliarUrgenteFormData>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<FamiliarUrgenteResultado | null>(null)
-  const [feedbackAbierto, setFeedbackAbierto] = useState(false)
-
-  useEffect(() => {
-    if (!validador) return
-    activityRepository.registrar({
-      validadorId: validador.id,
-      tipo: 'herramienta_abierta',
-      herramientaId: TOOL_ID,
-      duracionAproxSegundos: null,
-    })
-  }, [validador])
 
   function actualizar<K extends keyof FamiliarUrgenteFormData>(campo: K, valor: FamiliarUrgenteFormData[K]) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -187,15 +169,6 @@ export default function FamiliarUrgentePage({ publicMode = false }: FamiliarUrge
           >
             Generar matriz
           </button>
-          {validador && (
-            <button
-              type="button"
-              onClick={() => setFeedbackAbierto(true)}
-              className="rounded-lg border border-gold text-gold-dark px-6 py-3 font-semibold hover:bg-warning-light transition"
-            >
-              Enviar feedback
-            </button>
-          )}
         </div>
       </form>
 
@@ -225,15 +198,6 @@ export default function FamiliarUrgentePage({ publicMode = false }: FamiliarUrge
         </div>
       )}
 
-      {validador && (
-        <FeedbackModal
-          abierto={feedbackAbierto}
-          onCerrar={() => setFeedbackAbierto(false)}
-          herramientaId={TOOL_ID}
-          herramientaNombre={TOOL_NAME}
-          validadorId={validador.id}
-        />
-      )}
     </div>
   )
 }
