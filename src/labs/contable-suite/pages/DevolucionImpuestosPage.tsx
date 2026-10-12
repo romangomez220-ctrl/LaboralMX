@@ -290,7 +290,6 @@ export default function DevolucionImpuestosPage() {
             </div>
           )}
 
-          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

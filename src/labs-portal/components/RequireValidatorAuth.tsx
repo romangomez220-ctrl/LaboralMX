@@ -99,7 +99,13 @@ export default function RequireValidatorAuth({ children }: { children: ReactNode
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, validador?.id])
 
-  if (cargando || (validador && estadoAcceso === 'revisando')) return null
+  if (cargando || (validador && estadoAcceso === 'revisando')) {
+    return (
+      <div className="flex min-h-48 items-center justify-center" role="status" aria-live="polite">
+        <span className="text-sm text-stone">Verificando acceso…</span>
+      </div>
+    )
+  }
 
   if (!estaAutenticado || !validador) {
     return <Navigate to="/labs/login" replace state={{ desde: location.pathname }} />

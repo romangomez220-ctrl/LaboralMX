@@ -176,7 +176,6 @@ export default function PlataformasDigitalesPage() {
             </div>
           )}
 
-          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

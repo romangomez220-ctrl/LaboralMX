@@ -1,227 +1,172 @@
 import { Link } from 'react-router-dom'
+import { PAID_REPORTS_CONFIG, formatReportPrice } from '../config/paidReports'
 import { trackCtaClick } from '../utils/analytics'
 
-const RAZONES = [
-  'Alcance jurídico delimitado antes de cada publicación.',
-  'Herramientas probadas en ROMANUS Labs antes de abrirse al público.',
-  'Avisos claros: información útil sin prometer asesoría personalizada.',
-  'Ruta social conectada a talleres gratuitos y educación jurídica.',
-]
-
-const PASOS = [
+const HERRAMIENTAS = [
   {
-    titulo: 'Elige una herramienta',
-    descripcion: 'Empieza con una calculadora pública o con ROMANUS Términos si necesitas ordenar un plazo.',
+    to: '/calcular-liquidacion',
+    nombre: 'Liquidación',
+    descripcion: 'Estima finiquito e indemnización por terminación laboral.',
   },
   {
-    titulo: 'Revisa el alcance',
-    descripcion: 'Cada resultado incluye límites, supuestos y recordatorios para validar documentos y fechas.',
+    to: '/calcular-finiquito',
+    nombre: 'Finiquito',
+    descripcion: 'Calcula prestaciones pendientes con desglose claro.',
   },
   {
-    titulo: 'Da el siguiente paso',
-    descripcion: 'Consulta el taller gratuito, guarda tus resultados o busca orientación profesional cuando aplique.',
+    to: '/productos/laboralmx/aguinaldo',
+    nombre: 'Aguinaldo',
+    descripcion: 'Obtén el monto anual o proporcional que te corresponde.',
   },
-]
-
-const CHIPS_HERO = [
-  { to: '/productos/laboralmx/liquidacion', label: 'Liquidación' },
-  { to: '/productos/laboralmx/finiquito', label: 'Finiquito' },
-  { to: '/productos/laboralmx/aguinaldo', label: 'Aguinaldo' },
-  { to: '/productos/laboralmx/vacaciones', label: 'Vacaciones' },
-  { to: '/productos/laboralmx/vacaciones', label: 'Prima vacacional' },
-  { to: '/productos/laboralmx/sdi', label: 'Salario Diario Integrado' },
+  {
+    to: '/productos/laboralmx/vacaciones',
+    nombre: 'Vacaciones y prima',
+    descripcion: 'Revisa días pendientes y prima vacacional estimada.',
+  },
+  {
+    to: '/productos/laboralmx/sdi',
+    nombre: 'Salario integrado',
+    descripcion: 'Calcula el SDI con prestaciones mínimas de ley.',
+  },
 ]
 
 export default function RomanusHome() {
   return (
-    <div className="flex flex-col gap-14">
-      <section className="pt-8 sm:pt-12 grid lg:grid-cols-[1.08fr_0.92fr] gap-8 lg:gap-10 items-stretch">
+    <div className="flex flex-col gap-16 sm:gap-20">
+      <section className="grid items-center gap-10 py-6 sm:py-10 lg:grid-cols-[1.08fr_0.92fr] lg:py-14">
         <div>
-          <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
-            Plataforma jurídica y tecnológica
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-gold-dark">
+            Tecnología jurídica para México
           </p>
-          <h1 className="text-4xl sm:text-5xl font-semibold text-primary leading-tight">
-            ROMANUS: herramientas jurídicas claras para decisiones responsables.
+          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] text-primary sm:text-6xl">
+            Entiende tus derechos. Calcula con claridad.
           </h1>
-          <p className="font-serif text-lg sm:text-xl text-stone mt-5 max-w-2xl leading-relaxed">
-            Calculadoras, asistentes y recursos legales diseñados para México, con metodología
-            visible, avisos de alcance y publicación gradual después de validación.
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-600 sm:text-lg">
+            Herramientas laborales gratuitas con metodología visible, resultados inmediatos y
+            opciones profesionales cuando necesitas conservar o revisar la información.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              to="/calcular-liquidacion"
+              onClick={() => trackCtaClick('Calcular liquidación', '/calcular-liquidacion', 'home_hero')}
+              className="rounded-lg bg-primary px-7 py-3 text-center font-semibold text-white transition hover:bg-primary-light"
+            >
+              Calcular liquidación
+            </Link>
             <Link
               to="/herramientas"
-              onClick={() => trackCtaClick('Usar herramientas públicas', '/herramientas', 'home_hero')}
-              className="rounded-lg bg-primary text-white px-8 py-3 font-semibold hover:bg-primary-light transition text-center"
+              onClick={() => trackCtaClick('Ver herramientas', '/herramientas', 'home_hero')}
+              className="rounded-lg border border-primary px-7 py-3 text-center font-semibold text-primary transition hover:bg-primary hover:text-white"
             >
-              Usar herramientas públicas
-            </Link>
-            <Link
-              to="/con-causa"
-              onClick={() => trackCtaClick('Ver taller gratuito', '/con-causa', 'home_hero')}
-              className="rounded-lg border-2 border-primary text-primary px-8 py-3 font-semibold hover:bg-primary hover:text-white transition text-center"
-            >
-              Ver taller gratuito
+              Ver herramientas
             </Link>
           </div>
-          <div className="mt-7 grid grid-cols-3 gap-3 max-w-xl">
-            {['México', 'Labs', 'Con Causa'].map((item) => (
-              <div key={item} className="border-l-2 border-gold pl-3">
-                <p className="text-xs uppercase tracking-widest text-stone">Enfoque</p>
-                <p className="font-semibold text-primary">{item}</p>
+          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone">
+            <span>Sin registro</span>
+            <span aria-hidden="true">·</span>
+            <span>Datos procesados en tu navegador</span>
+            <span aria-hidden="true">·</span>
+            <span>Metodología visible</span>
+          </div>
+        </div>
+
+        <aside className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">Laboral Suite</p>
+          <h2 className="mt-2 text-3xl font-semibold text-primary">Tu cálculo, paso a paso</h2>
+          <div className="mt-6 space-y-4">
+            {[
+              ['01', 'Captura', 'Fechas, salario y situación laboral.'],
+              ['02', 'Comprende', 'Resultado desglosado y fórmulas consultables.'],
+              ['03', 'Decide', 'Compara, comparte o genera un reporte profesional.'],
+            ].map(([numero, titulo, descripcion]) => (
+              <div key={numero} className="grid grid-cols-[2.25rem_1fr] gap-3 border-t border-gray-100 pt-4 first:border-0 first:pt-0">
+                <span className="font-serif text-xl font-semibold text-gold-dark">{numero}</span>
+                <div>
+                  <p className="font-semibold text-primary">{titulo}</p>
+                  <p className="mt-0.5 text-sm text-gray-600">{descripcion}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </aside>
+      </section>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm flex flex-col justify-between">
-          <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-3">
-            Disponible hoy
-          </p>
-          <p className="font-serif text-2xl font-semibold text-primary">Laboral Suite</p>
-          <p className="text-sm text-gray-600 mt-2">
-            Calcula finiquitos, liquidaciones, aguinaldo, vacaciones, prima vacacional y salario
-            diario integrado conforme a parámetros de la Ley Federal del Trabajo.
-          </p>
-          <div id="herramientas-destacadas" className="mt-5 flex flex-wrap gap-2.5">
-            {CHIPS_HERO.map((c) => (
-              <Link
-                key={c.label}
-                to={c.to}
-                onClick={() => trackCtaClick(c.label, c.to, 'home_available_today')}
-                className="rounded-full border border-gray-200 bg-ivory px-4 py-2 text-sm font-medium text-primary hover:border-gold hover:text-gold-dark transition"
-              >
-                {c.label}
-              </Link>
-            ))}
+      <section>
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">Disponible ahora</p>
+            <h2 className="mt-1 text-3xl font-semibold text-primary">Calculadoras laborales</h2>
           </div>
-          <Link
-            to="/laboral-suite"
-            onClick={() => trackCtaClick('Ver Laboral Suite', '/laboral-suite', 'home_available_today')}
-            className="text-sm text-primary underline mt-5 inline-block"
-          >
+          <Link to="/laboral-suite" className="text-sm font-semibold text-primary underline decoration-gold underline-offset-4">
             Ver Laboral Suite
           </Link>
-          <div className="mt-6 border-t border-gray-200 pt-4">
-            <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-3">
-              Flujo de confianza
-            </p>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-600">
-              {['Diseño', 'Validación', 'Publicación'].map((paso) => (
-                <div key={paso} className="rounded-md bg-ivory px-2 py-2">
-                  <span className="font-semibold text-primary">{paso}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-      </section>
-
-      <section className="grid md:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <p className="font-semibold text-primary">Productos públicos</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Herramientas listas para uso general, con alcance y avisos claros.
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <p className="font-semibold text-primary">ROMANUS Labs</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Validación privada con profesionistas antes de publicar nuevas soluciones.
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <p className="font-semibold text-primary">Con Causa</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Talleres gratuitos y orientación inicial para acercar conocimiento jurídico.
-          </p>
-        </div>
-      </section>
-
-      <section>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
-          <div>
-            <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-              Cómo funciona
-            </p>
-            <h2 className="text-2xl font-semibold text-primary">Una ruta clara, sin promesas indebidas</h2>
-          </div>
-          <Link to="/aviso-legal" className="text-sm text-primary underline">
-            Leer aviso legal
-          </Link>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {PASOS.map((paso, index) => (
-            <div key={paso.titulo} className="rounded-lg border border-gray-200 bg-white p-5">
-              <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-                Paso {index + 1}
-              </p>
-              <p className="font-semibold text-primary">{paso.titulo}</p>
-              <p className="text-sm text-gray-600 mt-1">{paso.descripcion}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
-          <div>
-            <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-              Uso inmediato
-            </p>
-            <h2 className="text-2xl font-semibold text-primary">Herramientas destacadas</h2>
-          </div>
-          <Link
-            to="/herramientas"
-            onClick={() => trackCtaClick('Ver biblioteca pública', '/herramientas', 'home_featured_tools')}
-            className="text-sm text-primary underline"
-          >
-            Ver biblioteca pública
-          </Link>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CHIPS_HERO.slice(0, 6).map((c) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {HERRAMIENTAS.map((herramienta) => (
             <Link
-              key={c.label}
-              to={c.to}
-              onClick={() => trackCtaClick(c.label, c.to, 'home_featured_tools')}
-              className="rounded-lg border border-gray-200 bg-white p-4 hover:border-gold transition"
+              key={herramienta.nombre}
+              to={herramienta.to}
+              onClick={() => trackCtaClick(herramienta.nombre, herramienta.to, 'home_tools')}
+              className="group rounded-xl border border-gray-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-gold hover:shadow-sm"
             >
-              <p className="font-semibold text-primary">{c.label}</p>
-              <p className="text-sm text-stone mt-1">Calculadora pública de Laboral Suite.</p>
+              <p className="font-semibold text-primary group-hover:text-primary-light">{herramienta.nombre}</p>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">{herramienta.descripcion}</p>
+              <p className="mt-5 text-sm font-semibold text-primary">Abrir →</p>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="rounded-lg border border-gold bg-white p-6">
-        <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
-          Primer taller en preparación
-        </p>
-        <h2 className="text-2xl font-semibold text-primary">
-          Derechos básicos al terminar una relación laboral
-        </h2>
-        <p className="text-sm text-gray-600 mt-2 max-w-2xl">
-          Con Causa prepara un taller gratuito sobre finiquito, liquidación y qué revisar antes de
-          firmar documentos al terminar una relación de trabajo.
-        </p>
-        <Link
-          to="/con-causa"
-          onClick={() => trackCtaClick('Ver detalles del taller', '/con-causa', 'home_workshop')}
-          className="text-sm text-primary underline mt-4 inline-block"
-        >
-          Ver detalles del taller
-        </Link>
+      {PAID_REPORTS_CONFIG.enabled && (
+        <section className="grid gap-6 rounded-2xl border border-gold/60 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">Reporte ROMANUS</p>
+            <h2 className="mt-2 text-3xl font-semibold text-primary">Del cálculo a un documento profesional</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
+              El cálculo es gratuito. Si necesitas conservarlo o compartirlo, genera un PDF con
+              folio, metodología, datos utilizados y checklist de revisión.
+            </p>
+            <p className="mt-3 font-semibold text-primary">Pago único de {formatReportPrice()}</p>
+          </div>
+          <Link
+            to="/calcular-liquidacion"
+            onClick={() => trackCtaClick('Probar cálculo', '/calcular-liquidacion', 'home_report')}
+            className="rounded-lg bg-primary px-6 py-3 text-center font-semibold text-white transition hover:bg-primary-light"
+          >
+            Probar cálculo
+          </Link>
+        </section>
+      )}
+
+      <section className="grid gap-8 border-t border-gray-200 pt-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">Criterio ROMANUS</p>
+          <h2 className="mt-2 text-3xl font-semibold text-primary">Claridad antes que complejidad</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
+            Cada herramienta delimita sus supuestos, muestra cómo obtiene el resultado y pasa por
+            revisión antes de llegar al catálogo público.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-center text-sm">
+          {['Alcance claro', 'Cálculo visible', 'Revisión continua'].map((item) => (
+            <div key={item} className="rounded-lg bg-white px-3 py-4 font-medium text-primary ring-1 ring-gray-200">
+              {item}
+            </div>
+          ))}
+        </div>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-semibold text-primary mb-6">¿Por qué ROMANUS?</h2>
-        <ul className="grid sm:grid-cols-2 gap-3 text-sm text-gray-600">
-          {RAZONES.map((razon) => (
-            <li key={razon} className="rounded-lg border border-gray-200 bg-white p-4">
-              {razon}
-            </li>
-          ))}
-        </ul>
+      <section className="flex flex-col justify-between gap-5 rounded-2xl bg-primary p-6 text-white sm:flex-row sm:items-center sm:p-8">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">ROMANUS con Causa</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Información jurídica que también acompaña.</h2>
+          <p className="mt-2 max-w-2xl text-sm text-gray-300">
+            Talleres gratuitos y orientación inicial para acercar conocimiento jurídico útil.
+          </p>
+        </div>
+        <Link to="/con-causa" className="shrink-0 rounded-lg border border-gold px-5 py-2.5 text-center font-semibold text-gold transition hover:bg-gold hover:text-primary">
+          Conocer la iniciativa
+        </Link>
       </section>
     </div>
   )

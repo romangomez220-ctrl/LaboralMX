@@ -151,7 +151,6 @@ export default function SDICalculator() {
 
           <RevisionProfesionalBlock />
 
-          <Disclaimer />
         </div>
       )}
     </div>

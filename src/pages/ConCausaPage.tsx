@@ -20,20 +20,10 @@ const AREAS_ENFOQUE = [
 
 // Áreas de atención jurídica consideradas (v4.5). Derecho Penal se
 // excluyó deliberadamente de este listado.
-const AREAS_DERECHO = [
-  'Derecho Laboral',
-  'Derecho Civil',
-  'Derecho Familiar',
-  'Cobranza abusiva',
-  'Fraudes y estafas digitales (orientación básica)',
-]
-
 const PRECISIONES = [
-  'Es un programa piloto en fase de validación.',
-  'La atención puede limitarse o suspenderse en cualquier momento.',
-  'No existe representación legal.',
-  'No existe relación abogado-cliente.',
-  'No existe obligación de aceptar todos los casos que se reciban.',
+  'Es un programa piloto y la disponibilidad es limitada.',
+  'El contacto inicial no crea una relación abogado-cliente ni implica representación legal.',
+  'Cada solicitud se revisa antes de confirmar si puede recibir orientación.',
 ]
 
 const PREPARATE_TALLER = [
@@ -51,8 +41,8 @@ const PREPARATE_TALLER = [
  */
 export default function ConCausaPage() {
   return (
-    <div className="flex flex-col gap-10">
-      <div className="pt-4 max-w-3xl">
+    <div className="mx-auto flex max-w-5xl flex-col gap-10">
+      <div className="max-w-3xl pt-4">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Iniciativa social de ROMANUS
         </p>
@@ -64,7 +54,7 @@ export default function ConCausaPage() {
         </p>
       </div>
 
-      <section className="rounded-lg border-2 border-gold bg-white p-6">
+      <section className="rounded-xl border border-gold/60 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
           Primer taller gratuito en preparación
         </p>
@@ -91,7 +81,7 @@ export default function ConCausaPage() {
         </div>
       </section>
 
-      <section className="max-w-3xl w-full">
+      <section className="w-full">
         <h2 className="font-semibold text-primary mb-2">Cómo prepararte para el taller</h2>
         <div className="grid sm:grid-cols-3 gap-3">
           {PREPARATE_TALLER.map((item) => (
@@ -102,50 +92,12 @@ export default function ConCausaPage() {
         </div>
       </section>
 
-      <section className="max-w-3xl w-full">
-        <h2 className="font-semibold text-primary mb-2">Propósito</h2>
-        <p className="text-sm text-gray-700">
-          Creemos que el acceso a orientación jurídica básica no debería depender únicamente de la
-          capacidad económica de cada persona. ROMANUS con Causa es el compromiso permanente de la
-          plataforma con esa idea.
-        </p>
-      </section>
-
-      <section className="max-w-3xl w-full">
-        <h2 className="font-semibold text-primary mb-2">Misión social</h2>
-        <p className="text-sm text-gray-700">
-          Acercar información y orientación jurídica comprensible a quienes más la necesitan,
-          combinando tecnología con la colaboración de profesionistas comprometidos.
-        </p>
-      </section>
-
-      <section className="max-w-3xl w-full">
-        <h2 className="font-semibold text-primary mb-2">Áreas de atención consideradas</h2>
-        <p className="text-sm text-gray-700 mb-3">
-          Por ahora, ROMANUS con Causa contempla orientación inicial en:
-        </p>
-        <ul className="flex flex-col gap-2">
-          {AREAS_DERECHO.map((area) => (
-            <li
-              key={area}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700"
-            >
-              {area}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="max-w-3xl w-full">
-        <h2 className="font-semibold text-primary mb-2">
-          Programa de orientación gratuita <span className="text-stone font-normal">(próximamente)</span>
-        </h2>
-        <p className="text-sm text-gray-700 mb-4">
-          Estamos construyendo un programa permanente con tres áreas de enfoque:
-        </p>
-        <div className="flex flex-col gap-3">
+      <section className="w-full">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Nuestro enfoque</p>
+        <h2 className="mt-2 text-2xl font-semibold text-primary">Información clara y apoyo responsable</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
           {AREAS_ENFOQUE.map((area) => (
-            <div key={area.titulo} className="rounded-lg border border-gray-200 bg-white p-4">
+            <div key={area.titulo} className="rounded-xl border border-gray-200 bg-white p-5">
               <p className="font-semibold text-primary mb-1">{area.titulo}</p>
               <p className="text-sm text-gray-600">{area.descripcion}</p>
             </div>
@@ -153,9 +105,9 @@ export default function ConCausaPage() {
         </div>
       </section>
 
-      <section className="max-w-3xl w-full rounded-lg border-2 border-primary bg-white p-5">
-        <h2 className="font-semibold text-primary mb-3">Antes de contactarnos, es importante que sepas:</h2>
-        <ul className="flex flex-col gap-1.5 text-sm text-gray-700">
+      <section className="w-full rounded-xl border border-gray-200 bg-ivory p-6">
+        <h2 className="font-semibold text-primary mb-3">Alcance del programa</h2>
+        <ul className="grid gap-2 text-sm text-gray-700 md:grid-cols-3">
           {PRECISIONES.map((p) => (
             <li key={p} className="flex gap-2">
               <span className="text-primary">•</span>
@@ -165,7 +117,7 @@ export default function ConCausaPage() {
         </ul>
       </section>
 
-      <section className="max-w-3xl w-full rounded-lg border border-amber-300 bg-warning-light p-5">
+      <section className="w-full rounded-lg border border-amber-300 bg-warning-light p-5">
         <h2 className="font-semibold text-warning mb-2">ROMANUS no es un servicio de emergencia</h2>
         <p className="text-sm text-gray-700">
           Si tu situación involucra violencia activa, una detención, riesgo para tu integridad
@@ -174,12 +126,6 @@ export default function ConCausaPage() {
         </p>
       </section>
 
-      <div className="text-center flex flex-col items-center gap-4">
-        <ContactWhatsAppButton label="Contactar a Con Causa" variant="outline" requireConsent />
-        <span className="inline-block text-xs font-semibold text-gold-dark uppercase tracking-widest border border-gold rounded-full px-3 py-1">
-          Próximamente
-        </span>
-      </div>
     </div>
   )
 }

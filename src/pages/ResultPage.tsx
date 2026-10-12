@@ -10,7 +10,6 @@ import type { DatoCapturado } from '../utils/pdfGenerator'
 import { registrarError } from '../utils/errorLogger'
 import { formatCurrency } from '../utils/formatCurrency'
 import { trackResultAction, trackResultViewed } from '../utils/analytics'
-import { WHATSAPP_BUSINESS_LINK } from '../config/contacto'
 import type { ResultadoCalculo } from '../types/labor'
 import type { PaidReportSnapshot } from '../reports/types'
 import { PAID_REPORTS_CONFIG } from '../config/paidReports'
@@ -220,7 +219,7 @@ export default function ResultPage() {
 
       <ExplicacionCalculo resultado={resultado} datosCapturados={datosCapturados} />
 
-      <Disclaimer />
+      <Disclaimer compact />
 
       {requiereReportePagado && reportSnapshot && (
         <PremiumReportOffer snapshot={reportSnapshot} />
@@ -304,19 +303,6 @@ export default function ResultPage() {
 
       <ResultFeedback calculator={resultado.tipo} />
 
-      <aside className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600">
-        <p className="font-semibold text-primary">¿Detectaste un dato extraño o un problema técnico?</p>
-        <p className="mt-1">Repórtalo sin compartir información sensible. Tu comentario nos ayuda a mejorar ROMANUS.</p>
-        <a
-          href={WHATSAPP_BUSINESS_LINK}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => trackResultAction(resultado.tipo, 'report_problem')}
-          className="mt-3 inline-block font-semibold text-primary underline decoration-gold underline-offset-4"
-        >
-          Reportar un problema
-        </a>
-      </aside>
     </div>
   )
 }

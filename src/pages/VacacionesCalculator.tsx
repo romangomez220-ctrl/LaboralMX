@@ -171,7 +171,6 @@ export default function VacacionesCalculator() {
 
           <RevisionProfesionalBlock />
 
-          <Disclaimer />
         </div>
       )}
     </div>

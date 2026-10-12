@@ -20,13 +20,8 @@ const HERRAMIENTAS = [
   },
   {
     to: '/productos/laboralmx/vacaciones',
-    nombre: 'Vacaciones',
-    descripcion: 'Días de vacaciones pendientes según tu antigüedad laboral.',
-  },
-  {
-    to: '/productos/laboralmx/vacaciones',
-    nombre: 'Prima vacacional',
-    descripcion: '25% sobre el valor de tus vacaciones pendientes.',
+    nombre: 'Vacaciones y prima vacacional',
+    descripcion: 'Días pendientes y prima vacacional según tu antigüedad.',
   },
   {
     to: '/productos/laboralmx/sdi',
@@ -50,26 +45,14 @@ const ENLACES_UTILES = [
 export default function LaboralSuiteCatalogPage() {
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid lg:grid-cols-[1fr_0.75fr] gap-6 items-end pt-4">
-        <div>
+      <div className="max-w-3xl pt-4">
           <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
             Producto disponible
           </p>
           <h1 className="text-3xl font-semibold text-primary">Laboral Suite</h1>
-          <p className="text-sm text-stone mt-2 max-w-2xl">
-            Calculadoras laborales para México. Úsalas como punto de partida para estimar conceptos
-            básicos y revisar escenarios comunes antes de tomar decisiones.
+          <p className="mt-3 text-base leading-relaxed text-gray-600">
+            Calculadoras laborales gratuitas para México, sin registro y con metodología visible.
           </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
-            Importante
-          </p>
-          <p className="text-sm text-gray-600">
-            Los resultados son estimaciones informativas y pueden variar por prestaciones,
-            documentos, convenios, impuestos o circunstancias del caso.
-          </p>
-        </div>
       </div>
 
       <div id="calculadoras" className="grid scroll-mt-24 sm:grid-cols-2 gap-4">
@@ -78,7 +61,7 @@ export default function LaboralSuiteCatalogPage() {
             key={h.nombre}
             to={h.to}
             onClick={() => trackCtaClick(h.nombre, h.to, 'laboral_suite_catalog')}
-            className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold hover:shadow-sm transition"
+            className="group rounded-xl border border-gray-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-gold hover:shadow-sm"
           >
             <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
               Calculadora
@@ -88,7 +71,7 @@ export default function LaboralSuiteCatalogPage() {
             {PAID_REPORTS_CONFIG.enabled && (
               <p className="mt-3 text-xs font-semibold text-gold-dark">Reporte profesional opcional disponible</p>
             )}
-            <p className="text-sm text-primary underline mt-4">Abrir herramienta</p>
+            <p className="mt-4 text-sm font-semibold text-primary">Abrir →</p>
           </Link>
         ))}
       </div>

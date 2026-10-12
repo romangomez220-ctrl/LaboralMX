@@ -8,6 +8,12 @@ const AVISOS = {
     'Importante: Los resultados son estimaciones informativas basadas en los datos proporcionados y las disposiciones fiscales indicadas en cada herramienta. Pueden variar por CFDI, retenciones, acreditamientos, estímulos, reglas vigentes y circunstancias del contribuyente. Verifica la información precargada por el SAT y consulta a un profesional antes de presentar o corregir una declaración.',
 }
 
+const AVISOS_COMPACTOS: Record<keyof typeof AVISOS, string> = {
+  laboral: 'Resultado estimado. Puede variar por documentos, prestaciones, impuestos y circunstancias del caso.',
+  juridico: 'Resultado orientativo. Confirma fechas, notificaciones, autoridad competente y reglas aplicables.',
+  fiscal: 'Estimación informativa. Confirma CFDI, datos precargados y reglas vigentes antes de declarar.',
+}
+
 interface DisclaimerProps {
   compact?: boolean
   variante?: keyof typeof AVISOS
@@ -21,8 +27,8 @@ export default function Disclaimer({ compact = false, variante = 'laboral' }: Di
       }`}
       role="note"
     >
-      <p className="font-semibold mb-1">Aviso importante</p>
-      <p>{AVISOS[variante]}</p>
+      {!compact && <p className="font-semibold mb-1">Aviso importante</p>}
+      <p>{compact ? AVISOS_COMPACTOS[variante] : AVISOS[variante]}</p>
     </div>
   )
 }

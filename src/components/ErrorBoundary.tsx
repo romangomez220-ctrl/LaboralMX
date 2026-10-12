@@ -54,17 +54,25 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             color: '#1f2937',
           }}
         >
-          <div style={{ maxWidth: '640px' }}>
+          <div style={{ maxWidth: '520px' }}>
             <h1 style={{ color: '#0F2744', fontSize: '22px', marginBottom: '8px' }}>
-              Algo salió mal
+              No pudimos mostrar esta sección
             </h1>
             <p style={{ color: '#6B7280', marginBottom: '16px', fontSize: '14px' }}>
-              Ocurrió un error inesperado en esta sección ({this.props.moduleName}). El resto de
-              ROMANUS sigue funcionando con normalidad. Intenta recargar o vuelve al inicio.
+              Recarga la página para intentarlo de nuevo. Si el problema continúa, vuelve al inicio.
             </p>
-            <a href="/" style={{ color: '#0F2744', textDecoration: 'underline' }}>
-              Ir al inicio
-            </a>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                style={{ border: 0, borderRadius: '8px', background: '#0F2744', color: '#fff', padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Recargar
+              </button>
+              <a href="/" style={{ border: '1px solid #0F2744', borderRadius: '8px', color: '#0F2744', padding: '9px 16px', fontWeight: 600, textDecoration: 'none' }}>
+                Volver al inicio
+              </a>
+            </div>
             {mostrarDebug && (
               <pre
                 style={{

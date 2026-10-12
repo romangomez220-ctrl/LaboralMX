@@ -134,7 +134,6 @@ export default function ResicoAnualPage() {
             </div>
           )}
 
-          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

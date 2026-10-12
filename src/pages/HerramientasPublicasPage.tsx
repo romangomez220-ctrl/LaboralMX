@@ -38,30 +38,22 @@ export default function HerramientasPublicasPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="pt-4 grid lg:grid-cols-[1fr_0.72fr] gap-6 items-end">
-        <div>
+      <section className="max-w-3xl pt-4">
           <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest mb-2">
             Biblioteca pública
           </p>
           <h1 className="text-3xl font-semibold text-primary">Herramientas ROMANUS</h1>
-          <p className="text-sm text-stone mt-2 max-w-2xl">
-            Calculadoras, asistentes y recursos jurídicos publicados después de pasar por el proceso
-            de validación de ROMANUS Labs.
+          <p className="mt-3 text-base leading-relaxed text-gray-600">
+            Elige una herramienta y obtén un resultado claro. No necesitas crear una cuenta.
           </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-semibold text-stone uppercase tracking-widest mb-2">
-            Alcance
-          </p>
-          <p className="text-sm text-gray-600">
-            Las herramientas son informativas. Cada resultado debe revisarse según documentos,
-            fechas, autoridad competente y circunstancias del caso.
-          </p>
-        </div>
       </section>
 
       {cargando ? (
-        <p className="text-sm text-stone">Cargando herramientas…</p>
+        <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label="Cargando herramientas">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-44 animate-pulse rounded-xl border border-gray-200 bg-white" />
+          ))}
+        </div>
       ) : error ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
           <p className="font-semibold text-primary">Catálogo temporalmente no disponible</p>
@@ -76,23 +68,22 @@ export default function HerramientasPublicasPage() {
             <Link
               key={h.id}
               to={obtenerRutaPublicaHerramienta(h)}
-              className="rounded-lg border border-gray-200 bg-white p-5 hover:border-gold hover:shadow-sm transition"
+              className="group rounded-xl border border-gray-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-gold hover:shadow-sm"
               onClick={() => trackToolOpen(h.id, h.nombreVisible, '/herramientas')}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <p className="text-xs font-semibold text-gold-dark uppercase tracking-widest">
                   {nombreSuite(h.suiteId)}
                 </p>
-                <span className="rounded-full bg-ivory px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone">
-                  {h.requiereValidador ? 'Validada' : 'Pública'}
-                </span>
+                {h.requiereValidador && (
+                  <span className="rounded-full bg-ivory px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone">
+                    Validada
+                  </span>
+                )}
               </div>
               <p className="font-serif text-xl font-semibold text-primary mb-1">{h.nombreVisible}</p>
-              <p className="text-sm text-gray-600">{h.descripcion}</p>
-              <p className="text-xs text-stone mt-4">
-                Categoría: {h.categoria} · Versión: {h.versionSoftware}
-              </p>
-              <p className="text-sm text-primary underline mt-4">Abrir herramienta</p>
+              <p className="text-sm leading-relaxed text-gray-600">{h.descripcion}</p>
+              <p className="mt-5 text-sm font-semibold text-primary">Abrir →</p>
             </Link>
           ))}
         </div>

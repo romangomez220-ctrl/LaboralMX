@@ -226,7 +226,6 @@ export default function ArrendamientoComparadorPage() {
             </div>
           )}
 
-          <Disclaimer variante="fiscal" />
         </div>
       )}
     </div>

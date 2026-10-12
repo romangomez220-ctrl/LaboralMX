@@ -506,7 +506,6 @@ export default function ResicoDiagnosticoPage() {
             </button>
           </div>
 
-          <Disclaimer variante="fiscal" />
         </div>
       )}
 

@@ -1,39 +1,38 @@
-import { lazy, Suspense, type ComponentType } from 'react'
+import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import LaboralMXLayout from './components/LaboralMXLayout'
 import ErrorBoundary from './components/ErrorBoundary'
-import RomanusHome from './pages/RomanusHome'
-import ProductosListing from './pages/ProductosListing'
-import HerramientasPublicasPage from './pages/HerramientasPublicasPage'
-import HerramientaPublicaPage from './pages/HerramientaPublicaPage'
-import LaboralSuiteCatalogPage from './pages/LaboralSuiteCatalogPage'
-import ConCausaPage from './pages/ConCausaPage'
-import AcercaDeRomanusPage from './pages/AcercaDeRomanusPage'
-import AvisoLegalPage from './pages/AvisoLegalPage'
-import PrivacidadPage from './pages/PrivacidadPage'
-import TerminosPage from './pages/TerminosPage'
-import ResicoDiagnosticoPage from './labs/resico/ResicoDiagnosticoPage'
-import DevolucionImpuestosPage from './labs/contable-suite/pages/DevolucionImpuestosPage'
-import ResicoAnualPage from './labs/contable-suite/pages/ResicoAnualPage'
-import ArrendamientoComparadorPage from './labs/contable-suite/pages/ArrendamientoComparadorPage'
-import PlataformasDigitalesPage from './labs/contable-suite/pages/PlataformasDigitalesPage'
-import TerminosProcesalesPage from './labs/juridico-suite/pages/TerminosProcesalesPage'
-import FamiliarUrgentePage from './labs/juridico-suite/pages/FamiliarUrgentePage'
 import LabsErrorBoundary from './labs/components/LabsErrorBoundary'
 import RequireValidatorAuth from './labs-portal/components/RequireValidatorAuth'
 import RequireAdminAuth from './labs-portal/components/RequireAdminAuth'
-import ValidadorLoginPage from './labs-portal/pages/ValidadorLoginPage'
-import RestablecerPasswordPage from './labs-portal/pages/RestablecerPasswordPage'
-import ValidadorPortalPage from './labs-portal/pages/ValidadorPortalPage'
-import AdminLoginPage from './labs-portal/admin/AdminLoginPage'
-import AdminDashboardPage from './labs-portal/admin/AdminDashboardPage'
-import AdminValidadoresPage from './labs-portal/admin/AdminValidadoresPage'
-import AdminHerramientasPage from './labs-portal/admin/AdminHerramientasPage'
-import AdminFeedbackPage from './labs-portal/admin/AdminFeedbackPage'
-import AdminEstadisticasPage from './labs-portal/admin/AdminEstadisticasPage'
 import { listarToolsDeLabs } from './catalog/registry'
 
+const RomanusHome = lazy(() => import('./pages/RomanusHome'))
+const HerramientasPublicasPage = lazy(() => import('./pages/HerramientasPublicasPage'))
+const HerramientaPublicaPage = lazy(() => import('./pages/HerramientaPublicaPage'))
+const LaboralSuiteCatalogPage = lazy(() => import('./pages/LaboralSuiteCatalogPage'))
+const ConCausaPage = lazy(() => import('./pages/ConCausaPage'))
+const AcercaDeRomanusPage = lazy(() => import('./pages/AcercaDeRomanusPage'))
+const AvisoLegalPage = lazy(() => import('./pages/AvisoLegalPage'))
+const PrivacidadPage = lazy(() => import('./pages/PrivacidadPage'))
+const TerminosPage = lazy(() => import('./pages/TerminosPage'))
+const ResicoDiagnosticoPage = lazy(() => import('./labs/resico/ResicoDiagnosticoPage'))
+const DevolucionImpuestosPage = lazy(() => import('./labs/contable-suite/pages/DevolucionImpuestosPage'))
+const ResicoAnualPage = lazy(() => import('./labs/contable-suite/pages/ResicoAnualPage'))
+const ArrendamientoComparadorPage = lazy(() => import('./labs/contable-suite/pages/ArrendamientoComparadorPage'))
+const PlataformasDigitalesPage = lazy(() => import('./labs/contable-suite/pages/PlataformasDigitalesPage'))
+const TerminosProcesalesPage = lazy(() => import('./labs/juridico-suite/pages/TerminosProcesalesPage'))
+const FamiliarUrgentePage = lazy(() => import('./labs/juridico-suite/pages/FamiliarUrgentePage'))
+const ValidadorLoginPage = lazy(() => import('./labs-portal/pages/ValidadorLoginPage'))
+const RestablecerPasswordPage = lazy(() => import('./labs-portal/pages/RestablecerPasswordPage'))
+const ValidadorPortalPage = lazy(() => import('./labs-portal/pages/ValidadorPortalPage'))
+const AdminLoginPage = lazy(() => import('./labs-portal/admin/AdminLoginPage'))
+const AdminDashboardPage = lazy(() => import('./labs-portal/admin/AdminDashboardPage'))
+const AdminValidadoresPage = lazy(() => import('./labs-portal/admin/AdminValidadoresPage'))
+const AdminHerramientasPage = lazy(() => import('./labs-portal/admin/AdminHerramientasPage'))
+const AdminFeedbackPage = lazy(() => import('./labs-portal/admin/AdminFeedbackPage'))
+const AdminEstadisticasPage = lazy(() => import('./labs-portal/admin/AdminEstadisticasPage'))
 const ConverterPage = lazy(() => import('./labs/xml-cfdi/ConverterPage'))
 const ResultPage = lazy(() => import('./pages/ResultPage'))
 
@@ -41,7 +40,7 @@ const ResultPage = lazy(() => import('./pages/ResultPage'))
 // donde el Registro (datos) se conecta con la implementación (código) —
 // el propio Registro nunca importa React ni sabe que estos componentes
 // existen (principio "referencia de implementación opaca").
-const COMPONENTES_LABS: Record<string, ComponentType> = {
+const COMPONENTES_LABS: Record<string, LazyExoticComponent<ComponentType>> = {
   resico: ResicoDiagnosticoPage,
   'xml-cfdi': ConverterPage,
   'devolucion-impuestos': DevolucionImpuestosPage,
@@ -51,29 +50,33 @@ const COMPONENTES_LABS: Record<string, ComponentType> = {
   'terminos-procesales': TerminosProcesalesPage,
   'familiar-urgente': FamiliarUrgentePage,
 }
-import Home from './pages/Home'
-import FiniquitoCalculator from './pages/FiniquitoCalculator'
-import LiquidacionCalculator from './pages/LiquidacionCalculator'
-import HowItWorks from './pages/HowItWorks'
-import LegalNotice from './pages/LegalNotice'
-import About from './pages/About'
-import SDICalculator from './pages/SDICalculator'
-import AguinaldoCalculator from './pages/AguinaldoCalculator'
-import VacacionesCalculator from './pages/VacacionesCalculator'
-import CalculatorCampaignLanding from './pages/CalculatorCampaignLanding'
-import PaidReportPage from './pages/PaidReportPage'
+const Home = lazy(() => import('./pages/Home'))
+const FiniquitoCalculator = lazy(() => import('./pages/FiniquitoCalculator'))
+const LiquidacionCalculator = lazy(() => import('./pages/LiquidacionCalculator'))
+const HowItWorks = lazy(() => import('./pages/HowItWorks'))
+const LegalNotice = lazy(() => import('./pages/LegalNotice'))
+const About = lazy(() => import('./pages/About'))
+const SDICalculator = lazy(() => import('./pages/SDICalculator'))
+const AguinaldoCalculator = lazy(() => import('./pages/AguinaldoCalculator'))
+const VacacionesCalculator = lazy(() => import('./pages/VacacionesCalculator'))
+const CalculatorCampaignLanding = lazy(() => import('./pages/CalculatorCampaignLanding'))
+const PaidReportPage = lazy(() => import('./pages/PaidReportPage'))
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-48 items-center justify-center" role="status" aria-live="polite">
-      <span className="text-sm text-stone">Preparando herramienta…</span>
+    <div className="flex min-h-[40vh] items-center justify-center" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 text-sm text-stone">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-gold" aria-hidden="true" />
+        Preparando contenido…
+      </div>
     </div>
   )
 }
 
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
       <Route element={<Layout />}>
         {/* ============================================================
             JERARQUÍA INSTITUCIONAL DE ROMANUS (v4.4)
@@ -98,7 +101,7 @@ export default function App() {
         {/* PRODUCTOS (catálogo). Laboral Suite mantiene su propia ruta,
             solo que ahora se llega a ella desde /productos, no desde el
             menú principal directamente. */}
-        <Route path="/productos" element={<ProductosListing />} />
+        <Route path="/productos" element={<Navigate to="/herramientas" replace />} />
         <Route path="/herramientas" element={<HerramientasPublicasPage />} />
         <Route path="/herramientas/:clave" element={<HerramientaPublicaPage />} />
         <Route path="/laboral-suite" element={<LaboralSuiteCatalogPage />} />
@@ -310,6 +313,7 @@ export default function App() {
             en vez de dejar el <Outlet/> vacío dentro del Layout. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }
