@@ -22,7 +22,7 @@ function fixture(): LiquidacionSnapshot {
 
 describe('Reporte premium ROMANUS', () => {
   it('mantiene precio y flag centralizados y apagados por defecto', () => {
-    expect(PAID_REPORTS_CONFIG.priceMinor).toBe(3900)
+    expect(PAID_REPORTS_CONFIG.priceMinor).toBe(10000)
     expect(PAID_REPORTS_CONFIG.currency).toBe('MXN')
     expect(PAID_REPORTS_CONFIG.enabled).toBe(false)
   })

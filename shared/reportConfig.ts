@@ -1,5 +1,5 @@
 export const REPORT_PRODUCT_CONFIG = {
-  priceMinor: 3900,
+  priceMinor: 10000,
   currency: 'MXN',
   reportVersion: '1.1.0',
   calculatorVersion: 'laboral-2026.1',

@@ -20,7 +20,7 @@ import { sanitizeAnalyticsPath, trackPaidReport } from '../utils/analytics'
 
 const purchase: PurchasePaymentRecord = {
   id: '11111111-1111-4111-8111-111111111111',
-  amount_minor: 3900,
+  amount_minor: 10000,
   currency: 'MXN',
   payment_status: 'pending',
   provider_checkout_id: 'cs_test_romanus',
@@ -32,7 +32,7 @@ function checkoutEvent(overrides: Record<string, unknown> = {}): StripeEventLike
     id: 'evt_test_romanus',
     type: 'checkout.session.completed',
     data: { object: {
-      id: 'cs_test_romanus', mode: 'payment', amount_total: 3900, currency: 'mxn',
+      id: 'cs_test_romanus', mode: 'payment', amount_total: 10000, currency: 'mxn',
       payment_status: 'paid', payment_intent: 'pi_test_romanus',
       client_reference_id: purchase.id, metadata: { purchase_id: purchase.id },
       ...overrides,
@@ -50,9 +50,9 @@ async function stripeSignature(payload: string, secret: string, timestamp: numbe
 }
 
 describe('Pagos de reportes ROMANUS', () => {
-  it('construye Checkout con el precio autoritativo de $39 MXN', () => {
+  it('construye Checkout con el precio autoritativo de $100 MXN', () => {
     const params = buildStripeCheckoutParams(purchase.id, 'https://preview.romanus.mx/success', 'https://preview.romanus.mx/cancel')
-    expect(params.get('line_items[0][price_data][unit_amount]')).toBe('3900')
+    expect(params.get('line_items[0][price_data][unit_amount]')).toBe('10000')
     expect(params.get('line_items[0][price_data][currency]')).toBe('mxn')
     expect(params.get('client_reference_id')).toBe(purchase.id)
   })
@@ -96,7 +96,7 @@ describe('Pagos de reportes ROMANUS', () => {
   it('registra fallos de PaymentIntent sin degradar una compra pagada', () => {
     const failedEvent: StripeEventLike = {
       type: 'payment_intent.payment_failed',
-      data: { object: { id: 'pi_failed', amount: 3900, currency: 'mxn', metadata: { purchase_id: purchase.id } } },
+      data: { object: { id: 'pi_failed', amount: 10000, currency: 'mxn', metadata: { purchase_id: purchase.id } } },
     }
     expect(evaluateStripeEvent(failedEvent, purchase)).toMatchObject({ action: 'mark_failed' })
     expect(evaluateStripeEvent(failedEvent, { ...purchase, payment_status: 'paid' })).toMatchObject({ action: 'ignore' })
@@ -129,14 +129,14 @@ describe('Pagos de reportes ROMANUS', () => {
     vi.stubGlobal('window', { gtag, location: { pathname: '/resultado', search: '', origin: 'https://romanus.mx' } })
     trackPaidReport('payment_succeeded', 'liquidacion', purchase.id)
     expect(gtag).toHaveBeenCalledWith('event', 'romanus_pdf_payment_succeeded', expect.objectContaining({
-      calculator_type: 'liquidacion', report_price: 39, value: 39, currency: 'MXN',
+      calculator_type: 'liquidacion', report_price: 100, value: 100, currency: 'MXN',
       transaction_id: purchase.id,
     }))
     expect(gtag).toHaveBeenCalledWith('event', 'purchase', expect.objectContaining({
       transaction_id: purchase.id,
-      value: 39,
+      value: 100,
       currency: 'MXN',
-      items: [expect.objectContaining({ item_id: 'romanus_report_liquidacion', price: 39, quantity: 1 })],
+      items: [expect.objectContaining({ item_id: 'romanus_report_liquidacion', price: 100, quantity: 1 })],
     }))
     const serialized = JSON.stringify(gtag.mock.calls)
     for (const prohibited of ['salario', 'fechaIngreso', 'telefono', 'report_token', 'recoveryToken']) {
@@ -151,14 +151,14 @@ describe('Pagos de reportes ROMANUS', () => {
 
     trackPaidReport('offer_viewed', 'finiquito')
     expect(gtag).toHaveBeenCalledWith('event', 'view_item', expect.objectContaining({
-      value: 39,
+      value: 100,
       currency: 'MXN',
       items: [expect.objectContaining({ item_id: 'romanus_report_finiquito' })],
     }))
 
     trackPaidReport('checkout_started', 'finiquito')
     expect(gtag).toHaveBeenCalledWith('event', 'begin_checkout', expect.objectContaining({
-      value: 39,
+      value: 100,
       currency: 'MXN',
       items: [expect.objectContaining({ item_id: 'romanus_report_finiquito' })],
     }))
