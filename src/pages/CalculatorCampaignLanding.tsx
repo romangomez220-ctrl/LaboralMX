@@ -85,7 +85,7 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="font-semibold text-primary mb-1">¿Qué recibirás?</p>
-          <p>Una estimación desglosada que puedes revisar, copiar o guardar como PDF.</p>
+          <p>Una estimación desglosada para revisar en pantalla. El informe detallado en PDF se ofrece por separado.</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="font-semibold text-primary mb-1">Alcance</p>

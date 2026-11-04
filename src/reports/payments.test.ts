@@ -7,6 +7,9 @@ import webhookFunctionSource from '../../supabase/functions/stripe-report-webhoo
 import supabaseConfig from '../../supabase/config.toml?raw'
 import checkoutFunctionSource from '../../supabase/functions/create-report-checkout/index.ts?raw'
 import recoveryComponentSource from '../components/PaidReportRecovery.tsx?raw'
+import premiumOfferSource from '../components/PremiumReportOffer.tsx?raw'
+import resultPageSource from '../pages/ResultPage.tsx?raw'
+import pdfGeneratorSource from '../utils/pdfGenerator.ts?raw'
 import {
   buildStripeCheckoutParams,
   evaluateStripeEvent,
@@ -206,5 +209,14 @@ describe('Pagos de reportes ROMANUS', () => {
     expect(checkoutFunctionSource).toContain("update({ payment_status: 'failed' })")
     expect(recoveryComponentSource).toContain("if (checkoutState === 'cancelled') return")
     expect(recoveryComponentSource).toContain('recoverPaidReport(purchaseId, recoveryToken, trackConfirmedPayment)')
+  })
+
+  it('reserva toda descarga PDF para el informe pagado y comunica el precio final', () => {
+    expect(premiumOfferSource).toContain('Desbloquear informe legal completo por ${formatReportPrice()} MXN')
+    expect(premiumOfferSource).toContain('El pago desbloquea exclusivamente el PDF Premium detallado')
+    expect(resultPageSource).not.toContain('generarPDF(resultado')
+    expect(resultPageSource).not.toContain('Descargar PDF')
+    expect(pdfGeneratorSource).not.toContain('export function generarPDF')
+    expect(pdfGeneratorSource).not.toContain('export function descargarReportePremium')
   })
 })

@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf'
-import type { ResultadoCalculo } from '../types/labor'
 import type { LiquidacionReportModel, ReportModel, StandardLaborReportModel } from '../reports/types'
 import { LABOR_REPORT_DISCLAIMER, LABOR_REPORT_METHOD_REFERENCES } from '../reports/legalContent'
 import { formatCurrency } from './formatCurrency'
@@ -406,22 +405,4 @@ export function buildPremiumReportPdf(model: ReportModel): jsPDF {
 
 export function premiumReportBlob(model: ReportModel): Blob {
   return buildPremiumReportPdf(model).output('blob')
-}
-
-export function descargarReportePremium(model: ReportModel): void {
-  buildPremiumReportPdf(model).save(`reporte-romanus-${model.folio}.pdf`)
-}
-
-// Compatibilidad temporal mientras paidReportsEnabled permanece apagado.
-// No se usa como autorización ni como renderer premium.
-export function generarPDF(resultado: ResultadoCalculo, datosCapturados: DatoCapturado[] = []): void {
-  const doc = new jsPDF()
-  let y = header(doc, 'Resultado gratuito temporal')
-  y = title(doc, resultado.tipo === 'finiquito' ? 'Resultado estimado de finiquito' : 'Resultado estimado de liquidación', y)
-  datosCapturados.forEach((dato) => { y = paragraph(doc, `${dato.etiqueta}: ${dato.valor}`, y) })
-  resultado.conceptos.forEach((item) => { y = paragraph(doc, `${item.etiqueta}: ${formatCurrency(item.monto)}`, y) })
-  doc.setFont('helvetica', 'bold'); doc.setTextColor(...GREEN); doc.setFontSize(14)
-  doc.text(`Total estimado: ${formatCurrency(resultado.totalEstimado)}`, LEFT, y + 5)
-  footers(doc)
-  doc.save(`romanus-laboral-suite-${resultado.tipo}-${Date.now()}.pdf`)
 }

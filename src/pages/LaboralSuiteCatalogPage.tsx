@@ -84,7 +84,7 @@ export default function LaboralSuiteCatalogPage() {
               <h2 className="font-serif text-2xl font-semibold text-primary">Un Reporte ROMANUS para cada cálculo</h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600">
                 Usa cualquiera de las calculadoras sin costo y, sólo si necesitas conservar o compartir el resultado,
-                conviértelo en un PDF profesional con datos utilizados, metodología, checklist y folio ROMANUS.
+                desbloquea el PDF detallado con datos utilizados, metodología, checklist y folio ROMANUS.
               </p>
               <p className="mt-3 text-sm font-semibold text-primary">
                 Pago único de {formatReportPrice()} · El cálculo gratuito permanece disponible.

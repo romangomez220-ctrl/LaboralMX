@@ -44,10 +44,10 @@ export default function PremiumReportOffer({ snapshot }: Props) {
             </span>
           </div>
           <h2 className="mt-3 max-w-2xl font-serif text-2xl font-semibold leading-tight text-primary sm:text-3xl">
-            Convierte tu estimación en un documento claro para revisar, negociar o compartir
+            Desbloquea el informe detallado de tu cálculo
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-            El total gratuito te orienta. El reporte organiza el caso, explica los conceptos y deja por escrito qué conviene verificar antes de aceptar una propuesta.
+            Consulta gratis tu estimación en pantalla. Por $100 MXN obtén el PDF completo con el desglose, la metodología, los supuestos y los puntos que conviene verificar antes de aceptar una propuesta.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -70,7 +70,7 @@ export default function PremiumReportOffer({ snapshot }: Props) {
               disabled={loading}
               className="min-h-12 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-primary-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:bg-gray-400"
             >
-              {loading ? 'Preparando pago seguro…' : `Desbloquear reporte completo — ${formatReportPrice()}`}
+              {loading ? 'Preparando pago seguro…' : `Desbloquear informe legal completo por ${formatReportPrice()} MXN`}
             </button>
             <div className="text-xs leading-5 text-gray-600">
               <p className="font-semibold text-primary">Pago único procesado por Stripe</p>
@@ -83,7 +83,7 @@ export default function PremiumReportOffer({ snapshot }: Props) {
             </p>
           )}
           <p className="mt-4 text-xs leading-5 text-stone">
-            Tu cálculo permanece disponible gratuitamente. El pago corresponde al documento Premium, su estructura de revisión y la descarga protegida.
+            La consulta en pantalla permanece disponible sin costo. El pago desbloquea exclusivamente el PDF Premium detallado y su descarga protegida.
           </p>
         </div>
 

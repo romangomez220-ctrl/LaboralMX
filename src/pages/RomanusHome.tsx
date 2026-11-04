@@ -123,8 +123,8 @@ export default function RomanusHome() {
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-dark">Reporte ROMANUS</p>
             <h2 className="mt-2 text-3xl font-semibold text-primary">Del cálculo a un documento profesional</h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
-              El cálculo es gratuito. Si necesitas conservarlo o compartirlo, genera un PDF con
-              folio, metodología, datos utilizados y checklist de revisión.
+              Consulta gratis tu estimación en pantalla. Si necesitas conservarla o compartirla,
+              desbloquea el PDF detallado con folio, metodología, datos utilizados y checklist de revisión.
             </p>
             <p className="mt-3 font-semibold text-primary">Pago único de {formatReportPrice()}</p>
           </div>

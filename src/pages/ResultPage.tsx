@@ -30,7 +30,6 @@ export default function ResultPage() {
   const checkoutState = query.get('checkout')
   const [copiado, setCopiado] = useState(false)
   const [errorCopiar, setErrorCopiar] = useState(false)
-  const [errorPDF, setErrorPDF] = useState(false)
   const [errorCompartir, setErrorCompartir] = useState(false)
   const [fechaGeneracion] = useState(() => new Date())
 
@@ -231,27 +230,20 @@ export default function ResultPage() {
 
       <Disclaimer compact />
 
-      {errorPDF && (
-        <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
-          No se pudo generar el PDF en este momento. Puedes usar "Copiar resultado" mientras
-          tanto; el equipo de ROMANUS ya quedó notificado de este error.
-        </div>
-      )}
-
       {errorCopiar && (
         <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
-          Tu navegador no permitió copiar automáticamente. Puedes descargar el PDF o mantener
-          presionado el texto del resultado para copiarlo manualmente.
+          Tu navegador no permitió copiar automáticamente. Mantén presionado el texto del
+          resultado para copiarlo manualmente.
         </div>
       )}
 
       {errorCompartir && (
         <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light p-3 text-sm text-warning">
-          Tu navegador no permitió compartir. Puedes usar “Copiar resultado” o descargar el PDF.
+          Tu navegador no permitió compartir. Puedes usar “Copiar resultado”.
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <button
           onClick={compartirResultado}
           className="min-h-12 rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
@@ -264,32 +256,6 @@ export default function ResultPage() {
         >
           {copiado ? 'Copiado ✓' : 'Copiar resultado'}
         </button>
-        {!requiereReportePagado && (
-          <button
-            onClick={() => {
-              // generarPDF() es una llamada imperativa desde un event handler:
-              // un Error Boundary NO puede capturar errores aquí (solo
-              // captura errores de render), así que necesita su propio
-              // try/catch para no dejar un error sin registrar ni mostrar.
-              try {
-                setErrorPDF(false)
-                void import('../utils/pdfGenerator').then(({ generarPDF }) => {
-                  generarPDF(resultado, datosCapturados)
-                  trackResultAction(resultado.tipo, 'download_pdf')
-                }).catch((error) => {
-                  registrarError(error as Error, 'pdfGenerator')
-                  setErrorPDF(true)
-                })
-              } catch (error) {
-                registrarError(error as Error, 'pdfGenerator')
-                setErrorPDF(true)
-              }
-            }}
-            className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
-          >
-            Descargar PDF
-          </button>
-        )}
         <button
           onClick={() => {
             trackResultAction(resultado.tipo, 'new_calculation')
