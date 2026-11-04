@@ -170,6 +170,7 @@ export function trackProfessionalReview(
 type PaidReportStep =
   | 'offer_viewed'
   | 'checkout_started'
+  | 'checkout_failed'
   | 'payment_succeeded'
   | 'payment_failed'
   | 'generated'
@@ -197,4 +198,37 @@ export function trackPaidReport(
   }
 
   trackEvent(`romanus_pdf_${step}`, params)
+
+  const item = {
+    item_id: `romanus_report_${calculator}`,
+    item_name: `Reporte ROMANUS ${calculator}`,
+    item_category: 'Reporte laboral digital',
+    price: PAID_REPORTS_CONFIG.priceMinor / 100,
+    quantity: 1,
+  }
+
+  // Mantiene el embudo propio y, a la vez, alimenta los informes estándar
+  // de comercio electrónico de GA4. No se envían datos laborales ni tokens.
+  if (step === 'offer_viewed') {
+    trackEvent('view_item', {
+      currency: PAID_REPORTS_CONFIG.currency,
+      value: PAID_REPORTS_CONFIG.priceMinor / 100,
+      items: [item],
+    })
+  }
+  if (step === 'checkout_started') {
+    trackEvent('begin_checkout', {
+      currency: PAID_REPORTS_CONFIG.currency,
+      value: PAID_REPORTS_CONFIG.priceMinor / 100,
+      items: [item],
+    })
+  }
+  if (step === 'payment_succeeded' && transactionId) {
+    trackEvent('purchase', {
+      transaction_id: transactionId,
+      currency: PAID_REPORTS_CONFIG.currency,
+      value: PAID_REPORTS_CONFIG.priceMinor / 100,
+      items: [item],
+    })
+  }
 }

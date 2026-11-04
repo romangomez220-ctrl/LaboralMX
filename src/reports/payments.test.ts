@@ -132,10 +132,41 @@ describe('Pagos de reportes ROMANUS', () => {
       calculator_type: 'liquidacion', report_price: 39, value: 39, currency: 'MXN',
       transaction_id: purchase.id,
     }))
+    expect(gtag).toHaveBeenCalledWith('event', 'purchase', expect.objectContaining({
+      transaction_id: purchase.id,
+      value: 39,
+      currency: 'MXN',
+      items: [expect.objectContaining({ item_id: 'romanus_report_liquidacion', price: 39, quantity: 1 })],
+    }))
     const serialized = JSON.stringify(gtag.mock.calls)
     for (const prohibited of ['salario', 'fechaIngreso', 'telefono', 'report_token', 'recoveryToken']) {
       expect(serialized).not.toContain(prohibited)
     }
+    vi.unstubAllGlobals()
+  })
+
+  it('envía el embudo de comercio electrónico estándar de GA4', () => {
+    const gtag = vi.fn()
+    vi.stubGlobal('window', { gtag, location: { pathname: '/resultado', search: '', origin: 'https://romanus.mx' } })
+
+    trackPaidReport('offer_viewed', 'finiquito')
+    expect(gtag).toHaveBeenCalledWith('event', 'view_item', expect.objectContaining({
+      value: 39,
+      currency: 'MXN',
+      items: [expect.objectContaining({ item_id: 'romanus_report_finiquito' })],
+    }))
+
+    trackPaidReport('checkout_started', 'finiquito')
+    expect(gtag).toHaveBeenCalledWith('event', 'begin_checkout', expect.objectContaining({
+      value: 39,
+      currency: 'MXN',
+      items: [expect.objectContaining({ item_id: 'romanus_report_finiquito' })],
+    }))
+
+    trackPaidReport('checkout_failed', 'finiquito')
+    expect(gtag).toHaveBeenCalledWith('event', 'romanus_pdf_checkout_failed', expect.objectContaining({
+      calculator_type: 'finiquito',
+    }))
     vi.unstubAllGlobals()
   })
 

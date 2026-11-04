@@ -145,6 +145,16 @@ export default function ResultPage() {
         <div className="romanus-result-rule mt-5" aria-hidden="true" />
       </section>
 
+      {requiereReportePagado && reportSnapshot && (
+        <PremiumReportOffer snapshot={reportSnapshot} />
+      )}
+
+      <div className="flex items-center gap-3 pt-1" aria-hidden="true">
+        <div className="h-px flex-1 bg-gray-200" />
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone">Consulta gratuita en pantalla</p>
+        <div className="h-px flex-1 bg-gray-200" />
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg p-4">
         <p>
           <span className="font-semibold">Salario capturado:</span>{' '}
@@ -220,10 +230,6 @@ export default function ResultPage() {
       <ExplicacionCalculo resultado={resultado} datosCapturados={datosCapturados} />
 
       <Disclaimer compact />
-
-      {requiereReportePagado && reportSnapshot && (
-        <PremiumReportOffer snapshot={reportSnapshot} />
-      )}
 
       {errorPDF && (
         <div className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
