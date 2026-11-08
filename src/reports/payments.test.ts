@@ -9,6 +9,8 @@ import checkoutFunctionSource from '../../supabase/functions/create-report-check
 import recoveryComponentSource from '../components/PaidReportRecovery.tsx?raw'
 import premiumOfferSource from '../components/PremiumReportOffer.tsx?raw'
 import resultPageSource from '../pages/ResultPage.tsx?raw'
+import finiquitoCalculatorSource from '../pages/FiniquitoCalculator.tsx?raw'
+import liquidacionCalculatorSource from '../pages/LiquidacionCalculator.tsx?raw'
 import pdfGeneratorSource from '../utils/pdfGenerator.ts?raw'
 import {
   buildStripeCheckoutParams,
@@ -212,11 +214,36 @@ describe('Pagos de reportes ROMANUS', () => {
   })
 
   it('reserva toda descarga PDF para el informe pagado y comunica el precio final', () => {
-    expect(premiumOfferSource).toContain('Desbloquear informe legal completo por ${formatReportPrice()} MXN')
+    expect(premiumOfferSource).toContain('Obtener reporte detallado PDF — ${formatReportPrice()} MXN')
     expect(premiumOfferSource).toContain('El pago desbloquea exclusivamente el PDF Premium detallado')
     expect(resultPageSource).not.toContain('generarPDF(resultado')
     expect(resultPageSource).not.toContain('Descargar PDF')
     expect(pdfGeneratorSource).not.toContain('export function generarPDF')
     expect(pdfGeneratorSource).not.toContain('export function descargarReportePremium')
+  })
+
+  it('limita la pantalla gratuita al total y no serializa el detalle premium en el historial', () => {
+    expect(resultPageSource).toContain('Estimación gratuita')
+    expect(resultPageSource).toContain('cálculo orientativo')
+    expect(resultPageSource).toContain('Modificar datos')
+    expect(resultPageSource).not.toContain('ResultCard')
+    expect(resultPageSource).not.toContain('ExplicacionCalculo')
+    expect(resultPageSource).not.toContain('RevisionProfesionalBlock')
+    expect(resultPageSource).not.toContain('Copiar resultado')
+    expect(resultPageSource).not.toContain('Compartir resultado')
+    expect(resultPageSource).not.toContain('.conceptos')
+    expect(finiquitoCalculatorSource).toContain('storeReportDraft(reportSnapshot)')
+    expect(liquidacionCalculatorSource).toContain('storeReportDraft(reportSnapshot)')
+    expect(finiquitoCalculatorSource).not.toContain('state: { resultado')
+    expect(liquidacionCalculatorSource).not.toContain('state: { resultado')
+  })
+
+  it('solo devuelve el snapshot detallado después de confirmar el pago', () => {
+    const paidGate = accessFunctionSource.indexOf("purchase.payment_status !== 'paid'")
+    const snapshotResponse = accessFunctionSource.indexOf('snapshot: purchase.calculation_snapshot')
+    expect(paidGate).toBeGreaterThan(-1)
+    expect(snapshotResponse).toBeGreaterThan(paidGate)
+    expect(checkoutFunctionSource).toContain('return json({ purchaseId: purchase.id, checkoutUrl: session.url, recoveryToken })')
+    expect(checkoutFunctionSource).not.toContain('return json({ purchaseId: purchase.id, checkoutUrl: session.url, recoveryToken, snapshot')
   })
 })

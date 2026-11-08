@@ -18,6 +18,7 @@ import type {
   TipoSalidaLiquidacion,
   ZonaSalarioMinimo,
 } from '../types/labor'
+import { storeReportDraft } from '../reports/draftVault'
 
 // Igual que en FiniquitoCalculator: los campos numéricos se capturan
 // como texto y solo se convierten a number al calcular (aNumero), para
@@ -74,15 +75,6 @@ const TIPOS_SALIDA: { value: TipoSalidaLiquidacion; label: string }[] = [
   { value: 'fallecimiento', label: 'Fallecimiento del trabajador' },
   { value: 'incapacidad_no_profesional', label: 'Incapacidad no profesional (Art. 54)' },
 ]
-
-const TIPOS_SALIDA_LABEL: Record<string, string> = {
-  despido_injustificado: 'Despido injustificado',
-  despido_justificado: 'Despido justificado',
-  renuncia: 'Renuncia',
-  mutuo_acuerdo: 'Mutuo acuerdo',
-  fallecimiento: 'Fallecimiento del trabajador',
-  incapacidad_no_profesional: 'Incapacidad no profesional (Art. 54)',
-}
 
 interface LiquidacionCalculatorProps {
   headingLevel?: 'h1' | 'h2'
@@ -191,27 +183,19 @@ export default function LiquidacionCalculator({ headingLevel = 'h1' }: Liquidaci
     borrarBorrador(CLAVE_BORRADOR)
     trackCalculatorCompleted('liquidacion')
 
-    const datosCapturados = [
-      { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
-      { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
-      {
-        etiqueta: 'Salario capturado',
-        valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
-      },
-      { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
-      { etiqueta: 'Salario diario integrado', valor: form.salarioDiarioIntegrado || 'Estimado con prestaciones mínimas de ley' },
-      { etiqueta: 'Vacaciones ya disfrutadas o pagadas', valor: form.vacacionesDisfrutadas || '0' },
-      { etiqueta: 'Tipo de salida', valor: TIPOS_SALIDA_LABEL[form.tipoSalida] ?? form.tipoSalida },
-    ]
-
     const reportSnapshot = {
       calculatorType: 'liquidacion' as const,
       ...datosParaCalcular,
       salarioDiarioIntegradoCapturado: datosParaCalcular.salarioDiarioIntegrado,
       resultado,
     }
-
-    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados, reportSnapshot } })
+    const reportDraftId = storeReportDraft(reportSnapshot)
+    navigate('/productos/laboralmx/resultado', {
+      state: {
+        reportDraftId,
+        publicResult: { tipo: resultado.tipo, totalEstimado: resultado.totalEstimado },
+      },
+    })
   }
 
   const veinteDiasDisponible = form.tipoSalida === 'despido_injustificado'

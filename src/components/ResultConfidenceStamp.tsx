@@ -15,7 +15,7 @@ export default function ResultConfidenceStamp({ generatedAt }: ResultConfidenceS
       <span className="h-7 w-px bg-primary/20" aria-hidden="true" />
       <span>
         <span className="block text-[10px] font-bold uppercase tracking-widest">Cálculo estimado</span>
-        <span className="block text-[10px] text-gray-500">Metodología visible · {fecha}</span>
+        <span className="block text-[10px] text-gray-500">Estimación orientativa · {fecha}</span>
       </span>
     </div>
   )

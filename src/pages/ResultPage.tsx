@@ -1,53 +1,55 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
-import ResultCard from '../components/ResultCard'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Disclaimer from '../components/Disclaimer'
-import RevisionProfesionalBlock from '../components/RevisionProfesionalBlock'
-import ExplicacionCalculo from '../components/ExplicacionCalculo'
-import ResultConfidenceStamp from '../components/ResultConfidenceStamp'
-import ResultFeedback from '../components/ResultFeedback'
-import type { DatoCapturado } from '../utils/pdfGenerator'
-import { registrarError } from '../utils/errorLogger'
-import { formatCurrency } from '../utils/formatCurrency'
-import { trackResultAction, trackResultViewed } from '../utils/analytics'
-import type { ResultadoCalculo } from '../types/labor'
-import type { PaidReportSnapshot } from '../reports/types'
-import { PAID_REPORTS_CONFIG } from '../config/paidReports'
-import PremiumReportOffer from '../components/PremiumReportOffer'
 import PaidReportRecovery from '../components/PaidReportRecovery'
+import PremiumReportOffer from '../components/PremiumReportOffer'
+import ResultConfidenceStamp from '../components/ResultConfidenceStamp'
+import { PAID_REPORTS_CONFIG } from '../config/paidReports'
+import { resolveReportDraft } from '../reports/draftVault'
 import { resolveReportRecoveryToken } from '../reports/recovery'
+import type { PaidReportCalculator } from '../reports/types'
+import type { TipoCalculo } from '../types/labor'
+import { trackResultAction, trackResultViewed } from '../utils/analytics'
+import { formatCurrency } from '../utils/formatCurrency'
+
+interface PublicResult {
+  tipo: TipoCalculo
+  totalEstimado: number
+}
+
+interface ResultNavigationState {
+  reportDraftId?: string
+  publicResult?: PublicResult
+}
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const estadoNavegacion = location.state as { resultado?: ResultadoCalculo; datosCapturados?: DatoCapturado[]; reportSnapshot?: PaidReportSnapshot } | null
-  const resultado = estadoNavegacion?.resultado
-  const datosCapturados = estadoNavegacion?.datosCapturados ?? []
-  const reportSnapshot = estadoNavegacion?.reportSnapshot
+  const navigationState = location.state as ResultNavigationState | null
+  const publicResult = navigationState?.publicResult
+  const reportDraftId = navigationState?.reportDraftId
+  const reportSnapshot = resolveReportDraft(reportDraftId)
   const query = new URLSearchParams(location.search)
   const reportPurchaseId = query.get('report_purchase')
   const reportToken = resolveReportRecoveryToken(reportPurchaseId, query.get('report_token'))
   const checkoutState = query.get('checkout')
-  const [copiado, setCopiado] = useState(false)
-  const [errorCopiar, setErrorCopiar] = useState(false)
-  const [errorCompartir, setErrorCompartir] = useState(false)
-  const [fechaGeneracion] = useState(() => new Date())
+  const [generatedAt] = useState(() => new Date())
 
   useEffect(() => {
-    if (resultado) trackResultViewed(resultado.tipo)
-  }, [resultado])
+    if (publicResult) trackResultViewed(publicResult.tipo)
+  }, [publicResult])
 
-  if (!resultado && reportPurchaseId && reportToken) {
+  if (!publicResult && reportPurchaseId && reportToken) {
     return <PaidReportRecovery purchaseId={reportPurchaseId} recoveryToken={reportToken} checkoutState={checkoutState} />
   }
 
-  if (!resultado) {
+  if (!publicResult) {
     return (
-      <div className="flex flex-col gap-4 items-start">
+      <div className="flex flex-col items-start gap-4">
         <p className="text-gray-700">No hay un resultado para mostrar. Realiza un cálculo primero.</p>
         <Link
           to="/productos/laboralmx"
-          className="rounded-lg bg-primary text-white px-5 py-2 font-semibold hover:bg-primary-light transition"
+          className="rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
         >
           Ir al inicio
         </Link>
@@ -55,226 +57,60 @@ export default function ResultPage() {
     )
   }
 
-  const requiereReportePagado = PAID_REPORTS_CONFIG.enabled && Boolean(reportSnapshot)
-
-  async function copiarResultado() {
-    if (!resultado) return
-    const lineas = [
-      `Laboral Suite — ${resultado.tipo === 'finiquito' ? 'Finiquito' : 'Liquidación'} estimado`,
-      `Salario capturado: ${formatCurrency(resultado.salarioBase)} (${resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
-      `Salario diario usado: ${formatCurrency(resultado.salarioDiario)}`,
-      ...(resultado.salarioDiarioIntegrado
-        ? [`Salario diario integrado para indemnizaciones: ${formatCurrency(resultado.salarioDiarioIntegrado)}`]
-        : []),
-      `Antigüedad: ${resultado.antiguedadTexto}`,
-      ...resultado.conceptos.map((c) => `${c.etiqueta}: ${formatCurrency(c.monto)}`),
-      `Total estimado: ${formatCurrency(resultado.totalEstimado)}`,
-    ]
-    if (resultado.primaAntiguedadInformativa) {
-      lineas.push(
-        `${resultado.primaAntiguedadInformativa.etiqueta} (informativo, no incluido en el total): ${formatCurrency(resultado.primaAntiguedadInformativa.monto)}`,
-      )
-    }
-    if (resultado.veinteDiasInformativo) {
-      lineas.push(
-        `${resultado.veinteDiasInformativo.etiqueta}: ${formatCurrency(resultado.veinteDiasInformativo.monto)}`,
-      )
-    }
-    lineas.push('Estimación informativa, no asesoría legal.')
-
-    try {
-      setErrorCopiar(false)
-      if (!navigator.clipboard) throw new Error('Clipboard API unavailable')
-      await navigator.clipboard.writeText(lineas.join('\n'))
-      trackResultAction(resultado.tipo, 'copy')
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000)
-    } catch (error) {
-      registrarError(error as Error, 'copiarResultado')
-      setErrorCopiar(true)
-    }
-  }
-
-  async function compartirResultado() {
-    if (!resultado) return
-    const texto = `Mi ${resultado.tipo} estimado en ROMANUS es ${formatCurrency(resultado.totalEstimado)}. Estimación informativa con metodología visible.`
-    try {
-      setErrorCompartir(false)
-      if (navigator.share) {
-        await navigator.share({
-          title: `Resultado de ${resultado.tipo} — ROMANUS`,
-          text: texto,
-          url: resultado.tipo === 'finiquito'
-            ? `${window.location.origin}/calcular-finiquito`
-            : `${window.location.origin}/calcular-liquidacion`,
-        })
-      } else {
-        if (!navigator.clipboard) throw new Error('Share and clipboard APIs unavailable')
-        await navigator.clipboard.writeText(texto)
-        setCopiado(true)
-        setTimeout(() => setCopiado(false), 2000)
-      }
-      trackResultAction(resultado.tipo, 'share')
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        registrarError(error as Error, 'compartirResultado')
-        setErrorCompartir(true)
-      }
-    }
-  }
+  const calculatorPath = publicResult.tipo === 'finiquito'
+    ? '/productos/laboralmx/finiquito'
+    : '/productos/laboralmx/liquidacion'
+  const premiumAvailable = PAID_REPORTS_CONFIG.enabled && Boolean(reportSnapshot)
 
   return (
     <div className="flex flex-col gap-5">
       <section className="overflow-hidden rounded-2xl border border-gold/60 bg-gradient-to-br from-white via-ivory to-success-light p-5 shadow-sm sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Tu resultado</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold-dark">Estimación gratuita</p>
             <h1 className="mt-1 text-2xl font-bold text-primary sm:text-3xl">
-              {resultado.tipo === 'finiquito' ? 'Finiquito estimado' : 'Liquidación estimada'}
+              {publicResult.tipo === 'finiquito' ? 'Finiquito estimado' : 'Liquidación estimada'}
             </h1>
-            <p className="mt-4 text-4xl font-bold tracking-tight text-success sm:text-5xl" aria-label={`Total estimado ${formatCurrency(resultado.totalEstimado)}`}>
-              {formatCurrency(resultado.totalEstimado)}
+            <p
+              className="mt-4 text-4xl font-bold tracking-tight text-success sm:text-5xl"
+              aria-label={`Total estimado ${formatCurrency(publicResult.totalEstimado)}`}
+            >
+              {formatCurrency(publicResult.totalEstimado)}
             </p>
-            <p className="mt-2 max-w-xl text-sm text-gray-600">
-              Esta cantidad se calculó con los datos que capturaste. Revisa el desglose y los supuestos antes de tomar una decisión.
+            <p className="mt-3 max-w-xl text-sm leading-6 text-gray-600">
+              Este monto es un cálculo orientativo elaborado con los datos que capturaste. No constituye asesoría legal ni sustituye la revisión de documentos y circunstancias particulares.
             </p>
           </div>
-          <ResultConfidenceStamp generatedAt={fechaGeneracion} />
+          <ResultConfidenceStamp generatedAt={generatedAt} />
         </div>
         <div className="romanus-result-rule mt-5" aria-hidden="true" />
       </section>
 
-      {requiereReportePagado && reportSnapshot && (
-        <PremiumReportOffer snapshot={reportSnapshot} />
+      {premiumAvailable && reportSnapshot && (
+        <PremiumReportOffer
+          calculatorType={publicResult.tipo as PaidReportCalculator}
+          resolveSnapshot={() => resolveReportDraft(reportDraftId)}
+        />
       )}
 
-      <div className="flex items-center gap-3 pt-1" aria-hidden="true">
-        <div className="h-px flex-1 bg-gray-200" />
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone">Consulta gratuita en pantalla</p>
-        <div className="h-px flex-1 bg-gray-200" />
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-3 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg p-4">
-        <p>
-          <span className="font-semibold">Salario capturado:</span>{' '}
-          {formatCurrency(resultado.salarioBase)} ({resultado.tipoSalario === 'diario' ? 'diario' : 'mensual'})
-        </p>
-        <p>
-          <span className="font-semibold">Salario diario usado:</span>{' '}
-          {formatCurrency(resultado.salarioDiario)}
-          {resultado.tipoSalario === 'mensual' && ' (mensual ÷ 30)'}
-        </p>
-        <p>
-          <span className="font-semibold">Antigüedad:</span> {resultado.antiguedadTexto}
-        </p>
-        {resultado.salarioDiarioIntegrado && (
-          <p>
-            <span className="font-semibold">Salario integrado para indemnizaciones:</span>{' '}
-            {formatCurrency(resultado.salarioDiarioIntegrado)}
-          </p>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
-        {resultado.conceptos.map((c, i) => (
-          <ResultCard key={i} etiqueta={c.etiqueta} monto={c.monto} detalle={c.detalle} formula={c.formula} />
-        ))}
-      </div>
-
-      {resultado.primaAntiguedadInformativa && (
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold text-stone uppercase tracking-wide">
-            Concepto informativo — no incluido en el total principal
-          </p>
-          <ResultCard
-            etiqueta={resultado.primaAntiguedadInformativa.etiqueta}
-            monto={resultado.primaAntiguedadInformativa.monto}
-            formula={resultado.primaAntiguedadInformativa.formula}
-            variant="info"
-          />
-        </div>
+      {!premiumAvailable && PAID_REPORTS_CONFIG.enabled && (
+        <section className="rounded-xl border border-amber-200 bg-warning-light p-4 text-sm text-warning">
+          Para proteger el detalle de tu cálculo, no lo guardamos en el navegador. Modifica o confirma nuevamente tus datos para preparar el reporte PDF.
+        </section>
       )}
 
-      {resultado.veinteDiasInformativo && (
-        <div className="flex flex-col gap-3">
-          <ResultCard
-            etiqueta={resultado.veinteDiasInformativo.etiqueta}
-            monto={resultado.veinteDiasInformativo.monto}
-            formula={resultado.veinteDiasInformativo.formula}
-            variant="info"
-          />
-          {resultado.totalConEscenarioInformativo !== undefined && (
-            <ResultCard
-              etiqueta="Total con escenario informativo"
-              monto={resultado.totalConEscenarioInformativo}
-              variant="info"
-            />
-          )}
-        </div>
-      )}
-
-      {resultado.notas.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {resultado.notas.map((n, i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3"
-            >
-              {n}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <ExplicacionCalculo resultado={resultado} datosCapturados={datosCapturados} />
+      <button
+        type="button"
+        onClick={() => {
+          trackResultAction(publicResult.tipo, 'new_calculation')
+          navigate(calculatorPath)
+        }}
+        className="min-h-12 self-start rounded-lg border border-gray-300 bg-white px-5 py-2 font-semibold text-primary transition hover:border-primary"
+      >
+        Modificar datos
+      </button>
 
       <Disclaimer compact />
-
-      {errorCopiar && (
-        <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light text-warning text-sm p-3">
-          Tu navegador no permitió copiar automáticamente. Mantén presionado el texto del
-          resultado para copiarlo manualmente.
-        </div>
-      )}
-
-      {errorCompartir && (
-        <div role="alert" className="rounded-lg border border-amber-300 bg-warning-light p-3 text-sm text-warning">
-          Tu navegador no permitió compartir. Puedes usar “Copiar resultado”.
-        </div>
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <button
-          onClick={compartirResultado}
-          className="min-h-12 rounded-lg bg-primary px-5 py-2 font-semibold text-white transition hover:bg-primary-light"
-        >
-          Compartir resultado
-        </button>
-        <button
-          onClick={copiarResultado}
-          className="min-h-12 rounded-lg border-2 border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary hover:text-white"
-        >
-          {copiado ? 'Copiado ✓' : 'Copiar resultado'}
-        </button>
-        <button
-          onClick={() => {
-            trackResultAction(resultado.tipo, 'new_calculation')
-            navigate(
-              resultado.tipo === 'finiquito'
-                ? '/productos/laboralmx/finiquito'
-                : '/productos/laboralmx/liquidacion',
-            )
-          }}
-          className="min-h-12 rounded-lg border border-gray-300 bg-white px-5 py-2 font-semibold text-primary transition hover:border-primary"
-        >
-          Nuevo cálculo
-        </button>
-      </div>
-
-      <RevisionProfesionalBlock calculator={resultado.tipo} totalEstimado={resultado.totalEstimado} />
-
-      <ResultFeedback calculator={resultado.tipo} />
-
     </div>
   )
 }

@@ -51,7 +51,7 @@ export default function LaboralSuiteCatalogPage() {
           </p>
           <h1 className="text-3xl font-semibold text-primary">Laboral Suite</h1>
           <p className="mt-3 text-base leading-relaxed text-gray-600">
-            Calculadoras laborales gratuitas para México, sin registro y con metodología visible.
+            Calculadoras laborales gratuitas para México, sin registro y con estimaciones inmediatas.
           </p>
       </div>
 

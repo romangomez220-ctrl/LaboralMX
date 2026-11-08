@@ -42,8 +42,8 @@ export default function RomanusHome() {
             Entiende tus derechos. Calcula con claridad.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-600 sm:text-lg">
-            Herramientas laborales gratuitas con metodología visible, resultados inmediatos y
-            opciones profesionales cuando necesitas conservar o revisar la información.
+            Herramientas laborales gratuitas con resultados orientativos inmediatos y reportes
+            profesionales cuando necesitas revisar o conservar el detalle.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -66,7 +66,7 @@ export default function RomanusHome() {
             <span aria-hidden="true">·</span>
             <span>Datos procesados en tu navegador</span>
             <span aria-hidden="true">·</span>
-            <span>Metodología visible</span>
+            <span>Estimación inmediata</span>
           </div>
         </div>
 
@@ -76,8 +76,8 @@ export default function RomanusHome() {
           <div className="mt-6 space-y-4">
             {[
               ['01', 'Captura', 'Fechas, salario y situación laboral.'],
-              ['02', 'Comprende', 'Resultado desglosado y fórmulas consultables.'],
-              ['03', 'Decide', 'Compara, comparte o genera un reporte profesional.'],
+              ['02', 'Estima', 'Consulta gratuitamente el monto total orientativo.'],
+              ['03', 'Profundiza', 'Desbloquea el desglose en un reporte PDF profesional.'],
             ].map(([numero, titulo, descripcion]) => (
               <div key={numero} className="grid grid-cols-[2.25rem_1fr] gap-3 border-t border-gray-100 pt-4 first:border-0 first:pt-0">
                 <span className="font-serif text-xl font-semibold text-gold-dark">{numero}</span>

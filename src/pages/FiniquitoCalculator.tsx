@@ -14,6 +14,7 @@ import { obtenerFechaHoyInput } from '../utils/dateUtils'
 import { borrarBorrador, cargarBorrador, guardarBorrador } from '../utils/calculatorDraft'
 import type { FiniquitoFormData, TipoCapturaSalarial, ZonaSalarioMinimo } from '../types/labor'
 import { buildFiniquitoReportSnapshot } from '../reports/standardSnapshots'
+import { storeReportDraft } from '../reports/draftVault'
 
 // Estado de captura del formulario: los campos numéricos se manejan como
 // texto mientras el usuario escribe (nunca como number), para que el
@@ -148,20 +149,14 @@ export default function FiniquitoCalculator({ headingLevel = 'h1' }: FiniquitoCa
     borrarBorrador(CLAVE_BORRADOR)
     trackCalculatorCompleted('finiquito')
 
-    const datosCapturados = [
-      { etiqueta: 'Fecha de ingreso', valor: form.fechaIngreso },
-      { etiqueta: 'Fecha de salida', valor: form.fechaSalida },
-      {
-        etiqueta: 'Salario capturado',
-        valor: `$${form.salarioBase} MXN (${form.tipoSalario === 'diario' ? 'diario' : 'mensual'})`,
-      },
-      { etiqueta: 'Días pendientes de pago', valor: form.diasPendientes || '0' },
-      { etiqueta: 'Vacaciones ya disfrutadas o pagadas', valor: form.vacacionesDisfrutadas || '0' },
-      { etiqueta: '¿Renuncia voluntaria?', valor: form.renunciaVoluntaria ? 'Sí' : 'No' },
-    ]
-
     const reportSnapshot = buildFiniquitoReportSnapshot(datosParaCalcular, resultado)
-    navigate('/productos/laboralmx/resultado', { state: { resultado, datosCapturados, reportSnapshot } })
+    const reportDraftId = storeReportDraft(reportSnapshot)
+    navigate('/productos/laboralmx/resultado', {
+      state: {
+        reportDraftId,
+        publicResult: { tipo: resultado.tipo, totalEstimado: resultado.totalEstimado },
+      },
+    })
   }
 
   return (

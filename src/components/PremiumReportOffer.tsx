@@ -1,33 +1,40 @@
 import { useEffect, useRef, useState } from 'react'
 import { PAID_REPORTS_CONFIG, formatReportPrice } from '../config/paidReports'
-import type { PaidReportSnapshot } from '../reports/types'
+import type { PaidReportCalculator, PaidReportSnapshot } from '../reports/types'
 import { createReportCheckout } from '../reports/api'
 import { trackPaidReport } from '../utils/analytics'
 import { storeReportRecoveryToken } from '../reports/recovery'
 
-interface Props { snapshot: PaidReportSnapshot }
+interface Props {
+  snapshot?: PaidReportSnapshot
+  calculatorType?: PaidReportCalculator
+  resolveSnapshot?: () => PaidReportSnapshot | undefined
+}
 
-export default function PremiumReportOffer({ snapshot }: Props) {
+export default function PremiumReportOffer({ snapshot, calculatorType, resolveSnapshot }: Props) {
   const viewed = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const type = snapshot?.calculatorType ?? calculatorType
 
   useEffect(() => {
-    if (viewed.current) return
+    if (viewed.current || !type) return
     viewed.current = true
-    trackPaidReport('offer_viewed', snapshot.calculatorType)
-  }, [snapshot.calculatorType])
+    trackPaidReport('offer_viewed', type)
+  }, [type])
 
   async function beginCheckout() {
     try {
       setLoading(true)
       setError(false)
-      const checkout = await createReportCheckout(snapshot)
+      const checkoutSnapshot = snapshot ?? resolveSnapshot?.()
+      if (!checkoutSnapshot) throw new Error('Report draft unavailable')
+      const checkout = await createReportCheckout(checkoutSnapshot)
       storeReportRecoveryToken(checkout.purchaseId, checkout.recoveryToken)
-      trackPaidReport('checkout_started', snapshot.calculatorType)
+      trackPaidReport('checkout_started', checkoutSnapshot.calculatorType)
       window.location.assign(checkout.checkoutUrl)
     } catch {
-      trackPaidReport('checkout_failed', snapshot.calculatorType)
+      if (type) trackPaidReport('checkout_failed', type)
       setError(true)
       setLoading(false)
     }
@@ -47,7 +54,7 @@ export default function PremiumReportOffer({ snapshot }: Props) {
             Desbloquea el informe detallado de tu cálculo
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-            Consulta gratis tu estimación en pantalla. Por $100 MXN obtén el PDF completo con el desglose, la metodología, los supuestos y los puntos que conviene verificar antes de aceptar una propuesta.
+            El total gratuito es orientativo. El PDF incluye el desglose de prestaciones, metodología, supuestos y puntos que conviene verificar antes de aceptar una propuesta.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -70,7 +77,7 @@ export default function PremiumReportOffer({ snapshot }: Props) {
               disabled={loading}
               className="min-h-12 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-primary-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:bg-gray-400"
             >
-              {loading ? 'Preparando pago seguro…' : `Desbloquear informe legal completo por ${formatReportPrice()} MXN`}
+              {loading ? 'Preparando pago seguro…' : `Obtener reporte detallado PDF — ${formatReportPrice()} MXN`}
             </button>
             <div className="text-xs leading-5 text-gray-600">
               <p className="font-semibold text-primary">Pago único procesado por Stripe</p>
@@ -83,7 +90,7 @@ export default function PremiumReportOffer({ snapshot }: Props) {
             </p>
           )}
           <p className="mt-4 text-xs leading-5 text-stone">
-            La consulta en pantalla permanece disponible sin costo. El pago desbloquea exclusivamente el PDF Premium detallado y su descarga protegida.
+            El pago desbloquea exclusivamente el PDF Premium detallado y su descarga protegida.
           </p>
         </div>
 

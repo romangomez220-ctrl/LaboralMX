@@ -48,7 +48,7 @@ export function buildFiniquitoReportSnapshot(
     checklist: [...COMMON_CHECKLIST, 'Revisar si existen bonos, comisiones, horas extra u otras prestaciones pendientes.'],
     methodology: [
       'El reporte conserva los importes producidos por el motor de cálculo de ROMANUS; no ejecuta un segundo cálculo.',
-      'El desglose considera los conceptos mostrados en pantalla y los supuestos capturados por el usuario.',
+      'El desglose considera los conceptos producidos por el motor de cálculo y los supuestos capturados por el usuario.',
     ],
     disclaimer: DISCLAIMER,
   }

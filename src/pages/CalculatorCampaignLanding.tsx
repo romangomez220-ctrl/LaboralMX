@@ -66,7 +66,7 @@ export default function CalculatorCampaignLanding({ calculator }: CalculatorCamp
         <div className="grid sm:grid-cols-3 gap-3 mt-7 text-sm">
           <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Tus datos permanecen en tu dispositivo</p>
           <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Resultado inmediato</p>
-          <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Metodología visible</p>
+          <p className="rounded-lg bg-ivory px-4 py-3 text-primary font-medium">Total orientativo sin costo</p>
         </div>
       </section>
 
